@@ -1,0 +1,35 @@
+<div class="d-flex justify-content-center align-items-center vh-100">
+  <div
+    class="card p-4 shadow text-center"
+    style="max-width: 100%; width: 300px"
+  >
+    <h2 class="text-center mb-4">Iniciar Sesión</h2>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <input
+          type="email"
+          class="form-control mb-1"
+          formControlName="email"
+          placeholder="Ingresa tu correo electrónico"
+          required
+        />
+        <small
+          *ngIf="
+            loginForm.get('email')?.invalid &&
+            (loginForm.get('email')?.dirty || loginForm.get('email')?.touched)
+          "
+          class="text-danger"
+        >
+          El correo electrónico es obligatorio y debe ser válido
+        </small>
+      </div>
+      <button
+        type="submit"
+        class="btn btn-dark btn-block mt-3"
+        [disabled]="loginForm.invalid"
+      >
+        Iniciar Sesión
+      </button>
+    </form>
+  </div>
+</div>

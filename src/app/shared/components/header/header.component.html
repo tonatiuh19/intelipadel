@@ -1,0 +1,37 @@
+<nav
+  id="navbar"
+  [class]="
+    isMain
+      ? 'navbar navbar-expand-lg fixed-top py-3 d-block'
+      : 'navbar navbar-expand-lg bg-white fixed-top py-3 d-block'
+  "
+  data-navbar-on-scroll="data-navbar-on-scroll"
+>
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#goTop">
+      <img
+        src="https://garbrix.com/regalame/assets/images/logo.png"
+        alt="Regalame un Cafe"
+        height="30"
+        class="logo d-inline-block align-text-top"
+      />
+    </a>
+
+    <div class="d-sm-block d-md-none">
+      <div class="text-center">
+        <button class="btn btn-outline-dark btn-sm">Comisiones</button>
+        <button class="btn btn-outline-dark btn-sm ms-1" (click)="login()">
+          <fa-icon [icon]="faUserCircle"></fa-icon>
+        </button>
+      </div>
+    </div>
+    <div class="d-none d-md-block">
+      <button
+        class="btn btn-sm btn-outline-dark me-1 order-0"
+        (click)="login()"
+      >
+        <fa-icon [icon]="faUserCircle"></fa-icon>
+      </button>
+    </div>
+  </div>
+</nav>
