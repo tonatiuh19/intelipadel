@@ -4,7 +4,7 @@
     style="max-width: 100%; width: 300px"
   >
     <h2 class="text-center mb-4">Iniciar Sesión</h2>
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <form *ngIf="!isUserValid" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <input
           type="email"
@@ -22,6 +22,9 @@
         >
           El correo electrónico es obligatorio y debe ser válido
         </small>
+        <small *ngIf="!isUserValid && isCodeSent" class="text-danger">
+          El correo electrónico no es válido o no está registrado
+        </small>
       </div>
       <button
         type="submit"
@@ -29,6 +32,46 @@
         [disabled]="loginForm.invalid"
       >
         Iniciar Sesión
+      </button>
+    </form>
+    <form
+      *ngIf="isUserValid"
+      [formGroup]="codeForm"
+      (ngSubmit)="onSubmitCode()"
+    >
+      <div class="form-group">
+        <label for="code" class="label-code"
+          >Hemos enviado un código de verificación a tu correo, ingresalo a
+          continuación:</label
+        >
+        <input
+          type="number"
+          class="form-control mb-1 input-code"
+          formControlName="code"
+          placeholder="XXXXXX"
+          required
+        />
+        <small
+          *ngIf="codeForm.get('code')?.invalid && codeForm.get('code')?.touched"
+          class="text-danger"
+        >
+          El código de verificación es obligatorio
+        </small>
+        <div *ngIf="!isCodeValid && isTheCodeValid">
+          <small class="text-danger">
+            El código es incorrecto, por favor verifica e intenta de nuevo
+          </small>
+          <button type="button" class="btn btn-link p-0" (click)="resendCode()">
+            Volver a enviar código
+          </button>
+        </div>
+      </div>
+      <button
+        type="submit"
+        class="btn btn-dark btn-block mt-3"
+        [disabled]="codeForm.invalid"
+      >
+        Verificar código
       </button>
     </form>
   </div>

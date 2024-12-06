@@ -11,6 +11,8 @@ import { routerReducer, StoreRouterConnectingModule } from '@ngrx/router-store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { LoginModule } from './login/login.module';
+import { LoadingMaskModule } from './shared/components/loading-mask/loading-mask.module';
+import { provideHttpClient } from '@angular/common/http';
 
 @NgModule({
   declarations: [AppComponent],
@@ -30,8 +32,9 @@ import { LoginModule } from './login/login.module';
     HomeModule,
     DashboardModule,
     LoginModule,
+    LoadingMaskModule,
   ],
-  providers: [],
+  providers: [provideHttpClient()],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

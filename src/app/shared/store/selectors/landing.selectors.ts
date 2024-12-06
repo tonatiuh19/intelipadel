@@ -9,3 +9,8 @@ export const selecIsloading = createSelector(
   selectLandingState,
   (state: LandingState) => state.isLoading
 );
+
+export const selectUser = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.user
+);

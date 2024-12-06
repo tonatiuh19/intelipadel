@@ -1,0 +1,7 @@
+.main-container {
+  position: relative;
+  background-size: cover;
+  background-attachment: fixed; /* Fixed background image */
+  height: 100vh;
+  overflow: hidden;
+}

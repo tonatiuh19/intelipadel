@@ -1,0 +1,11 @@
+.label-code {
+  font-size: 1em;
+  font-weight: bold;
+  color: #000;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.input-code {
+  text-align: center;
+}

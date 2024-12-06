@@ -9,72 +9,31 @@ import { LandingState } from '../../../home/home.model';
 export const LandingReducer = createRehydrateReducer(
   { key: LANDING_FEATURE_KEY },
   initialLandingState,
-  on(
-    LandingActions.getGuest,
-    (state: LandingState, { guest_code, event_type }) => {
-      return {
-        ...state,
-        isLoading: true,
-        isError: false,
-      };
-    }
-  ),
-  on(LandingActions.getGuestFailure, (state: LandingState, { error }) => {
-    return {
-      ...state,
-      isValidated: false,
-      isLoading: false,
-      isError: true,
-    };
-  }),
-  on(LandingActions.cleanGuest, (state: LandingState) => {
-    return {
-      ...state,
-      isValidated: false,
-      ...initialLandingState,
-    };
-  }),
-  on(LandingActions.setLoading, (state: LandingState) => {
-    return {
-      ...state,
-      isLoading: true,
-    };
-  }),
-  on(LandingActions.cleanLoading, (state: LandingState) => {
-    return {
-      ...state,
-      isLoading: false,
-    };
-  }),
-  on(
-    LandingActions.updateMessageFromVideo,
-    (state: LandingState, { isMessage }) => {
-      return {
-        ...state,
-        isMessage,
-      };
-    }
-  ),
-  on(LandingActions.updateGuestInformation, (state: LandingState, { data }) => {
+  on(LandingActions.sendCodeByMailWeb, (state: LandingState, { email }) => {
     return {
       ...state,
       isLoading: true,
     };
   }),
   on(
-    LandingActions.updateGuestInformationSuccess,
-    (state: LandingState, { isConfirmed }) => {
+    LandingActions.sendCodeByMailWebSuccess,
+    (state: LandingState, { response }) => {
+      console.log('aqui', response, state);
       return {
         ...state,
-        isConfirmed,
+        user: {
+          ...state.user,
+          isUserValid: response,
+        },
         isLoading: false,
         isError: false,
       };
     }
   ),
   on(
-    LandingActions.updateGuestInformationFailure,
+    LandingActions.sendCodeByMailWebFailure,
     (state: LandingState, { error }) => {
+      console.log('aqui', error);
       return {
         ...state,
         isLoading: false,
@@ -83,8 +42,8 @@ export const LandingReducer = createRehydrateReducer(
     }
   ),
   on(
-    LandingActions.getEventAccommodations,
-    (state: LandingState, { id_event }) => {
+    LandingActions.validateSessionCodeWeb,
+    (state: LandingState, { code, email }) => {
       return {
         ...state,
         isLoading: true,
@@ -92,40 +51,52 @@ export const LandingReducer = createRehydrateReducer(
     }
   ),
   on(
-    LandingActions.getEventAccommodationsFailure,
-    (state: LandingState, { error }) => {
+    LandingActions.validateSessionCodeWebSuccess,
+    (state: LandingState, { response }) => {
+      if (!response) {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isCodeValid: response,
+          },
+          isLoading: false,
+          isError: false,
+        };
+      }
       return {
         ...state,
-        isLoading: false,
-        isError: true,
-      };
-    }
-  ),
-  on(LandingActions.getImagesVideosFromServer, (state: LandingState, {}) => {
-    return {
-      ...state,
-      isLoading: true,
-    };
-  }),
-  on(
-    LandingActions.getImagesVideosFromServerSuccess,
-    (state: LandingState, { data }) => {
-      return {
-        ...state,
-        landingMedia: data,
+        user: {
+          ...state.user,
+          isCodeValid: true,
+          email: response.email,
+          full_name: response.full_name,
+          id_platforms_user: response.id_platforms_user,
+          age: response.age,
+          date_of_birth: response.date_of_birth,
+          phone_number: response.phone_number,
+          phone_number_code: response.phone_number_code,
+          stripe_id: response.stripe_id,
+          type: response.type,
+          date_created: response.date_created,
+          id_platforms: response.id_platforms,
+        },
         isLoading: false,
         isError: false,
       };
     }
   ),
   on(
-    LandingActions.getImagesVideosFromServerFailure,
-    (state: LandingState, { error }) => {
+    LandingActions.validateSessionCodeWebFailure,
+    (state: LandingState, {}) => {
       return {
         ...state,
         isLoading: false,
         isError: true,
       };
     }
-  )
+  ),
+  on(LandingActions.resetLandingState, () => {
+    return initialLandingState;
+  })
 );
