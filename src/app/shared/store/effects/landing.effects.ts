@@ -44,6 +44,36 @@ export class LandingEffects {
     );
   });
 
+  getDateTimeSlotsByIdPlatformsAndDates$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getDateTimeSlotsByIdPlatformsAndDates),
+      switchMap(({ id_platforms, start_date, end_date }) => {
+        return this.landingService
+          .getDateTimeSlotsByIdPlatformsAndDates(
+            id_platforms,
+            start_date,
+            end_date
+          )
+          .pipe(
+            map((response) => {
+              return LandingActions.getDateTimeSlotsByIdPlatformsAndDatesSuccess(
+                {
+                  response,
+                }
+              );
+            }),
+            catchError((error) => {
+              return of(
+                LandingActions.getDateTimeSlotsByIdPlatformsAndDatesFailure({
+                  error,
+                })
+              );
+            })
+          );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

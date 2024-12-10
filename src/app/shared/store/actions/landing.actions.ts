@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { ReservationsState } from '../../../home/home.model';
 
 const actor = '[Landing]';
 
@@ -33,3 +34,18 @@ export const validateSessionCodeWebFailure = createAction(
 );
 
 export const resetLandingState = createAction(`${actor} Reset Landing State`);
+
+export const getDateTimeSlotsByIdPlatformsAndDates = createAction(
+  `${actor} Get Date Time Slots By Id Platforms And Dates`,
+  props<{ id_platforms: number; start_date: string; end_date: string }>()
+);
+
+export const getDateTimeSlotsByIdPlatformsAndDatesSuccess = createAction(
+  `${actor} Get Date Time Slots By Id Platforms And Dates Success`,
+  props<{ response: ReservationsState[] }>()
+);
+
+export const getDateTimeSlotsByIdPlatformsAndDatesFailure = createAction(
+  `${actor} Get Date Time Slots By Id Platforms And Dates Failure`,
+  props<{ error: any }>()
+);

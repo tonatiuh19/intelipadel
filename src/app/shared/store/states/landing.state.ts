@@ -21,4 +21,5 @@ export const initialLandingState: LandingState = {
     date_created: '',
     id_platforms: 0,
   },
+  reservations: [],
 };

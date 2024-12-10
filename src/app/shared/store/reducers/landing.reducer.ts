@@ -98,5 +98,35 @@ export const LandingReducer = createRehydrateReducer(
   ),
   on(LandingActions.resetLandingState, () => {
     return initialLandingState;
-  })
+  }),
+  on(
+    LandingActions.getDateTimeSlotsByIdPlatformsAndDates,
+    (state: LandingState, { id_platforms, start_date, end_date }) => {
+      return {
+        ...state,
+        isLoading: true,
+      };
+    }
+  ),
+  on(
+    LandingActions.getDateTimeSlotsByIdPlatformsAndDatesSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        reservations: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.getDateTimeSlotsByIdPlatformsAndDatesFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
+  )
 );

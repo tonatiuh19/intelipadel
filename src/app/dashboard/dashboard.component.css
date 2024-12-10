@@ -1,7 +1,96 @@
 .main-container {
+  padding-top: 2rem !important;
   position: relative;
   background-size: cover;
   background-attachment: fixed; /* Fixed background image */
-  height: 100vh;
   overflow: hidden;
+}
+
+.full-width-calendar {
+  width: 100%;
+}
+
+:host ::ng-deep .fc .fc-toolbar-title {
+  text-transform: uppercase;
+}
+
+:host ::ng-deep .fc .fc-col-header-cell-cushion {
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #405069;
+}
+
+/* Custom styles for agenda mode */
+:host ::ng-deep .fc .fc-timegrid-axis-cushion {
+  text-transform: uppercase;
+  color: #007bff; /* Blue text for time labels */
+}
+
+:host ::ng-deep .fc .fc-timegrid-slot-label-cushion {
+  text-transform: uppercase;
+  color: #007bff; /* Blue text for slot labels */
+}
+
+:host ::ng-deep .fc .fc-timegrid-event {
+  background-color: #28a745; /* Green background for events */
+  border-color: #28a745; /* Green border for events */
+  color: #ffffff; /* White text for events */
+}
+
+:host ::ng-deep .fc .fc-timegrid-now-indicator {
+  background-color: #dc3545; /* Red background for the current time indicator */
+}
+
+:host ::ng-deep .fc .fc-timegrid-slot {
+  background-color: #f8f9fa; /* Light gray background for time slots */
+}
+
+:host ::ng-deep .fc .fc-timegrid-slot-lane {
+  border-color: #dee2e6; /* Light gray border for time slots */
+}
+
+:host ::ng-deep .fc .fc-timegrid-slot-label {
+  background-color: #f8f9fa; /* Light gray background for slot labels */
+}
+
+:host ::ng-deep .fc .fc-daygrid-day-number {
+  text-decoration: none; /* Remove underline */
+  color: #405069; /* Dark blue text for day numbers */
+}
+
+:host ::ng-deep .fc .fc-daygrid-event-harness .fc-event {
+  cursor: pointer;
+  color: #405069;
+}
+
+:host ::ng-deep .fc .fc-daygrid-day.fc-day-today {
+  background-color: #cedeee; /* Light gray background for today's date */
+}
+
+:host ::ng-deep .p-dialog-header {
+  display: none;
+}
+
+.panel_reservation-container {
+  margin-top: 1rem;
+}
+
+.panel_reservation-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #405069;
+}
+
+.panel_reservation-title-bold {
+  font-weight: 700;
+}
+
+.panel_reservation-title-schedule {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #405069;
+}
+
+.panel_reservation-title-schedule-bold {
+  font-weight: 700;
 }

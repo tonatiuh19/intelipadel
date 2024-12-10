@@ -14,3 +14,8 @@ export const selectUser = createSelector(
   selectLandingState,
   (state: LandingState) => state.user
 );
+
+export const selectReservations = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.reservations
+);
