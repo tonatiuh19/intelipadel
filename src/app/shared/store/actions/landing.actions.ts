@@ -109,3 +109,18 @@ export const updateUserWebFailure = createAction(
   `${actor} Update User Web Failure`,
   props<{ error: any }>()
 );
+
+export const getPlatformSlotsByIdWeb = createAction(
+  `${actor} Get Platform Slots By Id Web`,
+  props<{ id_platforms_field: number; date: string }>()
+);
+
+export const getPlatformSlotsByIdWebSuccess = createAction(
+  `${actor} Get Platform Slots By Id Web Success`,
+  props<{ response: any }>()
+);
+
+export const getPlatformSlotsByIdWebFailure = createAction(
+  `${actor} Get Platform Slots By Id Web Failure`,
+  props<{ error: any }>()
+);

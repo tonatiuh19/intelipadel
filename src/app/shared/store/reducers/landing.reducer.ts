@@ -224,5 +224,32 @@ export const LandingReducer = createRehydrateReducer(
       isLoading: false,
       isError: true,
     };
-  })
+  }),
+  on(LandingActions.getPlatformSlotsByIdWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.getPlatformSlotsByIdWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        platformsSlots: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.getPlatformSlotsByIdWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
+  )
 );

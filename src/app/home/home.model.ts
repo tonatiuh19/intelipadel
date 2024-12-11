@@ -6,6 +6,7 @@ export interface LandingState {
   user: UserState;
   reservations: ReservationsState[];
   usersEnd: UserState[];
+  platformsSlots: PlatformsSlots;
   isLoading?: boolean;
   isError?: boolean;
 }
@@ -37,4 +38,23 @@ export interface ReservationsState {
   full_name: string;
   date_of_birth: string;
   email: string;
+}
+
+export interface PlatformsSlots {
+  id_platforms_field: number;
+  title: string;
+  today: Date;
+  fullToday: Date;
+  markedDates: { [key: string]: MarkedDate };
+  slots: any[];
+}
+
+export interface MarkedDate {
+  marked: boolean;
+  dotColor: string;
+  activeOpacity: number;
+  id_platforms_disabled_date: number;
+  start_date_time: Date;
+  end_date_time: Date;
+  active: number;
 }

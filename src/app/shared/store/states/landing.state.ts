@@ -23,4 +23,12 @@ export const initialLandingState: LandingState = {
   },
   reservations: [],
   usersEnd: [],
+  platformsSlots: {
+    id_platforms_field: 0,
+    title: '',
+    today: new Date(),
+    fullToday: new Date(),
+    markedDates: {},
+    slots: [],
+  },
 };

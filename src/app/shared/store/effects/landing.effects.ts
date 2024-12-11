@@ -175,6 +175,28 @@ export class LandingEffects {
     );
   });
 
+  getPlatformSlotsByIdWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getPlatformSlotsByIdWeb),
+      switchMap(({ id_platforms_field, date }) => {
+        return this.landingService
+          .getPlatformsSlotsById(id_platforms_field, date)
+          .pipe(
+            map((response) => {
+              return LandingActions.getPlatformSlotsByIdWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(
+                LandingActions.getPlatformSlotsByIdWebFailure({ error })
+              );
+            })
+          );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

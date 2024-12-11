@@ -1,18 +1,42 @@
 <p-dialog
   [(visible)]="display"
   [modal]="true"
-  [style]="{ width: '50vw' }"
+  [style]="{ width: '70vw' }"
   header="Marcar días"
 >
-  <!-- Modal content for Mark Days -->
-  <p>Contenido del modal para marcar schedule.</p>
-  <div class="ui-dialog-buttonpane p-clearfix">
-    <button
-      type="button"
-      pButton
-      icon="pi pi-times"
-      label="Cerrar"
-      (click)="display = false"
-    ></button>
+  <div class="schedule-panel_container">
+    <div class="container-fluid">
+      <div class="row text-center mb-3">
+        <div class="col-sm-12">
+          <div class="schedule-panel_title">
+            <span class="schedule-panel_title-bold">Agendar Cancha</span>
+            <button
+              type="button"
+              class="btn-close float-end"
+              aria-label="Close"
+              (click)="closeDialog()"
+            ></button>
+          </div>
+        </div>
+      </div>
+      <div class="row text-center">
+        <div class="col-sm-12">
+          <p-calendar
+            [(ngModel)]="selectedDate"
+            [inline]="true"
+            [showIcon]="true"
+            [monthNavigator]="true"
+            [yearNavigator]="true"
+            yearRange="2020:2030"
+            [minDate]="minDate"
+            (onSelect)="onDateSelect($event)"
+          >
+            <ng-template let-date pTemplate="date">
+              <span [ngStyle]="getDateStyle(date)">{{ date.day }}</span>
+            </ng-template>
+          </p-calendar>
+        </div>
+      </div>
+    </div>
   </div>
 </p-dialog>
