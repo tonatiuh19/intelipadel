@@ -10,6 +10,7 @@ export class LandingService {
   public SEND_CODE_BY_MAIL_WEB = `${DOMAIN}/sendCodeByMailWeb.php`;
   public VALIDATE_CODE_WEB = `${DOMAIN}/validateSessionCodeWeb.php`;
   public GET_DATE_TIME_SLOTS_BY_ID_PLATFORMS_AND_DATES = `${DOMAIN}/getDateTimeSlotsByIdPlatformsAndDates.php`;
+  public GET_USERS = `${DOMAIN}/getUsersByIdWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -48,6 +49,18 @@ export class LandingService {
         id_platforms,
         start_date,
         end_date,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public getUsers(id_platforms: number): Observable<any> {
+    return this.httpClient
+      .post(this.GET_USERS, {
+        id_platforms,
       })
       .pipe(
         map((response) => {

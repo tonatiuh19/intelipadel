@@ -1,0 +1,18 @@
+<p-dialog
+  [(visible)]="display"
+  [modal]="true"
+  [style]="{ width: '50vw' }"
+  header="Marcar días"
+>
+  <!-- Modal content for Mark Days -->
+  <p>Contenido del modal para marcar días.</p>
+  <div class="ui-dialog-buttonpane p-clearfix">
+    <button
+      type="button"
+      pButton
+      icon="pi pi-times"
+      label="Cerrar"
+      (click)="display = false"
+    ></button>
+  </div>
+</p-dialog>

@@ -8,6 +8,10 @@ import {
   faQrcode,
   faCheckCircle,
   faTrash,
+  faCalendar,
+  faPlusCircle,
+  faUsers,
+  faNewspaper,
 } from '@fortawesome/free-solid-svg-icons';
 import { CalendarOptions } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -54,6 +58,10 @@ export class DashboardComponent implements OnInit {
   faQrcode = faQrcode;
   faCheckCircle = faCheckCircle;
   faTrash = faTrash;
+  faCalendar = faCalendar;
+  faPlusCircle = faPlusCircle;
+  faUsers = faUsers;
+  faNewspaper = faNewspaper;
 
   user: UserState | undefined;
 
@@ -67,6 +75,10 @@ export class DashboardComponent implements OnInit {
   displayModal: boolean = false;
   displayCancelModal: boolean = false;
   displayValidateModal: boolean = false;
+  displayMarkDaysModal: boolean = false; // Control the visibility of the Mark Days modal
+  displayScheduleCourtModal: boolean = false; // Control the visibility of the Schedule Court modal
+  displayUsersModal: boolean = false; // Control the visibility of the Users modal
+  displayAnnouncementsModal: boolean = false;
 
   private unsubscribe$ = new Subject<void>();
 

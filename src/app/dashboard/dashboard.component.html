@@ -12,6 +12,35 @@
               <h1 class="text-center">PadelRoom</h1>
             </div>
           </div>
+          <div class="row text-center mt-3 mb-2">
+            <div class="col-sm-12">
+              <button
+                class="btn btn-primary"
+                (click)="displayMarkDaysModal = true"
+              >
+                <fa-icon [icon]="faCalendar"></fa-icon> Marcar días
+              </button>
+              <button
+                class="btn btn-primary ms-2"
+                (click)="displayScheduleCourtModal = true"
+              >
+                <fa-icon [icon]="faPlusCircle"></fa-icon> Agendar cancha
+              </button>
+              <button
+                class="btn btn-primary ms-2"
+                (click)="displayUsersModal = true"
+              >
+                <fa-icon [icon]="faUsers"></fa-icon> Usuarios
+              </button>
+              <button
+                class="btn btn-primary ms-2"
+                (click)="displayAnnouncementsModal = true"
+              >
+                <fa-icon [icon]="faNewspaper"></fa-icon> Anuncios
+              </button>
+            </div>
+          </div>
+          <hr />
           <div class="row">
             <div class="col-sm-12">
               <full-calendar
@@ -26,7 +55,12 @@
   </div>
 </section>
 <app-footer></app-footer>
-<p-dialog [(visible)]="displayModal" [modal]="true" [style]="{ width: '70vw' }">
+<p-dialog
+  maskStyleClass="backdrop-blur-sm"
+  [(visible)]="displayModal"
+  [modal]="true"
+  [style]="{ width: '70vw' }"
+>
   <div class="panel_reservation-container">
     <div class="container-fluid">
       <div class="row">
@@ -172,3 +206,12 @@
     </div>
   </div>
 </p-dialog>
+
+<app-mark-days-modal [display]="displayMarkDaysModal"></app-mark-days-modal>
+<app-schedule-court-modal
+  [display]="displayScheduleCourtModal"
+></app-schedule-court-modal>
+<app-users-modal [display]="displayUsersModal"></app-users-modal>
+<app-announcements-modal
+  [display]="displayAnnouncementsModal"
+></app-announcements-modal>

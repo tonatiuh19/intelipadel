@@ -22,4 +22,5 @@ export const initialLandingState: LandingState = {
     id_platforms: 0,
   },
   reservations: [],
+  usersEnd: [],
 };

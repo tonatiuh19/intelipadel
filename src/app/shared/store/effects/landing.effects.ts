@@ -74,6 +74,28 @@ export class LandingEffects {
     );
   });
 
+  getUsers$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getUsers),
+      switchMap(({ id_platforms }) => {
+        return this.landingService.getUsers(id_platforms).pipe(
+          map((response) => {
+            return LandingActions.getUsersSuccess({
+              response,
+            });
+          }),
+          catchError((error) => {
+            return of(
+              LandingActions.getUsersFailure({
+                error,
+              })
+            );
+          })
+        );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

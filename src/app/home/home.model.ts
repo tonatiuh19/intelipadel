@@ -5,13 +5,14 @@ export interface LandingState {
   isLogged: boolean;
   user: UserState;
   reservations: ReservationsState[];
+  usersEnd: UserState[];
   isLoading?: boolean;
   isError?: boolean;
 }
 
 export interface UserState {
-  isUserValid: boolean;
-  isCodeValid: boolean;
+  isUserValid?: boolean;
+  isCodeValid?: boolean;
   id_platforms_user: number;
   full_name: string;
   age: number;

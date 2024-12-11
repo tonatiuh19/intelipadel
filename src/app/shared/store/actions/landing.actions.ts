@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { ReservationsState } from '../../../home/home.model';
+import { ReservationsState, UserState } from '../../../home/home.model';
 
 const actor = '[Landing]';
 
@@ -47,5 +47,20 @@ export const getDateTimeSlotsByIdPlatformsAndDatesSuccess = createAction(
 
 export const getDateTimeSlotsByIdPlatformsAndDatesFailure = createAction(
   `${actor} Get Date Time Slots By Id Platforms And Dates Failure`,
+  props<{ error: any }>()
+);
+
+export const getUsers = createAction(
+  `${actor} Get Users`,
+  props<{ id_platforms: number }>()
+);
+
+export const getUsersSuccess = createAction(
+  `${actor} Get Users Success`,
+  props<{ response: UserState[] }>()
+);
+
+export const getUsersFailure = createAction(
+  `${actor} Get Users Failure`,
   props<{ error: any }>()
 );
