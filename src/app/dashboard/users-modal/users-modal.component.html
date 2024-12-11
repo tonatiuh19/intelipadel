@@ -12,7 +12,9 @@
       <div *ngIf="currentStep === 2" class="row text-center mb-3">
         <div class="col-sm-12">
           <div class="user-panel_title">
-            <span class="user-panel_title-bold">Nuevo usuario</span>
+            <span class="user-panel_title-bold">{{
+              editingUser ? "Editar Usuario" : "Nuevo usuario"
+            }}</span>
             <button
               type="button"
               class="btn-close float-end"
@@ -153,7 +155,10 @@
                 Atras
               </button>
               <button type="submit" class="btn btn-primary ms-2">
-                <fa-icon [icon]="faPlusCircle"></fa-icon> Crear Usuario
+                <fa-icon
+                  [icon]="editingUser ? faPencilAlt : faPlusCircle"
+                ></fa-icon>
+                {{ editingUser ? "Actualizar Usuario" : "Crear Usuario" }}
               </button>
             </div>
           </form>

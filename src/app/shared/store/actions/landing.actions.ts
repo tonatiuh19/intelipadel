@@ -94,3 +94,18 @@ export const deleteUserWebFailure = createAction(
   `${actor} Delete User Web Failure`,
   props<{ error: any }>()
 );
+
+export const updateUserWeb = createAction(
+  `${actor} Update User Web`,
+  props<{ user: any }>()
+);
+
+export const updateUserWebSuccess = createAction(
+  `${actor} Update User Web Success`,
+  props<{ response: any }>()
+);
+
+export const updateUserWebFailure = createAction(
+  `${actor} Update User Web Failure`,
+  props<{ error: any }>()
+);

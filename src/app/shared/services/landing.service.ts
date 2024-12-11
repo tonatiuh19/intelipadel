@@ -13,6 +13,7 @@ export class LandingService {
   public GET_USERS = `${DOMAIN}/getUsersByIdWeb.php`;
   public INSERT_USER = `${DOMAIN}/insertUserWeb.php`;
   public DELETE_USER = `${DOMAIN}/deleteUserWeb.php`;
+  public EDIT_USER = `${DOMAIN}/editUserWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -106,6 +107,36 @@ export class LandingService {
     return this.httpClient
       .post(this.DELETE_USER, {
         id_platforms_user,
+        id_platforms,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public editUser(
+    id_platforms_user: number,
+    full_name: string,
+    age: number,
+    date_of_birth: string,
+    email: string,
+    phone_number: string,
+    phone_number_code: string,
+    type: number,
+    id_platforms: number
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.EDIT_USER, {
+        id_platforms_user,
+        full_name,
+        age,
+        date_of_birth,
+        email,
+        phone_number,
+        phone_number_code,
+        type,
         id_platforms,
       })
       .pipe(

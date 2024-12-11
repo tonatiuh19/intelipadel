@@ -145,6 +145,36 @@ export class LandingEffects {
     );
   });
 
+  updateUser$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.updateUserWeb),
+      switchMap(({ user }) => {
+        return this.landingService
+          .editUser(
+            user.id_platforms_user,
+            user.full_name,
+            user.age,
+            user.date_of_birth,
+            user.email,
+            user.phone_number,
+            user.phone_number_code,
+            user.type,
+            user.id_platforms
+          )
+          .pipe(
+            map((response) => {
+              return LandingActions.updateUserWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.updateUserWebFailure({ error }));
+            })
+          );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

@@ -84,7 +84,23 @@ export class UsersModalComponent implements OnInit {
     if (this.createUserForm.valid) {
       if (this.editingUser) {
         // Update the existing user
-        console.log('edit', this.createUserForm.value);
+        console.log(
+          'edit',
+          this.editingUser.id_platforms_user,
+          this.createUserForm.value
+        );
+        this.store.dispatch(
+          LandingActions.updateUserWeb({
+            user: {
+              id_platforms_user: this.editingUser.id_platforms_user,
+              ...this.createUserForm.value,
+              phone_number: '',
+              phone_number_code: '',
+              type: 1,
+              id_platforms: this.platformsId,
+            },
+          })
+        );
       } else {
         // Add a new user
         console.log(this.createUserForm.value);
