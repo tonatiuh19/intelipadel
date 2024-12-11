@@ -27,6 +27,8 @@ export class UsersModalComponent implements OnInit {
   faPencilAlt = faPencilAlt;
 
   users: UserState[] = [];
+  platformsId: number = 0;
+
   paginatedUsers: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 10;
@@ -45,11 +47,13 @@ export class UsersModalComponent implements OnInit {
       full_name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       date_of_birth: ['', Validators.required],
+      age: ['', Validators.required],
     });
   }
 
   ngOnInit() {
     this.selectUser$.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
+      this.platformsId = user.id_platforms;
       this.store.dispatch(
         LandingActions.getUsers({
           id_platforms: user.id_platforms,
@@ -80,13 +84,27 @@ export class UsersModalComponent implements OnInit {
     if (this.createUserForm.valid) {
       if (this.editingUser) {
         // Update the existing user
-        Object.assign(this.editingUser, this.createUserForm.value);
+        console.log('edit', this.createUserForm.value);
       } else {
         // Add a new user
-        this.users.push(this.createUserForm.value);
+        console.log(this.createUserForm.value);
+        this.store.dispatch(
+          LandingActions.insertUserWeb({
+            user: {
+              ...this.createUserForm.value,
+              phone_number: '',
+              phone_number_code: '',
+              id_platforms: this.platformsId,
+              type: 1,
+            },
+          })
+        );
       }
       this.createUserForm.reset();
       this.previousStep(); // Return to the users table step
+    } else {
+      // Mark all fields as touched to trigger validation messages
+      this.createUserForm.markAllAsTouched();
     }
   }
 

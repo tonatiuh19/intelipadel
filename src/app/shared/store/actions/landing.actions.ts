@@ -64,3 +64,18 @@ export const getUsersFailure = createAction(
   `${actor} Get Users Failure`,
   props<{ error: any }>()
 );
+
+export const insertUserWeb = createAction(
+  `${actor} Insert User Web`,
+  props<{ user: any }>()
+);
+
+export const insertUserWebSuccess = createAction(
+  `${actor} Insert User Web Success`,
+  props<{ response: any }>()
+);
+
+export const insertUserWebFailure = createAction(
+  `${actor} Insert User Web Failure`,
+  props<{ error: any }>()
+);

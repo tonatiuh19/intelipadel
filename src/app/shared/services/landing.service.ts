@@ -11,6 +11,7 @@ export class LandingService {
   public VALIDATE_CODE_WEB = `${DOMAIN}/validateSessionCodeWeb.php`;
   public GET_DATE_TIME_SLOTS_BY_ID_PLATFORMS_AND_DATES = `${DOMAIN}/getDateTimeSlotsByIdPlatformsAndDates.php`;
   public GET_USERS = `${DOMAIN}/getUsersByIdWeb.php`;
+  public INSERT_USER = `${DOMAIN}/insertUserWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -60,6 +61,34 @@ export class LandingService {
   public getUsers(id_platforms: number): Observable<any> {
     return this.httpClient
       .post(this.GET_USERS, {
+        id_platforms,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public insertUser(
+    full_name: string,
+    age: number,
+    date_of_birth: string,
+    email: string,
+    phone_number: string,
+    phone_number_code: string,
+    type: number,
+    id_platforms: number
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.INSERT_USER, {
+        full_name,
+        age,
+        date_of_birth,
+        email,
+        phone_number,
+        phone_number_code,
+        type,
         id_platforms,
       })
       .pipe(

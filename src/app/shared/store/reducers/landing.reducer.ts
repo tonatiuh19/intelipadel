@@ -149,5 +149,29 @@ export const LandingReducer = createRehydrateReducer(
       isLoading: false,
       isError: true,
     };
+  }),
+  on(LandingActions.insertUserWeb, (state: LandingState, { user }) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.insertUserWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        usersEnd: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(LandingActions.insertUserWebFailure, (state: LandingState, { error }) => {
+    return {
+      ...state,
+      isLoading: false,
+      isError: true,
+    };
   })
 );

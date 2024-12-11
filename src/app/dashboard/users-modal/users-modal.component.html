@@ -95,6 +95,11 @@
                 id="full_name"
                 formControlName="full_name"
                 class="form-control"
+                [ngClass]="{
+                  'is-invalid':
+                    createUserForm.get('full_name')?.invalid &&
+                    createUserForm.get('full_name')?.touched
+                }"
               />
             </div>
             <div class="form-group mb-2">
@@ -104,31 +109,52 @@
                 id="email"
                 formControlName="email"
                 class="form-control"
+                [ngClass]="{
+                  'is-invalid':
+                    createUserForm.get('email')?.invalid &&
+                    createUserForm.get('email')?.touched
+                }"
               />
             </div>
-            <div class="form-group mb-4">
+            <div class="form-group mb-2">
               <label for="date_of_birth">Fecha de Nacimiento</label>
               <input
                 type="date"
                 id="date_of_birth"
                 formControlName="date_of_birth"
                 class="form-control"
+                [ngClass]="{
+                  'is-invalid':
+                    createUserForm.get('date_of_birth')?.invalid &&
+                    createUserForm.get('date_of_birth')?.touched
+                }"
+              />
+            </div>
+            <div class="form-group mb-4">
+              <label for="age">Edad</label>
+              <input
+                type="number"
+                id="age"
+                formControlName="age"
+                class="form-control"
+                [ngClass]="{
+                  'is-invalid':
+                    createUserForm.get('age')?.invalid &&
+                    createUserForm.get('age')?.touched
+                }"
               />
             </div>
             <div class="form-group text-center">
               <button
                 type="button"
-                pButton
-                icon="pi pi-times"
-                label="Cancelar"
+                class="btn btn-outline-danger"
                 (click)="previousStep()"
-              ></button>
-              <button
-                type="submit"
-                pButton
-                icon="pi pi-check"
-                label="Crear"
-              ></button>
+              >
+                Atras
+              </button>
+              <button type="submit" class="btn btn-primary ms-2">
+                <fa-icon [icon]="faPlusCircle"></fa-icon> Crear Usuario
+              </button>
             </div>
           </form>
         </div>
