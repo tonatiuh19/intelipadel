@@ -12,6 +12,7 @@ export class LandingService {
   public GET_DATE_TIME_SLOTS_BY_ID_PLATFORMS_AND_DATES = `${DOMAIN}/getDateTimeSlotsByIdPlatformsAndDates.php`;
   public GET_USERS = `${DOMAIN}/getUsersByIdWeb.php`;
   public INSERT_USER = `${DOMAIN}/insertUserWeb.php`;
+  public DELETE_USER = `${DOMAIN}/deleteUserWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -89,6 +90,22 @@ export class LandingService {
         phone_number,
         phone_number_code,
         type,
+        id_platforms,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public deleteUser(
+    id_platforms_user: number,
+    id_platforms: number
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.DELETE_USER, {
+        id_platforms_user,
         id_platforms,
       })
       .pipe(

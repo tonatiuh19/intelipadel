@@ -173,5 +173,32 @@ export const LandingReducer = createRehydrateReducer(
       isLoading: false,
       isError: true,
     };
+  }),
+  on(
+    LandingActions.deleteUserWeb,
+    (state: LandingState, { id_platforms_user }) => {
+      return {
+        ...state,
+        isLoading: true,
+      };
+    }
+  ),
+  on(
+    LandingActions.deleteUserWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        usersEnd: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(LandingActions.deleteUserWebFailure, (state: LandingState, { error }) => {
+    return {
+      ...state,
+      isLoading: false,
+      isError: true,
+    };
   })
 );

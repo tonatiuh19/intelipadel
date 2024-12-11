@@ -125,6 +125,26 @@ export class LandingEffects {
     );
   });
 
+  deleteUser$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.deleteUserWeb),
+      switchMap(({ id_platforms_user, id_platforms }) => {
+        return this.landingService
+          .deleteUser(id_platforms_user, id_platforms)
+          .pipe(
+            map((response) => {
+              return LandingActions.deleteUserWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.deleteUserWebFailure({ error }));
+            })
+          );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

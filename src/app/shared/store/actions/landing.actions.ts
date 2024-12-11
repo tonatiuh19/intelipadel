@@ -79,3 +79,18 @@ export const insertUserWebFailure = createAction(
   `${actor} Insert User Web Failure`,
   props<{ error: any }>()
 );
+
+export const deleteUserWeb = createAction(
+  `${actor} Delete User Web`,
+  props<{ id_platforms_user: number; id_platforms: number }>()
+);
+
+export const deleteUserWebSuccess = createAction(
+  `${actor} Delete User Web Success`,
+  props<{ response: any }>()
+);
+
+export const deleteUserWebFailure = createAction(
+  `${actor} Delete User Web Failure`,
+  props<{ error: any }>()
+);

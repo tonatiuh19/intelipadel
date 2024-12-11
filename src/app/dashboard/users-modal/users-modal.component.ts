@@ -121,10 +121,16 @@ export class UsersModalComponent implements OnInit {
 
   deleteUser() {
     if (this.deletingUser) {
-      this.users = this.users.filter((user) => user !== this.deletingUser);
-      this.deletingUser = null;
-      this.previousStep(); // Return to the users table step
+      console.log('delete', this.deletingUser.id_platforms_user);
+      this.store.dispatch(
+        LandingActions.deleteUserWeb({
+          id_platforms_user: this.deletingUser.id_platforms_user,
+          id_platforms: this.platformsId,
+        })
+      );
     }
+    this.deletingUser = null;
+    this.previousStep(); // Return to the users table step
   }
 
   closeDialog() {
