@@ -72,7 +72,10 @@
                   >
                     <fa-icon [icon]="faPencilAlt"></fa-icon>
                   </button>
-                  <button class="btn btn-outline-danger btn-sm ms-2">
+                  <button
+                    class="btn btn-outline-danger btn-sm ms-2"
+                    (click)="confirmDeleteUser(user)"
+                  >
                     <fa-icon [icon]="faTrashAlt"></fa-icon>
                   </button>
                 </td>
@@ -128,6 +131,43 @@
               ></button>
             </div>
           </form>
+        </div>
+      </div>
+
+      <!-- Step 3: Confirm Delete -->
+      <div *ngIf="currentStep === 3" class="row text-center mb-3">
+        <div class="col-sm-12">
+          <div class="user-panel_title">
+            <span class="user-panel_title-bold">Confirmar Eliminación</span>
+            <button
+              type="button"
+              class="btn-close float-end"
+              aria-label="Close"
+              (click)="closeDialog()"
+            ></button>
+          </div>
+        </div>
+        <div class="col-sm-12">
+          <p>
+            ¿Está seguro de que desea eliminar al usuario
+            {{ deletingUser?.full_name }}?
+          </p>
+          <div class="form-group text-center">
+            <button
+              type="button"
+              pButton
+              icon="pi pi-times"
+              label="Cancelar"
+              (click)="previousStep()"
+            ></button>
+            <button
+              type="button"
+              pButton
+              icon="pi pi-check"
+              label="Eliminar"
+              (click)="deleteUser()"
+            ></button>
+          </div>
         </div>
       </div>
     </div>
