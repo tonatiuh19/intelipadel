@@ -66,7 +66,10 @@
                 <td>{{ user.email }}</td>
                 <td>{{ user.date_of_birth | date : "dd/MM/yyyy" }}</td>
                 <td>
-                  <button class="btn btn-outline-primary btn-sm">
+                  <button
+                    class="btn btn-outline-primary btn-sm"
+                    (click)="editUser(user)"
+                  >
                     <fa-icon [icon]="faPencilAlt"></fa-icon>
                   </button>
                   <button class="btn btn-outline-danger btn-sm ms-2">

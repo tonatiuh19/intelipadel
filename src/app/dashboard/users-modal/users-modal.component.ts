@@ -35,6 +35,7 @@ export class UsersModalComponent implements OnInit {
 
   currentStep: number = 1;
   createUserForm!: FormGroup;
+  editingUser: UserState | null = null; // Store the user being edited
 
   private unsubscribe$ = new Subject<void>();
 
@@ -69,22 +70,44 @@ export class UsersModalComponent implements OnInit {
 
   previousStep() {
     this.currentStep = 1;
+    this.editingUser = null; // Reset the editing user
+    this.createUserForm.reset(); // Reset the form
   }
 
   onSubmit() {
     if (this.createUserForm.valid) {
-      this.users.push(this.createUserForm.value);
+      if (this.editingUser) {
+        // Update the existing user
+        Object.assign(this.editingUser, this.createUserForm.value);
+      } else {
+        // Add a new user
+        this.users.push(this.createUserForm.value);
+      }
       this.createUserForm.reset();
       this.previousStep(); // Return to the users table step
     }
   }
 
+  editUser(user: UserState) {
+    this.editingUser = user;
+    this.createUserForm.patchValue(user); // Populate the form with user data
+    this.nextStep(); // Go to the next step
+  }
+
+  deleteUser(user: UserState) {
+    console.log('Deleting user:', user);
+  }
+
   closeDialog() {
     this.display = false;
     this.currentStep = 1; // Reset to the first step
+    this.editingUser = null; // Reset the editing user
+    this.createUserForm.reset(); // Reset the form
   }
 
   onDialogHide() {
     this.currentStep = 1; // Reset to the first step when the dialog is hidden
+    this.editingUser = null; // Reset the editing user
+    this.createUserForm.reset(); // Reset the form
   }
 }
