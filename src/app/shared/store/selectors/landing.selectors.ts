@@ -17,10 +17,25 @@ export const selectUser = createSelector(
 
 export const selectReservations = createSelector(
   selectLandingState,
-  (state: LandingState) => state.reservations
+  (state: LandingState) => state.reservations.data
+);
+
+export const selectMarkedDates = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.reservations.markedDates
 );
 
 export const selectUsersEnd = createSelector(
   selectLandingState,
   (state: LandingState) => state.usersEnd
+);
+
+export const selectDisabledSlots = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.disabledSlots
+);
+
+export const selectPlatformsFields = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.platformsFields
 );

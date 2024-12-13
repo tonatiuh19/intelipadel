@@ -14,7 +14,8 @@ export class LandingService {
   public INSERT_USER = `${DOMAIN}/insertUserWeb.php`;
   public DELETE_USER = `${DOMAIN}/deleteUserWeb.php`;
   public EDIT_USER = `${DOMAIN}/editUserWeb.php`;
-  public GET_PLATFORMS_SLOTS_BY_ID = `${DOMAIN}/getPlatformsSlotsByIdWeb.php`;
+  public GET_DISABLED_SLOTS = `${DOMAIN}/getDisabledSlotsWeb.php`;
+  public GET_PLATFORMS_BY_ID = `${DOMAIN}/getPlatformFieldsById.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -147,14 +148,34 @@ export class LandingService {
       );
   }
 
-  public getPlatformsSlotsById(
+  public getDisabledSlots(
     id_platforms_field: number,
+    id_platform: number,
     date: string
   ): Observable<any> {
     return this.httpClient
-      .post(this.GET_PLATFORMS_SLOTS_BY_ID, {
+      .post(this.GET_DISABLED_SLOTS, {
         id_platforms_field,
         date,
+        id_platform,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public getPlatformFieldsById(
+    id_platform: number,
+    imageDirectory: string,
+    id_platforms_user: number
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.GET_PLATFORMS_BY_ID, {
+        id_platform,
+        imageDirectory,
+        id_platforms_user,
       })
       .pipe(
         map((response) => {

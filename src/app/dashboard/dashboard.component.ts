@@ -24,7 +24,7 @@ import {
   formatTime,
   formatDateToSpanish,
 } from '../../../src/app/shared/utils/help-functions';
-import { ReservationsState, UserState } from '../home/home.model';
+import { ReservationsModel, UserState } from '../home/home.model';
 import { LandingActions } from '../shared/store/actions';
 
 @Component({
@@ -54,6 +54,7 @@ export class DashboardComponent implements OnInit {
   public selectReservations$ = this.store.select(
     fromLanding.selectReservations
   );
+  public selectMarkedDates$ = this.store.select(fromLanding.selectMarkedDates);
 
   faQrcode = faQrcode;
   faCheckCircle = faCheckCircle;
@@ -69,8 +70,10 @@ export class DashboardComponent implements OnInit {
   fomatTime = formatTime;
   formatDateToSpanish = formatDateToSpanish;
 
-  selectedDateEvent!: ReservationsState; // Store events for the selected date
+  selectedDateEvent!: ReservationsModel; // Store events for the selected date
   selectedDate: Date | null = null; // Store the selected date
+
+  markedDates: any = {};
 
   displayModal: boolean = false;
   displayCancelModal: boolean = false;
@@ -91,6 +94,14 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.selectUser$.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
       this.user = user;
+
+      this.store.dispatch(
+        LandingActions.getPlatformFieldsById({
+          id_platform: user.id_platforms,
+          imageDirectory: '../assets/images/carrouselImages',
+          id_platforms_user: user.id_platforms_user,
+        })
+      );
     });
 
     this.selectReservations$
@@ -100,6 +111,13 @@ export class DashboardComponent implements OnInit {
         const transformedEvents = transformReservations(reservations);
         console.log('Transformed events:', transformedEvents);
         this.calendarOptions.events = transformedEvents;
+      });
+
+    this.selectMarkedDates$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((markedDates) => {
+        console.log('markedDates:', markedDates);
+        this.markedDates = markedDates;
       });
   }
 

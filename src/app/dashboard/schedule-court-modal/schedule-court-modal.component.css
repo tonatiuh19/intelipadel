@@ -18,3 +18,12 @@
   padding: 0.25rem;
   font-size: 0.85rem;
 }
+
+:host ::ng-deep .p-dropdown-items {
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+:host ::ng-deep .p-dropdown {
+  border: 0;
+}

@@ -1,4 +1,4 @@
-import { ReservationsState } from '../../home/home.model';
+import { ReservationsModel } from '../../home/home.model';
 
 export const formatDate = (date: Date): string => {
   const year = date.getFullYear();
@@ -8,7 +8,7 @@ export const formatDate = (date: Date): string => {
 };
 
 export const transformReservations = (
-  reservations: ReservationsState[]
+  reservations: ReservationsModel[]
 ): any[] => {
   return reservations.map((reservation) => {
     const start = new Date(reservation.platforms_date_time_start);
@@ -68,4 +68,41 @@ export const formatDateToSpanish = (dateTimeString: string): string => {
   const [weekday, ...rest] = formattedDate.split(', ');
   const capitalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
   return `${capitalizedWeekday}, ${rest.join(', ')}`;
+};
+
+export const formatDateString = (date: string): string => {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = ('0' + (d.getMonth() + 1)).slice(-2);
+  const day = ('0' + d.getDate()).slice(-2);
+  return `${year}-${month}-${day}`;
+};
+
+export const generateTimeSlots = (
+  start: number,
+  end: number,
+  range: number,
+  disabledSlots: string[],
+  selectedDate: string
+): string[] => {
+  console.log('Selected Date', selectedDate);
+  const slots = [];
+  const now = new Date(selectedDate);
+  console.log('Now', now);
+  const currentDate = now.toISOString().split('T')[0]; // Get current date in "YYYY-MM-DD" format
+  const currentHour = now.getHours();
+  const currentMinutes = now.getMinutes();
+
+  slots.push('');
+  for (let hour = start; hour <= end; hour += range) {
+    const fullHour = Math.floor(hour);
+    const minutes = (hour % 1) * 60;
+    const formattedHour = fullHour < 10 ? `0${fullHour}` : fullHour;
+    const formattedMinutes = minutes === 0 ? '00' : minutes;
+    const time = `${formattedHour}:${formattedMinutes}:00`;
+    if (!disabledSlots.includes(time)) {
+      slots.push(time);
+    }
+  }
+  return slots;
 };

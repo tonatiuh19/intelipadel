@@ -21,14 +21,27 @@ export const initialLandingState: LandingState = {
     date_created: '',
     id_platforms: 0,
   },
-  reservations: [],
+  reservations: {
+    data: [],
+    markedDates: {},
+  },
   usersEnd: [],
-  platformsSlots: {
-    id_platforms_field: 0,
+  platformsFields: {
     title: '',
     today: new Date(),
-    fullToday: new Date(),
-    markedDates: {},
-    slots: [],
+    start_time: '',
+    end_time: '',
+    platforms_fields: [],
+    last_reservation: {
+      id_platforms_date_time_slot: 0,
+      id_platforms_field: 0,
+      id_platforms_user: 0,
+      platforms_date_time_start: new Date(),
+      platforms_date_time_end: new Date(),
+      active: 0,
+      stripe_id: '',
+      validated: 0,
+    },
   },
+  disabledSlots: [],
 };

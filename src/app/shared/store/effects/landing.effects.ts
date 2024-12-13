@@ -175,22 +175,40 @@ export class LandingEffects {
     );
   });
 
-  getPlatformSlotsByIdWeb$ = createEffect(() => {
+  getDisabledSlots$ = createEffect(() => {
     return this.actions$.pipe(
-      ofType(LandingActions.getPlatformSlotsByIdWeb),
-      switchMap(({ id_platforms_field, date }) => {
+      ofType(LandingActions.getDisabledSlots),
+      switchMap(({ id_platforms_field, id_platform, date }) => {
         return this.landingService
-          .getPlatformsSlotsById(id_platforms_field, date)
+          .getDisabledSlots(id_platforms_field, id_platform, date)
           .pipe(
             map((response) => {
-              return LandingActions.getPlatformSlotsByIdWebSuccess({
+              return LandingActions.getDisabledSlotsSuccess({
                 response,
               });
             }),
             catchError((error) => {
-              return of(
-                LandingActions.getPlatformSlotsByIdWebFailure({ error })
-              );
+              return of(LandingActions.getDisabledSlotsFailure({ error }));
+            })
+          );
+      })
+    );
+  });
+
+  getPlatformFieldsById$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getPlatformFieldsById),
+      switchMap(({ id_platform, imageDirectory, id_platforms_user }) => {
+        return this.landingService
+          .getPlatformFieldsById(id_platform, imageDirectory, id_platforms_user)
+          .pipe(
+            map((response) => {
+              return LandingActions.getPlatformFieldsByIdSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.getPlatformFieldsByIdFailure({ error }));
             })
           );
       })

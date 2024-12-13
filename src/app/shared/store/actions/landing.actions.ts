@@ -42,7 +42,7 @@ export const getDateTimeSlotsByIdPlatformsAndDates = createAction(
 
 export const getDateTimeSlotsByIdPlatformsAndDatesSuccess = createAction(
   `${actor} Get Date Time Slots By Id Platforms And Dates Success`,
-  props<{ response: ReservationsState[] }>()
+  props<{ response: ReservationsState }>()
 );
 
 export const getDateTimeSlotsByIdPlatformsAndDatesFailure = createAction(
@@ -110,17 +110,36 @@ export const updateUserWebFailure = createAction(
   props<{ error: any }>()
 );
 
-export const getPlatformSlotsByIdWeb = createAction(
-  `${actor} Get Platform Slots By Id Web`,
-  props<{ id_platforms_field: number; date: string }>()
+export const getDisabledSlots = createAction(
+  `${actor} Get Disabled Slots By Id Web`,
+  props<{ id_platforms_field: number; id_platform: number; date: string }>()
 );
 
-export const getPlatformSlotsByIdWebSuccess = createAction(
-  `${actor} Get Platform Slots By Id Web Success`,
+export const getDisabledSlotsSuccess = createAction(
+  `${actor} Get Disabled Slots By Id Web Success`,
   props<{ response: any }>()
 );
 
-export const getPlatformSlotsByIdWebFailure = createAction(
-  `${actor} Get Platform Slots By Id Web Failure`,
+export const getDisabledSlotsFailure = createAction(
+  `${actor} Get Disabled Slots By Id Web Failure`,
+  props<{ error: any }>()
+);
+
+export const getPlatformFieldsById = createAction(
+  `${actor} Get Platform Slots By Id`,
+  props<{
+    id_platform: number;
+    imageDirectory: string;
+    id_platforms_user: number;
+  }>()
+);
+
+export const getPlatformFieldsByIdSuccess = createAction(
+  `${actor} Get Platform Slots By Id Success`,
+  props<{ response: any }>()
+);
+
+export const getPlatformFieldsByIdFailure = createAction(
+  `${actor} Get Platform Slots By Id Failure`,
   props<{ error: any }>()
 );

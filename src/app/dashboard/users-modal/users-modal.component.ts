@@ -69,6 +69,11 @@ export class UsersModalComponent implements OnInit {
       });
   }
 
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+  }
+
   nextStep() {
     this.currentStep = 2;
   }

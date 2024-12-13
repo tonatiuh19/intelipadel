@@ -1,7 +1,7 @@
 <p-dialog
   [(visible)]="display"
   [modal]="true"
-  [style]="{ width: '70vw' }"
+  [style]="{ width: '80vw' }"
   header="Marcar días"
 >
   <div class="schedule-panel_container">
@@ -20,15 +20,15 @@
         </div>
       </div>
       <div class="row text-center">
-        <div class="col-sm-12">
+        <div [class]="selectedDate ? 'col-sm-7' : 'col-sm-12'">
           <p-calendar
-            [(ngModel)]="selectedDate"
+            [(ngModel)]="selectDate"
             [inline]="true"
             [showIcon]="true"
             [monthNavigator]="true"
-            [yearNavigator]="true"
-            yearRange="2020:2030"
+            [yearNavigator]="false"
             [minDate]="minDate"
+            [maxDate]="maxDate"
             (onSelect)="onDateSelect($event)"
           >
             <ng-template let-date pTemplate="date">
@@ -36,6 +36,98 @@
             </ng-template>
           </p-calendar>
         </div>
+        <form
+          *ngIf="selectedDate"
+          class="col-sm-5"
+          [formGroup]="scheduleForm"
+          (ngSubmit)="onSubmit()"
+        >
+          <div class="container-fluid h-100">
+            <div class="row h-100 align-items-center">
+              <div class="col-sm-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h5>Selecciona la cancha:</h5>
+                    <p-dropdown
+                      [options]="fields"
+                      formControlName="selectedField"
+                      [showClear]="true"
+                      optionLabel="name"
+                      placeholder="Ver canchas"
+                      class="w-full"
+                    ></p-dropdown>
+                    <div
+                      *ngIf="
+                        scheduleForm.get('selectedCity')?.invalid &&
+                        scheduleForm.get('selectedCity')?.touched
+                      "
+                      class="invalid-feedback"
+                    >
+                      Selecciona un horario.
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="selectedField" class="col-sm-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h5>Selecciona el horario:</h5>
+                    <p-dropdown
+                      [options]="disabledSlots"
+                      formControlName="selectedCity"
+                      [showClear]="true"
+                      optionLabel="name"
+                      placeholder="Select a City"
+                      class="w-full"
+                    ></p-dropdown>
+                    <div
+                      *ngIf="
+                        scheduleForm.get('selectedCity')?.invalid &&
+                        scheduleForm.get('selectedCity')?.touched
+                      "
+                      class="invalid-feedback"
+                    >
+                      Selecciona un horario.
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="selectedField" class="col-sm-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h5>Selecciona el usuario:</h5>
+                    <p-dropdown
+                      [options]="users"
+                      formControlName="selectedUser"
+                      [showClear]="true"
+                      optionLabel="name"
+                      placeholder="Ver usuarios"
+                      class="w-full"
+                    ></p-dropdown>
+                    <div
+                      *ngIf="
+                        scheduleForm.get('selectedUser')?.invalid &&
+                        scheduleForm.get('selectedUser')?.touched
+                      "
+                      class="invalid-feedback"
+                    >
+                      Selecciona un usuario.
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-12">
+                <button
+                  type="submit"
+                  class="btn btn-dark w-100"
+                  [disabled]="!scheduleForm.valid || !scheduleForm.dirty"
+                >
+                  <fa-icon [icon]="faClock"></fa-icon> Agendar
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>

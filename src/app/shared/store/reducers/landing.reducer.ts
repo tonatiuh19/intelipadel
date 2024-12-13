@@ -225,25 +225,52 @@ export const LandingReducer = createRehydrateReducer(
       isError: true,
     };
   }),
-  on(LandingActions.getPlatformSlotsByIdWeb, (state: LandingState) => {
+  on(LandingActions.getDisabledSlots, (state: LandingState) => {
     return {
       ...state,
       isLoading: true,
     };
   }),
   on(
-    LandingActions.getPlatformSlotsByIdWebSuccess,
+    LandingActions.getDisabledSlotsSuccess,
     (state: LandingState, { response }) => {
       return {
         ...state,
-        platformsSlots: response,
+        disabledSlots: response,
         isLoading: false,
         isError: false,
       };
     }
   ),
   on(
-    LandingActions.getPlatformSlotsByIdWebFailure,
+    LandingActions.getDisabledSlotsFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
+  ),
+  on(LandingActions.getPlatformFieldsById, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.getPlatformFieldsByIdSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        platformsFields: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.getPlatformFieldsByIdFailure,
     (state: LandingState, { error }) => {
       return {
         ...state,

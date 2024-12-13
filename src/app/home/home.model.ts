@@ -4,9 +4,10 @@ export const DOMAIN = 'https://garbrix.com/padel/api';
 export interface LandingState {
   isLogged: boolean;
   user: UserState;
-  reservations: ReservationsState[];
+  reservations: ReservationsState;
   usersEnd: UserState[];
-  platformsSlots: PlatformsSlots;
+  platformsFields: PlatformsFieldsState;
+  disabledSlots: string[];
   isLoading?: boolean;
   isError?: boolean;
 }
@@ -28,6 +29,11 @@ export interface UserState {
 }
 
 export interface ReservationsState {
+  data: ReservationsModel[];
+  markedDates: { [key: string]: MarkedDate };
+}
+
+export interface ReservationsModel {
   id_platforms_date_time_slot: number;
   id_platforms_field: number;
   id_platforms_user: number;
@@ -40,21 +46,44 @@ export interface ReservationsState {
   email: string;
 }
 
-export interface PlatformsSlots {
-  id_platforms_field: number;
-  title: string;
-  today: Date;
-  fullToday: Date;
-  markedDates: { [key: string]: MarkedDate };
-  slots: any[];
-}
-
 export interface MarkedDate {
   marked: boolean;
   dotColor: string;
   activeOpacity: number;
   id_platforms_disabled_date: number;
-  start_date_time: Date;
-  end_date_time: Date;
+  start_date_time: string;
+  end_date_time: string;
   active: number;
+}
+
+export interface PlatformsFieldsState {
+  title: string;
+  today: Date;
+  start_time: string;
+  end_time: string;
+  platforms_fields: PlatformsField[];
+  last_reservation: LastReservation;
+}
+
+export interface LastReservation {
+  id_platforms_date_time_slot: number;
+  id_platforms_field: number;
+  id_platforms_user: number;
+  platforms_date_time_start: Date;
+  platforms_date_time_end: Date;
+  active: number;
+  stripe_id: string;
+  validated: number;
+}
+
+export interface PlatformsField {
+  id_platforms_field: number;
+  title: string;
+  today: Date;
+  carrouselImages: CarrouselImage[];
+}
+
+export interface CarrouselImage {
+  name: string;
+  path: string;
 }
