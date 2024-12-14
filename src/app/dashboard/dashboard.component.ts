@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -30,24 +30,28 @@ import { LandingActions } from '../shared/store/actions';
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css',
+  styleUrls: ['./dashboard.component.css'],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   calendarOptions: CalendarOptions = {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
     locales: allLocales,
     locale: 'es',
-    weekends: false,
-    events: [],
+    weekends: true,
     eventContent: (args) => {
+      if (args.event.extendedProps['marked']) {
+        return {
+          html: `<div style="color: ${args.event.textColor}; padding: 5px; border-radius: 5px;">${args.event.title}</div>`,
+        };
+      }
       return { html: args.event.title.toUpperCase() };
     },
     eventChange: this.handleEventChange.bind(this), // Bind the callback
     eventClick: this.handleDateClick.bind(this), // Handle event click
     select: this.handleSelect.bind(this),
     datesSet: this.handleDatesSet.bind(this),
-    //dateClick: this.handleDateClick.bind(this),
+    events: [], // Initialize with an empty array
   };
 
   public selectUser$ = this.store.select(fromLanding.selectUser);
@@ -73,7 +77,7 @@ export class DashboardComponent implements OnInit {
   selectedDateEvent!: ReservationsModel; // Store events for the selected date
   selectedDate: Date | null = null; // Store the selected date
 
-  markedDates: any = {};
+  markedDates: any[] = [];
 
   displayModal: boolean = false;
   displayCancelModal: boolean = false;
@@ -82,6 +86,7 @@ export class DashboardComponent implements OnInit {
   displayScheduleCourtModal: boolean = false; // Control the visibility of the Schedule Court modal
   displayUsersModal: boolean = false; // Control the visibility of the Users modal
   displayAnnouncementsModal: boolean = false;
+  displayMarkedDayModal: boolean = false; // Control the visibility of the Marked Day modal
 
   private unsubscribe$ = new Subject<void>();
 
@@ -118,12 +123,33 @@ export class DashboardComponent implements OnInit {
       .subscribe((markedDates) => {
         console.log('markedDates:', markedDates);
         this.markedDates = markedDates;
+        this.updateMarkedDates();
       });
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+  }
+
+  updateMarkedDates(): void {
+    const markedEvents = this.markedDates
+      .filter((markedDate) => markedDate.active === 1)
+      .map((markedDate) => ({
+        title: markedDate.title || 'Marked Day',
+        start: markedDate.start_date_time,
+        end: markedDate.end_date_time,
+        color: markedDate.dotColor,
+        textColor: 'red',
+        extendedProps: { marked: true },
+      }));
+
+    this.calendarOptions.events = [
+      ...(Array.isArray(this.calendarOptions.events)
+        ? this.calendarOptions.events
+        : []),
+      ...markedEvents,
+    ];
   }
 
   handleEventChange(eventChangeInfo: any) {
@@ -163,7 +189,16 @@ export class DashboardComponent implements OnInit {
     console.log('Date clicked:', this.selectedDateEvent);
 
     this.selectedDate = arg.date; // Store the selected date
-    this.displayModal = true; // Show the modal
+
+    if (arg.event._def.extendedProps.marked) {
+      this.displayMarkedDayModal = true;
+    } else {
+      this.displayModal = true; // Show the modal
+    }
+  }
+
+  closeMarkedDayModal() {
+    this.displayMarkedDayModal = false;
   }
 
   confirmCancellation() {

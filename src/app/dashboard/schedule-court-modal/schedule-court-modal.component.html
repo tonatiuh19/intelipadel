@@ -31,9 +31,6 @@
             [maxDate]="maxDate"
             (onSelect)="onDateSelect($event)"
           >
-            <ng-template let-date pTemplate="date">
-              <span [ngStyle]="getDateStyle(date)">{{ date.day }}</span>
-            </ng-template>
           </p-calendar>
         </div>
         <form
@@ -68,7 +65,10 @@
                   </div>
                 </div>
               </div>
-              <div *ngIf="selectedField" class="col-sm-12">
+              <div *ngIf="isFieldDisabled" class="col-sm-12">
+                <h5>Este dia, esta cancha no esta disponible</h5>
+              </div>
+              <div *ngIf="selectedField && !isFieldDisabled" class="col-sm-12">
                 <div class="card">
                   <div class="card-body">
                     <h5>Selecciona el horario:</h5>
@@ -92,7 +92,7 @@
                   </div>
                 </div>
               </div>
-              <div *ngIf="selectedField" class="col-sm-12">
+              <div *ngIf="selectedField && !isFieldDisabled" class="col-sm-12">
                 <div class="card">
                   <div class="card-body">
                     <h5>Selecciona el usuario:</h5>

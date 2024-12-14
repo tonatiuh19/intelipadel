@@ -30,7 +30,7 @@ export interface UserState {
 
 export interface ReservationsState {
   data: ReservationsModel[];
-  markedDates: { [key: string]: MarkedDate };
+  markedDates: MarkedDate[];
 }
 
 export interface ReservationsModel {
@@ -54,6 +54,8 @@ export interface MarkedDate {
   start_date_time: string;
   end_date_time: string;
   active: number;
+  title: string;
+  id_platforms_field: number;
 }
 
 export interface PlatformsFieldsState {

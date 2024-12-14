@@ -106,3 +106,33 @@ export const generateTimeSlots = (
   }
   return slots;
 };
+
+export const transformMarkedDates = (markedDates: any): any[] => {
+  return Object.keys(markedDates)
+    .filter((date) => markedDates[date].active === 1)
+    .map((date) => ({
+      id_platforms_date_time_slot: markedDates[date].id_platforms_disabled_date,
+      id_platforms_field: 1, // Assuming a static value, update as needed
+      id_platforms_user: 37, // Assuming a static value, update as needed
+      platforms_date_time_start: markedDates[date].start_date_time,
+      platforms_date_time_end: markedDates[date].end_date_time,
+      active: 7, // New active value
+      validated: 0, // Assuming a static value, update as needed
+      full_name: 'Félix Gómez', // Assuming a static value, update as needed
+      date_of_birth: '2024-11-02', // Assuming a static value, update as needed
+      email: 'tonatiuh.gom@gmail.com', // Assuming a static value, update as needed
+      title: `${new Date(markedDates[date].start_date_time).toLocaleTimeString(
+        [],
+        { hour: '2-digit', minute: '2-digit' }
+      )} - ${new Date(markedDates[date].end_date_time).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`,
+      start: new Date(markedDates[date].start_date_time).toISOString(),
+      end: new Date(markedDates[date].end_date_time).toISOString(),
+    }));
+};
+
+export const transformDateString = (dateTimeString: string): string => {
+  return dateTimeString.split(' ')[0];
+};

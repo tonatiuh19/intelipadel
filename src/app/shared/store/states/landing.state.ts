@@ -23,7 +23,7 @@ export const initialLandingState: LandingState = {
   },
   reservations: {
     data: [],
-    markedDates: {},
+    markedDates: [],
   },
   usersEnd: [],
   platformsFields: {

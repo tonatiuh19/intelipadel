@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
 import { Store } from '@ngrx/store';
@@ -9,14 +9,15 @@ import { UserState } from '../../home/home.model';
 import {
   formatDateString,
   generateTimeSlots,
+  transformDateString,
 } from '../../shared/utils/help-functions';
 
 @Component({
   selector: 'app-schedule-court-modal',
   templateUrl: './schedule-court-modal.component.html',
-  styleUrl: './schedule-court-modal.component.css',
+  styleUrls: ['./schedule-court-modal.component.css'],
 })
-export class ScheduleCourtModalComponent implements OnInit {
+export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
   @Input() display: boolean = false;
 
   selectDate: string | null = null;
@@ -43,9 +44,10 @@ export class ScheduleCourtModalComponent implements OnInit {
   disabledSlots: any[] = [];
   fields: any[] = [];
 
-  markedDates = {} as any;
+  markedDates: any[] = [];
+  markedDatesFiltered: any[] = [];
 
-  cities: any[] | undefined;
+  isFieldDisabled: boolean = false;
 
   selectedCity: any | undefined;
   selectedDate = '';
@@ -69,13 +71,6 @@ export class ScheduleCourtModalComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.cities = [
-      { name: 'New York', code: 'NY' },
-      { name: 'Rome', code: 'RM' },
-      { name: 'London', code: 'LDN' },
-      { name: 'Istanbul', code: 'IST' },
-      { name: 'Paris', code: 'PRS' },
-    ];
     this.selectMarkedDates$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((markedDates) => {
@@ -96,20 +91,23 @@ export class ScheduleCourtModalComponent implements OnInit {
     this.selectPlatformsFields$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((platformsFields) => {
-        console.log('platformsFields', platformsFields);
+        console.log('platformsFields', platformsFields.platforms_fields);
+
+        // Filter out fields that are present in markedFields
         this.fields = platformsFields.platforms_fields.map(
-          (platformsFields) => ({
-            name: platformsFields.title,
-            code: platformsFields.id_platforms_field,
+          (platformsField) => ({
+            name: platformsField.title,
+            code: platformsField.id_platforms_field,
           })
         );
+
+        console.log('Fields', this.fields);
       });
 
     this.selectDisabledSlots$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((slots) => {
         console.log('Disabled Slots', slots);
-        //if (slots && slots.length !== 0) {
         const generatedSlots = generateTimeSlots(
           8,
           23,
@@ -121,7 +119,6 @@ export class ScheduleCourtModalComponent implements OnInit {
           name: slot,
           code: slot,
         }));
-        //}
       });
 
     this.scheduleForm
@@ -137,30 +134,21 @@ export class ScheduleCourtModalComponent implements OnInit {
     this.unsubscribe$.complete();
   }
 
-  getDateStyle(date: any): any {
-    const dateString = `${date.year}-${('0' + (date.month + 1)).slice(-2)}-${(
-      '0' + date.day
-    ).slice(-2)}`;
-    if (this.markedDates[dateString] && this.markedDates[dateString].marked) {
-      return {
-        'background-color': this.markedDates[dateString].dotColor,
-        'border-radius': '50%',
-        width: '2em',
-        height: '2em',
-        display: 'inline-block',
-        'line-height': '2em',
-        'text-align': 'center',
-        color: 'white',
-      };
-    }
-    return {};
-  }
-
   onDateSelect(event: any): void {
     console.log('Selected date:', formatDateString(event));
+    this.isFieldDisabled = false;
     this.scheduleForm.reset();
     this.selectedField = '';
     this.selectedDate = formatDateString(event);
+
+    this.markedDatesFiltered = this.markedDates
+      .filter(
+        (markedDate) =>
+          markedDate.active === 1 &&
+          transformDateString(markedDate.start_date_time) === this.selectedDate
+      )
+      .map((markedDate) => markedDate.id_platforms_field);
+
     this.selectUser$.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
       this.user = user;
       this.platformsId = user.id_platforms;
@@ -175,8 +163,12 @@ export class ScheduleCourtModalComponent implements OnInit {
 
   onSelectedFieldChange(value: any): void {
     console.log('Selected field changed:', value);
+    this.isFieldDisabled = false;
     // Handle the change in selected field here
     if (value) {
+      if (this.markedDatesFiltered.includes(value.code)) {
+        this.isFieldDisabled = true;
+      }
       this.selectedField = value;
       this.store.dispatch(
         LandingActions.getDisabledSlots({
