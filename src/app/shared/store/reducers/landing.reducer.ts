@@ -18,7 +18,6 @@ export const LandingReducer = createRehydrateReducer(
   on(
     LandingActions.sendCodeByMailWebSuccess,
     (state: LandingState, { response }) => {
-      console.log('aqui', response, state);
       return {
         ...state,
         user: {
@@ -33,7 +32,6 @@ export const LandingReducer = createRehydrateReducer(
   on(
     LandingActions.sendCodeByMailWebFailure,
     (state: LandingState, { error }) => {
-      console.log('aqui', error);
       return {
         ...state,
         isLoading: false,

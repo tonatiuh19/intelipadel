@@ -64,7 +64,6 @@ export class UsersModalComponent implements OnInit {
     this.selectUsersEnd$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
-        console.log(users);
         this.users = users;
       });
   }
@@ -89,11 +88,6 @@ export class UsersModalComponent implements OnInit {
     if (this.createUserForm.valid) {
       if (this.editingUser) {
         // Update the existing user
-        console.log(
-          'edit',
-          this.editingUser.id_platforms_user,
-          this.createUserForm.value
-        );
         this.store.dispatch(
           LandingActions.updateUserWeb({
             user: {
@@ -108,7 +102,6 @@ export class UsersModalComponent implements OnInit {
         );
       } else {
         // Add a new user
-        console.log(this.createUserForm.value);
         this.store.dispatch(
           LandingActions.insertUserWeb({
             user: {
@@ -142,7 +135,6 @@ export class UsersModalComponent implements OnInit {
 
   deleteUser() {
     if (this.deletingUser) {
-      console.log('delete', this.deletingUser.id_platforms_user);
       this.store.dispatch(
         LandingActions.deleteUserWeb({
           id_platforms_user: this.deletingUser.id_platforms_user,

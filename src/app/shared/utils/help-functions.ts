@@ -85,10 +85,8 @@ export const generateTimeSlots = (
   disabledSlots: string[],
   selectedDate: string
 ): string[] => {
-  console.log('Selected Date', selectedDate);
   const slots = [];
   const now = new Date(selectedDate);
-  console.log('Now', now);
   const currentDate = now.toISOString().split('T')[0]; // Get current date in "YYYY-MM-DD" format
   const currentHour = now.getHours();
   const currentMinutes = now.getMinutes();

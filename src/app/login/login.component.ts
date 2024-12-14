@@ -48,7 +48,6 @@ export class LoginComponent implements OnInit {
     });
 
     this.selectUser$.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
-      console.log(user);
       if (user.isUserValid) {
         this.isUserValid = true;
       } else {

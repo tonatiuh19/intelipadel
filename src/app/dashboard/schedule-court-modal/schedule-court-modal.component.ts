@@ -74,14 +74,12 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
     this.selectMarkedDates$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((markedDates) => {
-        console.log('markedDates:', markedDates);
         this.markedDates = markedDates;
       });
 
     this.selectUsersEnd$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
-        console.log(users);
         this.users = users.map((user) => ({
           name: user.full_name,
           code: user.id_platforms_user,
@@ -91,8 +89,6 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
     this.selectPlatformsFields$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((platformsFields) => {
-        console.log('platformsFields', platformsFields.platforms_fields);
-
         // Filter out fields that are present in markedFields
         this.fields = platformsFields.platforms_fields.map(
           (platformsField) => ({
@@ -100,14 +96,11 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
             code: platformsField.id_platforms_field,
           })
         );
-
-        console.log('Fields', this.fields);
       });
 
     this.selectDisabledSlots$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((slots) => {
-        console.log('Disabled Slots', slots);
         const generatedSlots = generateTimeSlots(
           8,
           23,
@@ -135,7 +128,6 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
   }
 
   onDateSelect(event: any): void {
-    console.log('Selected date:', formatDateString(event));
     this.isFieldDisabled = false;
     this.scheduleForm.reset();
     this.selectedField = '';
@@ -162,7 +154,6 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
   }
 
   onSelectedFieldChange(value: any): void {
-    console.log('Selected field changed:', value);
     this.isFieldDisabled = false;
     // Handle the change in selected field here
     if (value) {

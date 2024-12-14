@@ -47,9 +47,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
       return { html: args.event.title.toUpperCase() };
     },
-    eventChange: this.handleEventChange.bind(this), // Bind the callback
     eventClick: this.handleDateClick.bind(this), // Handle event click
-    select: this.handleSelect.bind(this),
     datesSet: this.handleDatesSet.bind(this),
     events: [], // Initialize with an empty array
   };
@@ -112,16 +110,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.selectReservations$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((reservations) => {
-        console.log('Reservations:', reservations);
         const transformedEvents = transformReservations(reservations);
-        console.log('Transformed events:', transformedEvents);
         this.calendarOptions.events = transformedEvents;
       });
 
     this.selectMarkedDates$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((markedDates) => {
-        console.log('markedDates:', markedDates);
         this.markedDates = markedDates;
         this.updateMarkedDates();
       });
@@ -152,26 +147,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ];
   }
 
-  handleEventChange(eventChangeInfo: any) {
-    console.log('Event changed:', eventChangeInfo.event);
-    // Handle the event change logic here
-  }
-
-  handleEventClick(arg: any) {
-    console.log('Event clicked:', arg.event);
-    // Handle the event click logic here
-  }
-
-  handleSelect(selectionInfo: any) {
-    console.log(
-      'Date selected:',
-      selectionInfo.startStr,
-      'to',
-      selectionInfo.endStr
-    );
-    // Handle the date selection logic here
-  }
-
   handleDatesSet(dateInfo: any) {
     if (this.user) {
       this.store.dispatch(
@@ -186,7 +161,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   handleDateClick(arg: any) {
     this.selectedDateEvent = arg.event._def.extendedProps;
-    console.log('Date clicked:', this.selectedDateEvent);
 
     this.selectedDate = arg.date; // Store the selected date
 
@@ -202,15 +176,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   confirmCancellation() {
-    // Handle the cancellation logic here
-    console.log('Reservation cancelled:', this.selectedDateEvent);
     this.displayCancelModal = false;
     this.displayModal = false;
   }
 
   confirmValidation() {
-    // Handle the validation logic here
-    console.log('Reservation validated:', this.selectedDateEvent);
     this.displayValidateModal = false;
     this.displayModal = false;
   }

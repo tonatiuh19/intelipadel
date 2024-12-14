@@ -29,7 +29,6 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     this.selectUser$.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
-      console.log(user);
       if (user.id_platforms_user === 0) {
         this.isLogged = false;
         this.router.navigate(['']);
@@ -46,7 +45,6 @@ export class HeaderComponent implements OnInit {
   }
 
   login(): void {
-    console.log('Login');
     this.router.navigate(['iniciarsesion']);
   }
 
