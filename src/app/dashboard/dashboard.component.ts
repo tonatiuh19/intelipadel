@@ -12,6 +12,7 @@ import {
   faPlusCircle,
   faUsers,
   faNewspaper,
+  faCheck,
 } from '@fortawesome/free-solid-svg-icons';
 import { CalendarOptions } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -45,6 +46,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
           html: `<div style="color: ${args.event.textColor}; padding: 5px; border-radius: 5px;">${args.event.title}</div>`,
         };
       }
+      if (args.event.extendedProps['validated'] === 1) {
+        return {
+          html: `<div style="color: green;">${args.event.title}</div>`,
+        };
+      }
       return { html: args.event.title.toUpperCase() };
     },
     eventClick: this.handleDateClick.bind(this), // Handle event click
@@ -65,6 +71,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   faPlusCircle = faPlusCircle;
   faUsers = faUsers;
   faNewspaper = faNewspaper;
+  faCheck = faCheck;
 
   user: UserState | undefined;
 
@@ -74,6 +81,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   selectedDateEvent!: ReservationsModel; // Store events for the selected date
   selectedDate: Date | null = null; // Store the selected date
+  reservationValidate: boolean = false;
 
   markedDates: any[] = [];
 
@@ -166,6 +174,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   handleDateClick(arg: any) {
     this.selectedDateEvent = arg.event._def.extendedProps;
+    this.reservationValidate = this.selectedDateEvent.validated === 1;
 
     this.selectedDate = arg.date; // Store the selected date
 
@@ -194,6 +203,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   confirmValidation() {
+    this.store.dispatch(
+      LandingActions.validatePlatformDateTimeSlotWeb({
+        id_platforms_date_time_slot:
+          this.selectedDateEvent.id_platforms_date_time_slot,
+        start_date: this.start_date,
+        end_date: this.end_date,
+      })
+    );
     this.displayValidateModal = false;
     this.displayModal = false;
   }

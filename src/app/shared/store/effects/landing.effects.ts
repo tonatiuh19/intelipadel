@@ -285,6 +285,34 @@ export class LandingEffects {
     );
   });
 
+  validatePlatformDateTimeSlotWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.validatePlatformDateTimeSlotWeb),
+      switchMap(({ id_platforms_date_time_slot, start_date, end_date }) => {
+        return this.landingService
+          .validatePlatformDateTimeSlotWeb(
+            id_platforms_date_time_slot,
+            start_date,
+            end_date
+          )
+          .pipe(
+            map((response) => {
+              return LandingActions.validatePlatformDateTimeSlotWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(
+                LandingActions.validatePlatformDateTimeSlotWebFailure({
+                  error,
+                })
+              );
+            })
+          );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

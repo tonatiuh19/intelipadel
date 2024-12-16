@@ -18,6 +18,7 @@ export class LandingService {
   public GET_PLATFORMS_BY_ID = `${DOMAIN}/getPlatformFieldsById.php`;
   public INSERT_PLATFORM_DATE_TIME_SLOT_WEB = `${DOMAIN}/insertPlatformDateTimeSlotWeb.php`;
   public DEACTIVATE_PLATFORM_DATE_TIME_SLOT_WEB = `${DOMAIN}/deactivatePlatformDateTimeSlotWeb.php`;
+  public VALIDATE_PLATFORM_DATE_TIME_SLOT_WEB = `${DOMAIN}/validatePlatformDateTimeSlotWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -221,6 +222,24 @@ export class LandingService {
   ): Observable<any> {
     return this.httpClient
       .post(this.DEACTIVATE_PLATFORM_DATE_TIME_SLOT_WEB, {
+        id_platforms_date_time_slot,
+        start_date,
+        end_date,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public validatePlatformDateTimeSlotWeb(
+    id_platforms_date_time_slot: number,
+    start_date: string,
+    end_date: string
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.VALIDATE_PLATFORM_DATE_TIME_SLOT_WEB, {
         id_platforms_date_time_slot,
         start_date,
         end_date,

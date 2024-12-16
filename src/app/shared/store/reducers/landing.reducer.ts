@@ -333,5 +333,32 @@ export const LandingReducer = createRehydrateReducer(
         isError: true,
       };
     }
+  ),
+  on(LandingActions.validatePlatformDateTimeSlotWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.validatePlatformDateTimeSlotWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        reservations: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.validatePlatformDateTimeSlotWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
   )
 );

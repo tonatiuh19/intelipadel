@@ -103,14 +103,25 @@
       <div class="row mt-5">
         <div class="col-sm-12">
           <div class="float-end">
-            <button class="btn btn-dark" (click)="displayValidateModal = true">
+            <button
+              *ngIf="!reservationValidate"
+              class="btn btn-dark"
+              (click)="displayValidateModal = true"
+            >
               <fa-icon [icon]="faCheckCircle"></fa-icon> Validar reserva
             </button>
             <button
+              *ngIf="!reservationValidate"
               class="btn btn-outline-danger ms-2"
               (click)="displayCancelModal = true"
             >
               <fa-icon [icon]="faTrash"></fa-icon> Cancelar reserva
+            </button>
+            <button
+              *ngIf="reservationValidate"
+              class="btn btn-outline-success ms-2"
+            >
+              <fa-icon [icon]="faCheck"></fa-icon> Reserva validada
             </button>
             <button
               class="btn btn-outline-dark ms-2"

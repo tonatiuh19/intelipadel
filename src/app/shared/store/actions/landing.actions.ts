@@ -186,3 +186,22 @@ export const deactivatePlatformDateTimeSlotWebFailure = createAction(
   `${actor} Deactivate Platform Date Time Slot Web Failure`,
   props<{ error: any }>()
 );
+
+export const validatePlatformDateTimeSlotWeb = createAction(
+  `${actor} Validate Platform Date Time Slot Web`,
+  props<{
+    id_platforms_date_time_slot: number;
+    start_date: string;
+    end_date: string;
+  }>()
+);
+
+export const validatePlatformDateTimeSlotWebSuccess = createAction(
+  `${actor} Validate Platform Date Time Slot Web Success`,
+  props<{ response: any }>()
+);
+
+export const validatePlatformDateTimeSlotWebFailure = createAction(
+  `${actor} Validate Platform Date Time Slot Web Failure`,
+  props<{ error: any }>()
+);
