@@ -30,6 +30,7 @@ export class MarkDaysModalComponent {
   public selectPlatformsFields$ = this.store.select(
     fromLanding.selectPlatformsFields
   );
+  public selectMarkedDates$ = this.store.select(fromLanding.selectMarkedDates);
 
   markDaysForm!: FormGroup;
 
@@ -44,6 +45,7 @@ export class MarkDaysModalComponent {
   ];
 
   user: UserState | undefined;
+  markedDates: any[] = [];
   fields: any[] = [];
 
   isFieldDisabled: boolean = false;
@@ -88,6 +90,13 @@ export class MarkDaysModalComponent {
           })
         );
       });
+
+    this.selectMarkedDates$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((markedDates) => {
+        this.markedDates = markedDates;
+        console.log('Marked dates:', this.markedDates);
+      });
   }
 
   ngOnDestroy(): void {
@@ -103,7 +112,19 @@ export class MarkDaysModalComponent {
   onSelectedFieldChange(event: any): void {
     this.isFieldDisabled = false;
     console.log('Selected field:', event);
-    // Handle the selected date here
+
+    const selectedField = this.markDaysForm.get('selectedField')?.value;
+    if (
+      selectedField &&
+      this.markedDates.some(
+        (date) =>
+          date.start_date_time.startsWith(this.selectedDate) &&
+          date.id_platforms_field === selectedField.code
+      )
+    ) {
+      this.isFieldDisabled = true;
+    }
+    this.selectedField = event;
   }
 
   onDateSelect(event: any): void {

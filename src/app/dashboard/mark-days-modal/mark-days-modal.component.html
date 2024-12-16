@@ -77,7 +77,7 @@
                       formControlName="selectedOption"
                       [showClear]="true"
                       optionLabel="name"
-                      placeholder="Select a City"
+                      placeholder="Ver opciones"
                       class="w-full"
                     ></p-dropdown>
                     <div
@@ -89,6 +89,14 @@
                     >
                       Selecciona una opción
                     </div>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="selectedField && !isFieldDisabled" class="col-sm-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h5>Selecciona el horario:</h5>
+                    <!-- HERE -->
                   </div>
                 </div>
               </div>
