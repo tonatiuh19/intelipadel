@@ -86,6 +86,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   displayAnnouncementsModal: boolean = false;
   displayMarkedDayModal: boolean = false; // Control the visibility of the Marked Day modal
 
+  start_date: string = '';
+  end_date: string = '';
+
   private unsubscribe$ = new Subject<void>();
 
   constructor(
@@ -149,6 +152,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   handleDatesSet(dateInfo: any) {
     if (this.user) {
+      this.start_date = this.formatDate(dateInfo.start);
+      this.end_date = this.formatDate(dateInfo.end);
       this.store.dispatch(
         LandingActions.getDateTimeSlotsByIdPlatformsAndDates({
           id_platforms: this.user.id_platforms,
@@ -176,6 +181,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   confirmCancellation() {
+    this.store.dispatch(
+      LandingActions.deactivatePlatformDateTimeSlotWeb({
+        id_platforms_date_time_slot:
+          this.selectedDateEvent.id_platforms_date_time_slot,
+        start_date: this.start_date,
+        end_date: this.end_date,
+      })
+    );
     this.displayCancelModal = false;
     this.displayModal = false;
   }

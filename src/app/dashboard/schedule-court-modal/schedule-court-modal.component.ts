@@ -20,6 +20,10 @@ import {
 export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
   @Input() display: boolean = false;
 
+  @Input() start_date: string = '';
+
+  @Input() end_date: string = '';
+
   selectDate: string | null = null;
 
   public selectUsersEnd$ = this.store.select(fromLanding.selectUsersEnd);
@@ -49,7 +53,7 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
 
   isFieldDisabled: boolean = false;
 
-  selectedCity: any | undefined;
+  selectedTimeSlot: any | undefined;
   selectedDate = '';
   selectedField: any | undefined;
 
@@ -65,7 +69,7 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
 
     this.scheduleForm = this.fb.group({
       selectedField: [null, Validators.required],
-      selectedCity: [null, Validators.required],
+      selectedTimeSlot: [null, Validators.required],
       selectedUser: [null, Validators.required],
     });
   }
@@ -181,7 +185,20 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.scheduleForm.valid) {
-      console.log('Form Submitted', this.scheduleForm.value);
+      console.log('Form Submitted', this.scheduleForm.value, this.selectDate);
+      this.store.dispatch(
+        LandingActions.insertPlatformDateTimeSlotWeb({
+          id_platforms_field: this.scheduleForm.value.selectedField.code,
+          id_platforms_user: this.scheduleForm.value.selectedUser.code,
+          id_platforms: this.user ? this.user.id_platforms : 0,
+          platforms_date_time_start: `${this.selectedDate} ${this.scheduleForm.value.selectedTimeSlot.code}`,
+          active: 1,
+          validated: 0,
+          start_date: this.start_date,
+          end_date: this.end_date,
+        })
+      );
+      this.closeDialog();
     } else {
       this.scheduleForm.markAllAsTouched();
     }

@@ -215,6 +215,76 @@ export class LandingEffects {
     );
   });
 
+  insertPlatformDateTimeSlotWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.insertPlatformDateTimeSlotWeb),
+      switchMap(
+        ({
+          id_platforms_field,
+          id_platforms_user,
+          id_platforms,
+          platforms_date_time_start,
+          active,
+          validated,
+          start_date,
+          end_date,
+        }) => {
+          return this.landingService
+            .insertPlatformDateTimeSlotWeb(
+              id_platforms_field,
+              id_platforms_user,
+              id_platforms,
+              platforms_date_time_start,
+              active,
+              validated,
+              start_date,
+              end_date
+            )
+            .pipe(
+              map((response) => {
+                return LandingActions.insertPlatformDateTimeSlotWebSuccess({
+                  response,
+                });
+              }),
+              catchError((error) => {
+                return of(
+                  LandingActions.insertPlatformDateTimeSlotWebFailure({ error })
+                );
+              })
+            );
+        }
+      )
+    );
+  });
+
+  deactivatePlatformDateTimeSlotWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.deactivatePlatformDateTimeSlotWeb),
+      switchMap(({ id_platforms_date_time_slot, start_date, end_date }) => {
+        return this.landingService
+          .deactivatePlatformDateTimeSlotWeb(
+            id_platforms_date_time_slot,
+            start_date,
+            end_date
+          )
+          .pipe(
+            map((response) => {
+              return LandingActions.deactivatePlatformDateTimeSlotWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(
+                LandingActions.deactivatePlatformDateTimeSlotWebFailure({
+                  error,
+                })
+              );
+            })
+          );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

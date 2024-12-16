@@ -55,8 +55,8 @@
                     ></p-dropdown>
                     <div
                       *ngIf="
-                        scheduleForm.get('selectedCity')?.invalid &&
-                        scheduleForm.get('selectedCity')?.touched
+                        scheduleForm.get('selectedField')?.invalid &&
+                        scheduleForm.get('selectedField')?.touched
                       "
                       class="invalid-feedback"
                     >
@@ -74,7 +74,7 @@
                     <h5>Selecciona el horario:</h5>
                     <p-dropdown
                       [options]="disabledSlots"
-                      formControlName="selectedCity"
+                      formControlName="selectedTimeSlot"
                       [showClear]="true"
                       optionLabel="name"
                       placeholder="Select a City"
@@ -82,8 +82,8 @@
                     ></p-dropdown>
                     <div
                       *ngIf="
-                        scheduleForm.get('selectedCity')?.invalid &&
-                        scheduleForm.get('selectedCity')?.touched
+                        scheduleForm.get('selectedTimeSlot')?.invalid &&
+                        scheduleForm.get('selectedTimeSlot')?.touched
                       "
                       class="invalid-feedback"
                     >

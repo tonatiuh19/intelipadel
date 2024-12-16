@@ -276,5 +276,62 @@ export const LandingReducer = createRehydrateReducer(
         isError: true,
       };
     }
+  ),
+  on(LandingActions.insertPlatformDateTimeSlotWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.insertPlatformDateTimeSlotWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        reservations: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.insertPlatformDateTimeSlotWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
+  ),
+  on(
+    LandingActions.deactivatePlatformDateTimeSlotWeb,
+    (state: LandingState) => {
+      return {
+        ...state,
+        isLoading: true,
+      };
+    }
+  ),
+  on(
+    LandingActions.deactivatePlatformDateTimeSlotWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        reservations: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.deactivatePlatformDateTimeSlotWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
   )
 );

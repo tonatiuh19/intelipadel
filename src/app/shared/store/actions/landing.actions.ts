@@ -143,3 +143,46 @@ export const getPlatformFieldsByIdFailure = createAction(
   `${actor} Get Platform Slots By Id Failure`,
   props<{ error: any }>()
 );
+
+export const insertPlatformDateTimeSlotWeb = createAction(
+  `${actor} Insert Platform Date Time Slot Web`,
+  props<{
+    id_platforms_field: number;
+    id_platforms_user: number;
+    id_platforms: number;
+    platforms_date_time_start: string;
+    active: number;
+    validated: number;
+    start_date: string;
+    end_date: string;
+  }>()
+);
+
+export const insertPlatformDateTimeSlotWebSuccess = createAction(
+  `${actor} Insert Platform Date Time Slot Web Success`,
+  props<{ response: any }>()
+);
+
+export const insertPlatformDateTimeSlotWebFailure = createAction(
+  `${actor} Insert Platform Date Time Slot Web Failure`,
+  props<{ error: any }>()
+);
+
+export const deactivatePlatformDateTimeSlotWeb = createAction(
+  `${actor} Deactivate Platform Date Time Slot Web`,
+  props<{
+    id_platforms_date_time_slot: number;
+    start_date: string;
+    end_date: string;
+  }>()
+);
+
+export const deactivatePlatformDateTimeSlotWebSuccess = createAction(
+  `${actor} Deactivate Platform Date Time Slot Web Success`,
+  props<{ response: any }>()
+);
+
+export const deactivatePlatformDateTimeSlotWebFailure = createAction(
+  `${actor} Deactivate Platform Date Time Slot Web Failure`,
+  props<{ error: any }>()
+);
