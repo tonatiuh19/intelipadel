@@ -43,7 +43,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     eventContent: (args) => {
       if (args.event.extendedProps['marked']) {
         return {
-          html: `<div style="color: ${args.event.textColor}; padding: 5px; border-radius: 5px;">${args.event.title}</div>`,
+          html: `<div style="color: ${args.event.textColor}; border-radius: 5px;">${args.event.title}</div>`,
+        };
+      }
+      if (args.event.extendedProps['markedScheduled']) {
+        return {
+          html: `<div style="color: ${args.event.textColor}; border-radius: 5px;">${args.event.title}</div>`,
         };
       }
       if (args.event.extendedProps['validated'] === 1) {
@@ -93,6 +98,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   displayUsersModal: boolean = false; // Control the visibility of the Users modal
   displayAnnouncementsModal: boolean = false;
   displayMarkedDayModal: boolean = false; // Control the visibility of the Marked Day modal
+  displayDeleteConfirmModal: boolean = false;
 
   start_date: string = '';
   end_date: string = '';
@@ -140,7 +146,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   closeModal(modalType: string): void {
-    console.log('Closing modal...');
     switch (modalType) {
       case 'markDays':
         this.displayMarkDaysModal = false;
@@ -167,7 +172,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
         end: markedDate.end_date_time,
         color: markedDate.dotColor,
         textColor: 'red',
-        extendedProps: { marked: true },
+        extendedProps: {
+          marked: true,
+          id_platforms_date_time_slot: markedDate.id_platforms_disabled_date,
+          active: 1,
+        },
+      }));
+
+    const markedScheduledEvents = this.markedDates
+      .filter((markedDate) => markedDate.active === 2)
+      .map((markedDate) => ({
+        title: `${markedDate.title}: Rango` || 'Marked Day',
+        start: markedDate.start_date_time,
+        end: markedDate.end_date_time,
+        color: markedDate.dotColor,
+        textColor: 'blue',
+        extendedProps: {
+          markedScheduled: true,
+          id_platforms_date_time_slot: markedDate.id_platforms_disabled_date,
+          start: markedDate.start_date_time,
+          end: markedDate.end_date_time,
+          active: 2,
+        },
       }));
 
     this.calendarOptions.events = [
@@ -175,6 +201,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         ? this.calendarOptions.events
         : []),
       ...markedEvents,
+      ...markedScheduledEvents,
     ];
   }
 
@@ -196,12 +223,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.selectedDateEvent = arg.event._def.extendedProps;
     this.reservationValidate = this.selectedDateEvent.validated === 1;
 
-    console.log('Selected date event:', this.selectedDateEvent);
-
     this.selectedDate = arg.date; // Store the selected date
 
     if (arg.event._def.extendedProps.marked) {
       this.displayMarkedDayModal = true;
+    } else if (arg.event._def.extendedProps.markedScheduled) {
+      this.displayMarkedDayModal = true; // Show the modal
     } else {
       this.displayModal = true; // Show the modal
     }
@@ -216,6 +243,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       LandingActions.deactivatePlatformDateTimeSlotWeb({
         id_platforms_date_time_slot:
           this.selectedDateEvent.id_platforms_date_time_slot,
+        id_platforms: this.user?.id_platforms ?? 0,
         start_date: this.start_date,
         end_date: this.end_date,
       })
@@ -229,11 +257,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
       LandingActions.validatePlatformDateTimeSlotWeb({
         id_platforms_date_time_slot:
           this.selectedDateEvent.id_platforms_date_time_slot,
+        id_platforms: this.user?.id_platforms ?? 0,
         start_date: this.start_date,
         end_date: this.end_date,
       })
     );
     this.displayValidateModal = false;
     this.displayModal = false;
+  }
+
+  openDeleteConfirmModal(): void {
+    this.displayDeleteConfirmModal = true;
+  }
+
+  closeDeleteConfirmModal(): void {
+    this.displayDeleteConfirmModal = false;
+  }
+
+  deleteMarkedEvent(id_platforms_disabled_date: number) {
+    this.store.dispatch(
+      LandingActions.deletePlatformDateTimeSlotWeb({
+        id_platforms_disabled_date: id_platforms_disabled_date,
+        id_platforms: this.user?.id_platforms ?? 0,
+        start_date: this.start_date,
+        end_date: this.end_date,
+      })
+    );
+    this.displayMarkedDayModal = false;
+    this.displayDeleteConfirmModal = false;
   }
 }

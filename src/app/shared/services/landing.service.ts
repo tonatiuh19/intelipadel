@@ -20,6 +20,7 @@ export class LandingService {
   public DEACTIVATE_PLATFORM_DATE_TIME_SLOT_WEB = `${DOMAIN}/deactivatePlatformDateTimeSlotWeb.php`;
   public VALIDATE_PLATFORM_DATE_TIME_SLOT_WEB = `${DOMAIN}/validatePlatformDateTimeSlotWeb.php`;
   public INSERT_DISABLED_SLOT = `${DOMAIN}/insertDisabledSlotsWeb.php`;
+  public DELETE_DISABLED_SLOT = `${DOMAIN}/deleteDisabledPlatformDateTimeSlotWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -218,12 +219,14 @@ export class LandingService {
 
   public deactivatePlatformDateTimeSlotWeb(
     id_platforms_date_time_slot: number,
+    id_platforms: number,
     start_date: string,
     end_date: string
   ): Observable<any> {
     return this.httpClient
       .post(this.DEACTIVATE_PLATFORM_DATE_TIME_SLOT_WEB, {
         id_platforms_date_time_slot,
+        id_platforms,
         start_date,
         end_date,
       })
@@ -236,12 +239,14 @@ export class LandingService {
 
   public validatePlatformDateTimeSlotWeb(
     id_platforms_date_time_slot: number,
+    id_platforms: number,
     start_date: string,
     end_date: string
   ): Observable<any> {
     return this.httpClient
       .post(this.VALIDATE_PLATFORM_DATE_TIME_SLOT_WEB, {
         id_platforms_date_time_slot,
+        id_platforms,
         start_date,
         end_date,
       })
@@ -254,6 +259,7 @@ export class LandingService {
 
   public insertDisabledSlotsWeb(
     id_platforms_field: number,
+    id_platforms: number,
     start_date_time: string,
     end_date_time: string,
     active: number,
@@ -263,9 +269,30 @@ export class LandingService {
     return this.httpClient
       .post(this.INSERT_DISABLED_SLOT, {
         id_platforms_field,
+        id_platforms,
         start_date_time,
         end_date_time,
         active,
+        start_date,
+        end_date,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public deletePlatformDateTimeSlotWeb(
+    id_platforms_disabled_date: number,
+    id_platforms: number,
+    start_date: string,
+    end_date: string
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.DELETE_DISABLED_SLOT, {
+        id_platforms_disabled_date,
+        id_platforms,
         start_date,
         end_date,
       })

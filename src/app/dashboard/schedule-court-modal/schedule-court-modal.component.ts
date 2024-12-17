@@ -187,6 +187,8 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
   }
 
   closeDialog() {
+    this.isFieldDisabled = true;
+    this.selectDate = null;
     this.scheduleForm.reset();
     this.selectedDate = '';
     this.display = false;
@@ -195,7 +197,6 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.scheduleForm.valid) {
-      console.log('Form Submitted', this.scheduleForm.value, this.selectDate);
       this.store.dispatch(
         LandingActions.insertPlatformDateTimeSlotWeb({
           id_platforms_field: this.scheduleForm.value.selectedField.code,

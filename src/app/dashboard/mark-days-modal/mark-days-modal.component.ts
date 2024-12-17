@@ -130,13 +130,11 @@ export class MarkDaysModalComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((markedDates) => {
         this.markedDates = markedDates;
-        console.log('Marked dates:', this.markedDates);
       });
 
     this.selectReservations$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((reservations) => {
-        console.log('Reservations:', reservations);
         this.reservations = reservations;
       });
   }
@@ -162,8 +160,6 @@ export class MarkDaysModalComponent implements OnInit, OnDestroy {
   }
 
   onSelectedOptionChange(value: any): void {
-    console.log('Selected option:', value);
-
     if (value && value.value === 1) {
       this.markDaysForm.get('startTime')?.clearValidators();
       this.markDaysForm.get('endTime')?.clearValidators();
@@ -179,15 +175,11 @@ export class MarkDaysModalComponent implements OnInit, OnDestroy {
     this.markDaysForm.get('startTime')?.updateValueAndValidity();
     this.markDaysForm.get('endTime')?.updateValueAndValidity();
 
-    console.log('Form:', this.markDaysForm.value);
-    console.log('Is full day:', this.isFullDay);
     this.isFieldDisabled = false;
   }
 
   onSelectedFieldChange(event: any): void {
     this.isFieldDisabled = false;
-    console.log('Selected field:', event);
-
     const selectedField = this.markDaysForm.get('selectedField')?.value;
     if (
       selectedField &&
@@ -219,7 +211,7 @@ export class MarkDaysModalComponent implements OnInit, OnDestroy {
   }
 
   onDateSelect(event: any): void {
-    this.isFieldDisabled = false;
+    this.isFieldDisabled = true;
     this.markDaysForm.reset();
     this.selectedField = '';
     this.selectedDate = formatDateString(event);
@@ -228,11 +220,11 @@ export class MarkDaysModalComponent implements OnInit, OnDestroy {
       this.user = user;
       this.platformsId = user.id_platforms;
     });
-
-    console.log('Selected date:', this.selectedDate);
   }
 
   closeDialog() {
+    this.isFieldDisabled = true;
+    this.selectDate = null;
     this.markDaysForm.reset();
     this.selectedDate = '';
     this.display = false;
@@ -241,14 +233,16 @@ export class MarkDaysModalComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.markDaysForm.valid) {
-      console.log('Form Submitted', this.markDaysForm.value, this.selectDate);
       this.store.dispatch(
         LandingActions.insertDisabledSlotsWeb({
           id_platforms_field: this.markDaysForm.value.selectedField.code,
-          start_date_time:
-            this.selectedDate + ' ' + this.markDaysForm.value.startTime,
-          end_date_time:
-            this.selectedDate + ' ' + this.markDaysForm.value.endTime,
+          id_platforms: this.platformsId,
+          start_date_time: this.markDaysForm.value.startTime
+            ? this.selectedDate + ' ' + this.markDaysForm.value.startTime.value
+            : this.selectedDate + ' ' + '00:00',
+          end_date_time: this.markDaysForm.value.endTime
+            ? this.selectedDate + ' ' + this.markDaysForm.value.endTime.value
+            : this.selectedDate + ' ' + '23:59',
           active: this.activeSelected,
           start_date: this.start_date,
           end_date: this.end_date,

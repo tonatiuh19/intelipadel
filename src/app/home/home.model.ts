@@ -46,6 +46,8 @@ export interface ReservationsModel {
   date_of_birth: string;
   email: string;
   cancha?: string;
+  start?: string;
+  end?: string;
 }
 
 export interface MarkedDate {

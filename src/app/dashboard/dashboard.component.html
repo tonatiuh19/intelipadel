@@ -240,14 +240,85 @@
         </div>
       </div>
       <div class="row mt-3">
-        <div class="col-sm-12">
+        <div
+          *ngIf="displayMarkedDayModal && selectedDateEvent.active === 1"
+          class="col-sm-12"
+        >
           <p>Este día, esta cancha no estará disponible.</p>
+        </div>
+        <div
+          *ngIf="displayMarkedDayModal && selectedDateEvent.active === 2"
+          class="col-sm-12"
+        >
+          <p>
+            Este día, esta cancha no estará disponible en los siguientes
+            horarios:
+          </p>
+          <p>
+            <span class="panel_reservation-title-schedule-bold">{{
+              selectedDateEvent ? fomatTime(selectedDateEvent.start || "") : ""
+            }}</span>
+            -
+            <span class="panel_reservation-title-schedule-bold">{{
+              selectedDateEvent ? fomatTime(selectedDateEvent.end || "") : ""
+            }}</span>
+          </p>
         </div>
       </div>
       <div class="row mt-3">
         <div class="col-sm-12 text-center">
-          <button class="btn btn-primary" (click)="closeMarkedDayModal()">
+          <button
+            class="btn btn-outline-danger"
+            (click)="openDeleteConfirmModal()"
+          >
+            Eliminar dia marcado
+          </button>
+          <button class="btn btn-primary ms-1" (click)="closeMarkedDayModal()">
             Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog
+  maskStyleClass="backdrop-blur-sm"
+  [(visible)]="displayDeleteConfirmModal"
+  [modal]="true"
+  [style]="{ width: '30vw' }"
+>
+  <div class="panel_reservation-container">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="panel_reservation-title">
+            <span class="panel_reservation-title-bold"
+              >Confirmar Eliminación</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-sm-12">
+          <p>¿Está seguro de que desea eliminar este día marcado?</p>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-sm-12 text-center">
+          <button
+            class="btn btn-danger"
+            (click)="
+              deleteMarkedEvent(selectedDateEvent.id_platforms_date_time_slot)
+            "
+          >
+            Confirmar
+          </button>
+          <button
+            class="btn btn-secondary ms-1"
+            (click)="closeDeleteConfirmModal()"
+          >
+            Cancelar
           </button>
         </div>
       </div>

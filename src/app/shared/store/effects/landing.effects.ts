@@ -260,56 +260,72 @@ export class LandingEffects {
   deactivatePlatformDateTimeSlotWeb$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(LandingActions.deactivatePlatformDateTimeSlotWeb),
-      switchMap(({ id_platforms_date_time_slot, start_date, end_date }) => {
-        return this.landingService
-          .deactivatePlatformDateTimeSlotWeb(
-            id_platforms_date_time_slot,
-            start_date,
-            end_date
-          )
-          .pipe(
-            map((response) => {
-              return LandingActions.deactivatePlatformDateTimeSlotWebSuccess({
-                response,
-              });
-            }),
-            catchError((error) => {
-              return of(
-                LandingActions.deactivatePlatformDateTimeSlotWebFailure({
-                  error,
-                })
-              );
-            })
-          );
-      })
+      switchMap(
+        ({
+          id_platforms_date_time_slot,
+          id_platforms,
+          start_date,
+          end_date,
+        }) => {
+          return this.landingService
+            .deactivatePlatformDateTimeSlotWeb(
+              id_platforms_date_time_slot,
+              id_platforms,
+              start_date,
+              end_date
+            )
+            .pipe(
+              map((response) => {
+                return LandingActions.deactivatePlatformDateTimeSlotWebSuccess({
+                  response,
+                });
+              }),
+              catchError((error) => {
+                return of(
+                  LandingActions.deactivatePlatformDateTimeSlotWebFailure({
+                    error,
+                  })
+                );
+              })
+            );
+        }
+      )
     );
   });
 
   validatePlatformDateTimeSlotWeb$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(LandingActions.validatePlatformDateTimeSlotWeb),
-      switchMap(({ id_platforms_date_time_slot, start_date, end_date }) => {
-        return this.landingService
-          .validatePlatformDateTimeSlotWeb(
-            id_platforms_date_time_slot,
-            start_date,
-            end_date
-          )
-          .pipe(
-            map((response) => {
-              return LandingActions.validatePlatformDateTimeSlotWebSuccess({
-                response,
-              });
-            }),
-            catchError((error) => {
-              return of(
-                LandingActions.validatePlatformDateTimeSlotWebFailure({
-                  error,
-                })
-              );
-            })
-          );
-      })
+      switchMap(
+        ({
+          id_platforms_date_time_slot,
+          id_platforms,
+          start_date,
+          end_date,
+        }) => {
+          return this.landingService
+            .validatePlatformDateTimeSlotWeb(
+              id_platforms_date_time_slot,
+              id_platforms,
+              start_date,
+              end_date
+            )
+            .pipe(
+              map((response) => {
+                return LandingActions.validatePlatformDateTimeSlotWebSuccess({
+                  response,
+                });
+              }),
+              catchError((error) => {
+                return of(
+                  LandingActions.validatePlatformDateTimeSlotWebFailure({
+                    error,
+                  })
+                );
+              })
+            );
+        }
+      )
     );
   });
 
@@ -319,6 +335,7 @@ export class LandingEffects {
       switchMap(
         ({
           id_platforms_field,
+          id_platforms,
           start_date_time,
           end_date_time,
           active,
@@ -328,6 +345,7 @@ export class LandingEffects {
           return this.landingService
             .insertDisabledSlotsWeb(
               id_platforms_field,
+              id_platforms,
               start_date_time,
               end_date_time,
               active,
@@ -343,6 +361,40 @@ export class LandingEffects {
               catchError((error) => {
                 return of(
                   LandingActions.insertDisabledSlotsWebFailure({ error })
+                );
+              })
+            );
+        }
+      )
+    );
+  });
+
+  deletePlatformDateTimeSlotWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.deletePlatformDateTimeSlotWeb),
+      switchMap(
+        ({
+          id_platforms_disabled_date,
+          id_platforms,
+          start_date,
+          end_date,
+        }) => {
+          return this.landingService
+            .deletePlatformDateTimeSlotWeb(
+              id_platforms_disabled_date,
+              id_platforms,
+              start_date,
+              end_date
+            )
+            .pipe(
+              map((response) => {
+                return LandingActions.deletePlatformDateTimeSlotWebSuccess({
+                  response,
+                });
+              }),
+              catchError((error) => {
+                return of(
+                  LandingActions.deletePlatformDateTimeSlotWebFailure({ error })
                 );
               })
             );

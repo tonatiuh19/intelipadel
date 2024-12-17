@@ -172,6 +172,7 @@ export const deactivatePlatformDateTimeSlotWeb = createAction(
   `${actor} Deactivate Platform Date Time Slot Web`,
   props<{
     id_platforms_date_time_slot: number;
+    id_platforms: number;
     start_date: string;
     end_date: string;
   }>()
@@ -191,6 +192,7 @@ export const validatePlatformDateTimeSlotWeb = createAction(
   `${actor} Validate Platform Date Time Slot Web`,
   props<{
     id_platforms_date_time_slot: number;
+    id_platforms: number;
     start_date: string;
     end_date: string;
   }>()
@@ -210,6 +212,7 @@ export const insertDisabledSlotsWeb = createAction(
   `${actor} Insert Disabled Slots Web`,
   props<{
     id_platforms_field: number;
+    id_platforms: number;
     start_date_time: string;
     end_date_time: string;
     active: number;
@@ -225,5 +228,25 @@ export const insertDisabledSlotsWebSuccess = createAction(
 
 export const insertDisabledSlotsWebFailure = createAction(
   `${actor} Insert Disabled Slots Web Failure`,
+  props<{ error: any }>()
+);
+
+export const deletePlatformDateTimeSlotWeb = createAction(
+  `${actor} Delete Platform Date Time Slot Web`,
+  props<{
+    id_platforms_disabled_date: number;
+    id_platforms: number;
+    start_date: string;
+    end_date: string;
+  }>()
+);
+
+export const deletePlatformDateTimeSlotWebSuccess = createAction(
+  `${actor} Delete Platform Date Time Slot Web Success`,
+  props<{ response: any }>()
+);
+
+export const deletePlatformDateTimeSlotWebFailure = createAction(
+  `${actor} Delete Platform Date Time Slot Web Failure`,
   props<{ error: any }>()
 );
