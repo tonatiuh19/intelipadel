@@ -39,11 +39,13 @@ export interface ReservationsModel {
   id_platforms_user: number;
   platforms_date_time_start: string;
   platforms_date_time_end: string;
+  title: string;
   active: number;
   validated: number;
   full_name: string;
   date_of_birth: string;
   email: string;
+  cancha?: string;
 }
 
 export interface MarkedDate {

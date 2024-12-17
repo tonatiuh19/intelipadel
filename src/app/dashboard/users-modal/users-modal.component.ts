@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { UserState } from '../../home/home.model';
 import { Store } from '@ngrx/store';
 import { fromLanding } from '../../shared/store/selectors';
@@ -18,6 +18,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 })
 export class UsersModalComponent implements OnInit {
   @Input() display: boolean = false;
+  @Output() close = new EventEmitter<void>();
 
   public selectUsersEnd$ = this.store.select(fromLanding.selectUsersEnd);
   public selectUser$ = this.store.select(fromLanding.selectUser);
@@ -152,6 +153,7 @@ export class UsersModalComponent implements OnInit {
     this.editingUser = null; // Reset the editing user
     this.deletingUser = null; // Reset the deleting user
     this.createUserForm.reset(); // Reset the form
+    this.close.emit();
   }
 
   onDialogHide() {

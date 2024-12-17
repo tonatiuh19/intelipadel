@@ -1,4 +1,12 @@
-import { Component, Input } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+  EventEmitter,
+  Output,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
 import { Store } from '@ngrx/store';
@@ -6,18 +14,21 @@ import { fromLanding } from '../../shared/store/selectors';
 import { Subject, takeUntil } from 'rxjs';
 import { UserState } from '../../home/home.model';
 import { formatDateString } from '../../shared/utils/help-functions';
+import { LandingActions } from '../../shared/store/actions';
 
 @Component({
   selector: 'app-mark-days-modal',
   templateUrl: './mark-days-modal.component.html',
-  styleUrl: './mark-days-modal.component.css',
+  styleUrls: ['./mark-days-modal.component.css'],
 })
-export class MarkDaysModalComponent {
+export class MarkDaysModalComponent implements OnInit, OnDestroy {
   @Input() display: boolean = false;
 
   @Input() start_date: string = '';
 
   @Input() end_date: string = '';
+
+  @Output() close = new EventEmitter<void>();
 
   selectDate: string | null = null;
   selectedDate = '';
@@ -31,6 +42,9 @@ export class MarkDaysModalComponent {
     fromLanding.selectPlatformsFields
   );
   public selectMarkedDates$ = this.store.select(fromLanding.selectMarkedDates);
+  public selectReservations$ = this.store.select(
+    fromLanding.selectReservations
+  );
 
   markDaysForm!: FormGroup;
 
@@ -46,13 +60,24 @@ export class MarkDaysModalComponent {
 
   user: UserState | undefined;
   markedDates: any[] = [];
+  reservations: any[] = [];
   fields: any[] = [];
 
   isFieldDisabled: boolean = false;
+  isFullDay: boolean = false;
+
+  timeSlots: any[] = [];
+  filteredEndTimeSlots: any[] = [];
+
+  activeSelected: number = 0;
 
   private unsubscribe$ = new Subject<void>();
 
-  constructor(private store: Store, private fb: FormBuilder) {
+  constructor(
+    private store: Store,
+    private fb: FormBuilder,
+    private cdr: ChangeDetectorRef
+  ) {
     const currentDate = new Date();
     this.minDate = currentDate;
     this.maxDate = new Date(currentDate);
@@ -61,7 +86,11 @@ export class MarkDaysModalComponent {
     this.markDaysForm = this.fb.group({
       selectedField: [null, Validators.required],
       selectedOption: [null, Validators.required],
+      startTime: [null, Validators.required],
+      endTime: [null, Validators.required],
     });
+
+    this.generateTimeSlots();
   }
 
   ngOnInit() {
@@ -79,10 +108,16 @@ export class MarkDaysModalComponent {
         this.onSelectedFieldChange(value);
       });
 
+    this.markDaysForm
+      .get('startTime')
+      ?.valueChanges.pipe(takeUntil(this.unsubscribe$))
+      .subscribe((value) => {
+        this.onStartTimeChange(value);
+      });
+
     this.selectPlatformsFields$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((platformsFields) => {
-        // Filter out fields that are present in markedFields
         this.fields = platformsFields.platforms_fields.map(
           (platformsField) => ({
             name: platformsField.title,
@@ -97,6 +132,13 @@ export class MarkDaysModalComponent {
         this.markedDates = markedDates;
         console.log('Marked dates:', this.markedDates);
       });
+
+    this.selectReservations$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((reservations) => {
+        console.log('Reservations:', reservations);
+        this.reservations = reservations;
+      });
   }
 
   ngOnDestroy(): void {
@@ -104,8 +146,41 @@ export class MarkDaysModalComponent {
     this.unsubscribe$.complete();
   }
 
+  generateTimeSlots() {
+    const startTime = new Date();
+    startTime.setHours(8, 0, 0, 0);
+    const endTime = new Date();
+    endTime.setHours(23, 0, 0, 0);
+
+    while (startTime <= endTime) {
+      this.timeSlots.push({
+        label: startTime.toTimeString().substring(0, 5),
+        value: startTime.toTimeString().substring(0, 5),
+      });
+      startTime.setMinutes(startTime.getMinutes() + 90);
+    }
+  }
+
   onSelectedOptionChange(value: any): void {
     console.log('Selected option:', value);
+
+    if (value && value.value === 1) {
+      this.markDaysForm.get('startTime')?.clearValidators();
+      this.markDaysForm.get('endTime')?.clearValidators();
+      this.activeSelected = 1;
+      this.isFullDay = false;
+    } else if (value && value.value === 2) {
+      this.activeSelected = 2;
+      this.isFullDay = true;
+      this.markDaysForm.get('startTime')?.setValidators(Validators.required);
+      this.markDaysForm.get('endTime')?.setValidators(Validators.required);
+    }
+
+    this.markDaysForm.get('startTime')?.updateValueAndValidity();
+    this.markDaysForm.get('endTime')?.updateValueAndValidity();
+
+    console.log('Form:', this.markDaysForm.value);
+    console.log('Is full day:', this.isFullDay);
     this.isFieldDisabled = false;
   }
 
@@ -116,15 +191,31 @@ export class MarkDaysModalComponent {
     const selectedField = this.markDaysForm.get('selectedField')?.value;
     if (
       selectedField &&
-      this.markedDates.some(
+      (this.markedDates.some(
         (date) =>
           date.start_date_time.startsWith(this.selectedDate) &&
           date.id_platforms_field === selectedField.code
-      )
+      ) ||
+        this.reservations.some(
+          (reservation) =>
+            reservation.platforms_date_time_start.startsWith(
+              this.selectedDate
+            ) && reservation.id_platforms_field === selectedField.code
+        ))
     ) {
       this.isFieldDisabled = true;
     }
+
     this.selectedField = event;
+  }
+
+  onStartTimeChange(value: any): void {
+    if (value) {
+      this.filteredEndTimeSlots = this.timeSlots.filter(
+        (slot) => slot.value > value.value
+      );
+    }
+    this.markDaysForm.get('endTime')?.reset();
   }
 
   onDateSelect(event: any): void {
@@ -137,18 +228,32 @@ export class MarkDaysModalComponent {
       this.user = user;
       this.platformsId = user.id_platforms;
     });
-    // Handle the selected date here
+
+    console.log('Selected date:', this.selectedDate);
   }
 
   closeDialog() {
     this.markDaysForm.reset();
     this.selectedDate = '';
     this.display = false;
+    this.close.emit();
   }
 
   onSubmit(): void {
     if (this.markDaysForm.valid) {
       console.log('Form Submitted', this.markDaysForm.value, this.selectDate);
+      this.store.dispatch(
+        LandingActions.insertDisabledSlotsWeb({
+          id_platforms_field: this.markDaysForm.value.selectedField.code,
+          start_date_time:
+            this.selectedDate + ' ' + this.markDaysForm.value.startTime,
+          end_date_time:
+            this.selectedDate + ' ' + this.markDaysForm.value.endTime,
+          active: this.activeSelected,
+          start_date: this.start_date,
+          end_date: this.end_date,
+        })
+      );
       this.closeDialog();
     } else {
       this.markDaysForm.markAllAsTouched();

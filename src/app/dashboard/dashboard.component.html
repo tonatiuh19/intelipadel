@@ -99,6 +99,12 @@
               : ""
           }}</span>
         </div>
+        <div class="col-sm-12 panel_reservation-title-schedule">
+          Cancha:
+          <span class="panel_reservation-title-schedule-bold">{{
+            selectedDateEvent ? selectedDateEvent.cancha : ""
+          }}</span>
+        </div>
       </div>
       <div class="row mt-5">
         <div class="col-sm-12">
@@ -249,13 +255,23 @@
   </div>
 </p-dialog>
 
-<app-mark-days-modal [display]="displayMarkDaysModal"></app-mark-days-modal>
+<app-mark-days-modal
+  [display]="displayMarkDaysModal"
+  [start_date]="start_date"
+  [end_date]="end_date"
+  (close)="closeModal('markDays')"
+></app-mark-days-modal>
 <app-schedule-court-modal
   [display]="displayScheduleCourtModal"
   [start_date]="start_date"
   [end_date]="end_date"
+  (close)="closeModal('scheduleCourt')"
 ></app-schedule-court-modal>
-<app-users-modal [display]="displayUsersModal"></app-users-modal>
+<app-users-modal
+  [display]="displayUsersModal"
+  (close)="closeModal('users')"
+></app-users-modal>
 <app-announcements-modal
   [display]="displayAnnouncementsModal"
+  (close)="closeModal('announcements')"
 ></app-announcements-modal>

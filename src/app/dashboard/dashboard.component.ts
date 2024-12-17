@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -102,7 +102,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private store: Store,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -136,6 +137,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+  }
+
+  closeModal(modalType: string): void {
+    console.log('Closing modal...');
+    switch (modalType) {
+      case 'markDays':
+        this.displayMarkDaysModal = false;
+        break;
+      case 'scheduleCourt':
+        this.displayScheduleCourtModal = false;
+        break;
+      case 'users':
+        this.displayUsersModal = false;
+        break;
+      case 'announcements':
+        this.displayAnnouncementsModal = false;
+        break;
+    }
+    this.cdr.detectChanges();
   }
 
   updateMarkedDates(): void {
@@ -175,6 +195,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   handleDateClick(arg: any) {
     this.selectedDateEvent = arg.event._def.extendedProps;
     this.reservationValidate = this.selectedDateEvent.validated === 1;
+
+    console.log('Selected date event:', this.selectedDateEvent);
 
     this.selectedDate = arg.date; // Store the selected date
 

@@ -1,4 +1,11 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+  EventEmitter,
+  Output,
+} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
 import { Store } from '@ngrx/store';
@@ -23,6 +30,8 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
   @Input() start_date: string = '';
 
   @Input() end_date: string = '';
+
+  @Output() close = new EventEmitter<void>();
 
   selectDate: string | null = null;
 
@@ -181,6 +190,7 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
     this.scheduleForm.reset();
     this.selectedDate = '';
     this.display = false;
+    this.close.emit();
   }
 
   onSubmit(): void {

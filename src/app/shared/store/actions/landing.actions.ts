@@ -205,3 +205,25 @@ export const validatePlatformDateTimeSlotWebFailure = createAction(
   `${actor} Validate Platform Date Time Slot Web Failure`,
   props<{ error: any }>()
 );
+
+export const insertDisabledSlotsWeb = createAction(
+  `${actor} Insert Disabled Slots Web`,
+  props<{
+    id_platforms_field: number;
+    start_date_time: string;
+    end_date_time: string;
+    active: number;
+    start_date: string;
+    end_date: string;
+  }>()
+);
+
+export const insertDisabledSlotsWebSuccess = createAction(
+  `${actor} Insert Disabled Slots Web Success`,
+  props<{ response: any }>()
+);
+
+export const insertDisabledSlotsWebFailure = createAction(
+  `${actor} Insert Disabled Slots Web Failure`,
+  props<{ error: any }>()
+);

@@ -35,6 +35,7 @@ export const transformReservations = (
       id_platforms_user: reservation.id_platforms_user,
       platforms_date_time_start: reservation.platforms_date_time_start,
       platforms_date_time_end: reservation.platforms_date_time_end,
+      cancha: reservation.title,
       active: reservation.active,
       validated: reservation.validated,
       full_name: reservation.full_name,

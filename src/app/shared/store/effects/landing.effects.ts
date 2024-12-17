@@ -313,6 +313,44 @@ export class LandingEffects {
     );
   });
 
+  insertDisabledSlotsWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.insertDisabledSlotsWeb),
+      switchMap(
+        ({
+          id_platforms_field,
+          start_date_time,
+          end_date_time,
+          active,
+          start_date,
+          end_date,
+        }) => {
+          return this.landingService
+            .insertDisabledSlotsWeb(
+              id_platforms_field,
+              start_date_time,
+              end_date_time,
+              active,
+              start_date,
+              end_date
+            )
+            .pipe(
+              map((response) => {
+                return LandingActions.insertDisabledSlotsWebSuccess({
+                  response,
+                });
+              }),
+              catchError((error) => {
+                return of(
+                  LandingActions.insertDisabledSlotsWebFailure({ error })
+                );
+              })
+            );
+        }
+      )
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

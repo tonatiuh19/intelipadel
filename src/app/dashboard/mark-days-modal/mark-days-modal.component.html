@@ -1,7 +1,7 @@
 <p-dialog
   [(visible)]="display"
   [modal]="true"
-  [style]="{ width: '80vw' }"
+  [style]="{ width: '80vw', height: '80vh' }"
   header="Marcar días"
 >
   <div class="mark-days-panel_container">
@@ -19,7 +19,7 @@
           </div>
         </div>
       </div>
-      <div class="row text-center">
+      <div class="row text-center mb-3">
         <div [class]="selectedDate ? 'col-sm-7' : 'col-sm-12'">
           <p-calendar
             [(ngModel)]="selectDate"
@@ -41,7 +41,7 @@
         >
           <div class="container-fluid h-100">
             <div class="row h-100 align-items-center">
-              <div class="col-sm-12">
+              <div class="col-sm-12 mb-1">
                 <div class="card">
                   <div class="card-body">
                     <h5>Selecciona la cancha:</h5>
@@ -66,9 +66,15 @@
                 </div>
               </div>
               <div *ngIf="isFieldDisabled" class="col-sm-12">
-                <h5>Este dia, esta cancha ya esta marcada</h5>
+                <h5>
+                  Este dia, esta cancha ya esta marcada o hay una reserva en
+                  curso
+                </h5>
               </div>
-              <div *ngIf="selectedField && !isFieldDisabled" class="col-sm-12">
+              <div
+                *ngIf="selectedField && !isFieldDisabled"
+                class="col-sm-12 mb-1"
+              >
                 <div class="card">
                   <div class="card-body">
                     <h5>Selecciona el tipo de marcado:</h5>
@@ -92,11 +98,44 @@
                   </div>
                 </div>
               </div>
-              <div *ngIf="selectedField && !isFieldDisabled" class="col-sm-12">
+              <div *ngIf="isFullDay && !isFieldDisabled" class="col-sm-12 mb-1">
                 <div class="card">
                   <div class="card-body">
                     <h5>Selecciona el horario:</h5>
-                    <!-- HERE -->
+                    <p-dropdown
+                      [options]="timeSlots"
+                      formControlName="startTime"
+                      [showClear]="true"
+                      optionLabel="label"
+                      placeholder="Hora de inicio"
+                      class="w-full"
+                    ></p-dropdown>
+                    <p-dropdown
+                      [options]="filteredEndTimeSlots"
+                      formControlName="endTime"
+                      [showClear]="true"
+                      optionLabel="label"
+                      placeholder="Hora de fin"
+                      class="w-full"
+                    ></p-dropdown>
+                    <div
+                      *ngIf="
+                        markDaysForm.get('startTime')?.invalid &&
+                        markDaysForm.get('startTime')?.touched
+                      "
+                      class="invalid-feedback"
+                    >
+                      Selecciona una hora de inicio
+                    </div>
+                    <div
+                      *ngIf="
+                        markDaysForm.get('endTime')?.invalid &&
+                        markDaysForm.get('endTime')?.touched
+                      "
+                      class="invalid-feedback"
+                    >
+                      Selecciona una hora de fin
+                    </div>
                   </div>
                 </div>
               </div>
