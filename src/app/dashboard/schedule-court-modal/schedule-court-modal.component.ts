@@ -114,17 +114,19 @@ export class ScheduleCourtModalComponent implements OnInit, OnDestroy {
     this.selectDisabledSlots$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((slots) => {
-        const generatedSlots = generateTimeSlots(
-          8,
-          23,
-          1.5,
-          slots,
-          this.selectedDate
-        );
-        this.disabledSlots = generatedSlots.map((slot) => ({
-          name: slot,
-          code: slot,
-        }));
+        if (this.selectedDate) {
+          const generatedSlots = generateTimeSlots(
+            8,
+            23,
+            1.5,
+            slots,
+            this.selectedDate
+          );
+          this.disabledSlots = generatedSlots.map((slot) => ({
+            name: slot,
+            code: slot,
+          }));
+        }
       });
 
     this.scheduleForm

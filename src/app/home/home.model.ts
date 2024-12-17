@@ -26,6 +26,10 @@ export interface UserState {
   type: number;
   date_created: string;
   id_platforms: number;
+  id_platform: number;
+  title: string;
+  start_time: string;
+  end_time: string;
 }
 
 export interface ReservationsState {

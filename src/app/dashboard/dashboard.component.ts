@@ -159,6 +159,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       case 'announcements':
         this.displayAnnouncementsModal = false;
         break;
+      case 'deleteConfirm':
+        this.displayDeleteConfirmModal = false;
+        break;
     }
     this.cdr.detectChanges();
   }
@@ -203,6 +206,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       ...markedEvents,
       ...markedScheduledEvents,
     ];
+    this.cdr.detectChanges(); // Trigger change detection
   }
 
   handleDatesSet(dateInfo: any) {
@@ -216,6 +220,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           end_date: this.formatDate(dateInfo.end),
         })
       );
+      this.cdr.detectChanges(); // Trigger change detection
     }
   }
 
@@ -232,10 +237,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       this.displayModal = true; // Show the modal
     }
+    this.cdr.detectChanges(); // Trigger change detection
   }
 
   closeMarkedDayModal() {
     this.displayMarkedDayModal = false;
+    this.cdr.detectChanges(); // Trigger change detection
   }
 
   confirmCancellation() {
@@ -250,6 +257,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
     this.displayCancelModal = false;
     this.displayModal = false;
+    this.cdr.detectChanges(); // Trigger change detection
   }
 
   confirmValidation() {
@@ -264,14 +272,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
     this.displayValidateModal = false;
     this.displayModal = false;
+    this.cdr.detectChanges(); // Trigger change detection
   }
 
   openDeleteConfirmModal(): void {
     this.displayDeleteConfirmModal = true;
+    this.cdr.detectChanges(); // Trigger change detection
   }
 
   closeDeleteConfirmModal(): void {
     this.displayDeleteConfirmModal = false;
+    this.cdr.detectChanges(); // Trigger change detection
   }
 
   deleteMarkedEvent(id_platforms_disabled_date: number) {
@@ -285,5 +296,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
     this.displayMarkedDayModal = false;
     this.displayDeleteConfirmModal = false;
+    this.cdr.detectChanges(); // Trigger change detection
   }
 }

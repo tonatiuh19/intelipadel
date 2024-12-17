@@ -23,6 +23,8 @@ export class HeaderComponent implements OnInit {
   isLogged = false;
   user: UserState | undefined;
 
+  titlePage = '';
+
   private unsubscribe$ = new Subject<void>();
 
   constructor(private router: Router, private store: Store) {}
@@ -35,6 +37,7 @@ export class HeaderComponent implements OnInit {
       } else {
         this.isLogged = true;
         this.user = user;
+        this.titlePage = user.title;
       }
     });
   }
@@ -51,5 +54,9 @@ export class HeaderComponent implements OnInit {
   logout(): void {
     this.store.dispatch(LandingActions.resetLandingState());
     this.router.navigate(['']);
+  }
+
+  goToMyDashboard(): void {
+    this.router.navigate(['dashboard']);
   }
 }

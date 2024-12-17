@@ -19,7 +19,13 @@
 
     <div class="d-sm-block d-md-none">
       <div class="text-center">
-        <button class="btn btn-outline-dark btn-sm">Comisiones</button>
+        <button
+          *ngIf="isLogged"
+          class="btn btn-outline-dark btn-sm"
+          (click)="goToMyDashboard()"
+        >
+          {{ titlePage }}
+        </button>
         <button
           *ngIf="!isLogged"
           class="btn btn-outline-dark btn-sm ms-1"
@@ -52,6 +58,13 @@
       </div>
     </div>
     <div class="d-none d-md-block">
+      <button
+        *ngIf="isLogged"
+        class="btn btn-outline-dark btn-sm"
+        (click)="goToMyDashboard()"
+      >
+        {{ titlePage }}
+      </button>
       <button
         *ngIf="!isLogged"
         class="btn btn-sm btn-outline-dark me-1 order-0"

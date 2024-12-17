@@ -7,8 +7,8 @@ export const initialLandingState: LandingState = {
   isLoading: false,
   isError: false,
   user: {
-    isCodeValid: false,
     isUserValid: false,
+    isCodeValid: false,
     id_platforms_user: 0,
     full_name: '',
     age: 0,
@@ -20,6 +20,10 @@ export const initialLandingState: LandingState = {
     type: 0,
     date_created: '',
     id_platforms: 0,
+    id_platform: 0,
+    title: '',
+    start_time: '',
+    end_time: '',
   },
   reservations: {
     data: [],
