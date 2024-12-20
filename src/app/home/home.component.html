@@ -1,11 +1,296 @@
-<app-header></app-header>
+<app-header [isMain]="true"></app-header>
 <section
-  class="d-flex justify-content-center align-items-center main-container pt-5"
+  class="d-flex justify-content-center align-items-center main-container pt-5 background-image"
   id="goTop"
 >
-  <div class="container">
-    <div class="row text-center">
-      <div class="col-sm-12">Hola</div>
+  <div class="container py-vh-4 position-relative mt-5 px-vw-5 text-center">
+    <div class="row d-flex align-items-center justify-content-center py-vh-5">
+      <div class="col-12 col-xl-10" id="target-element">
+        <span class="h5 text-secondary fw-lighter text-white">
+          Tu marca, tu propia app
+        </span>
+        <h1 class="display-huge mt-3 mb-3 lh-1 text-white">
+          Administra tu club de padel de forma sencilla y eficaz
+        </h1>
+      </div>
+      <div class="col-12 col-xl-8">
+        <p class="lead text-secondary handwriting-animation text-white">
+          Control total, tranquilidad absoluta
+        </p>
+      </div>
+      <div class="col-12 text-center">
+        <a href="#vermas" class="btn btn-xl btn-light w-25">Ver mas</a>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="bg-light py-5" id="vermas">
+  <div class="container my-5">
+    <div class="row">
+      <div class="col-sm-12">
+        <h2 class="display-4 text-center text-secondary">
+          Bienvenido a la Revolución del Pádel
+        </h2>
+        <p class="lead text-center text-secondary">
+          Intelipadel es una plataforma diseñada para gestionar tu club de pádel
+          de forma sencilla y eficaz. Con Intelipadel, puedes administrar
+          reservas, controlar el acceso a las canchas, gestionar socios y mucho
+          más, todo desde una plataforma intuitiva y amigable.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="bg-light">
+  <div class="container-fluid">
+    <div class="row h-100 d-flex">
+      <div
+        class="col-sm-3 bg-dark d-flex align-items-center justify-content-center"
+      >
+        <fa-icon
+          [icon]="faCalendar"
+          class="text-white icon-responsive"
+        ></fa-icon>
+      </div>
+      <div
+        class="col-sm-9 bg-light d-flex align-items-center justify-content-center"
+      >
+        <div class="container my-5">
+          <div class="row">
+            <div class="col-12 text-center"><h5>Gestor de Reservas</h5></div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <p class="lead text-center text-secondary">
+                Organiza y administra las reservas de las canchas de tu club de
+                manera eficiente, reduciendo errores y optimizando tiempos.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row h-100 d-flex">
+      <div
+        class="col-sm-3 bg-dark d-flex align-items-center justify-content-center"
+      >
+        <fa-icon [icon]="faKey" class="text-white icon-responsive"></fa-icon>
+      </div>
+      <div
+        class="col-sm-9 bg-light d-flex align-items-center justify-content-center"
+      >
+        <div class="container my-5">
+          <div class="row">
+            <div class="col-12 text-center"><h5>Control de Accesos</h5></div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <p class="lead text-center text-secondary">
+                Garantiza un acceso seguro y ordenado a las canchas, manteniendo
+                un control total sobre el uso de las instalaciones.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row h-100 d-flex">
+      <div
+        class="col-sm-3 bg-dark d-flex align-items-center justify-content-center"
+      >
+        <fa-icon [icon]="faUsers" class="text-white icon-responsive"></fa-icon>
+      </div>
+      <div
+        class="col-sm-9 bg-light d-flex align-items-center justify-content-center"
+      >
+        <div class="container my-5">
+          <div class="row">
+            <div class="col-12 text-center"><h5>Gestor de Socios</h5></div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <p class="lead text-center text-secondary">
+                Administra la información de tus socios, incluyendo membresías,
+                pagos y beneficios exclusivos.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row h-100 d-flex">
+      <div
+        class="col-sm-3 bg-dark d-flex align-items-center justify-content-center"
+      >
+        <fa-icon
+          [icon]="faDesktop"
+          class="text-white icon-responsive"
+        ></fa-icon>
+      </div>
+      <div
+        class="col-sm-9 bg-light d-flex align-items-center justify-content-center"
+      >
+        <div class="container my-5">
+          <div class="row">
+            <div class="col-12 text-center"><h5>Navegación Intuitiva</h5></div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <p class="lead text-center text-secondary">
+                Encuentra y gestiona todo lo que necesitas en cuestión de
+                minutos con una interfaz rápida y fácil de usar.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row h-100 d-flex">
+      <div
+        class="col-sm-3 mb-5 bg-dark d-flex align-items-center justify-content-center"
+      >
+        <fa-icon
+          [icon]="faBullhorn"
+          class="text-white icon-responsive"
+        ></fa-icon>
+      </div>
+      <div
+        class="col-sm-9 bg-light d-flex align-items-center justify-content-center"
+      >
+        <div class="container my-5">
+          <div class="row">
+            <div class="col-12 text-center">
+              <h5>Notificaciones y Recordatorios</h5>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <p class="lead text-center text-secondary">
+                Recibe alertas automáticas para eventos importantes,
+                recordatorios de reservas y actualizaciones de tus canchas.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="bg-light py-5">
+  <div class="container my-5">
+    <div class="row">
+      <div class="col-sm-12">
+        <h4 class="display-4 text-center text-secondary">
+          Haz que Intelipadel se convierta en una extensión de tu marca:
+        </h4>
+        <p class="lead text-center text-secondary">
+          Esta personalización asegura que tu negocio destaque en el mercado
+          mientras ofrece una experiencia superior a tus usuarios.
+        </p>
+      </div>
+    </div>
+    <div class="row h-100 d-flex">
+      <div class="col-sm-6 d-flex align-items-center justify-content-center">
+        <img
+          src="https://garbrix.com/intelipadel/assets/images/your-own-app.png"
+          alt="Your Own App"
+          class="img-fluid"
+        />
+      </div>
+      <div class="col-sm-6 d-flex align-items-center justify-content-center">
+        <div class="container my-5">
+          <div class="row mt-5">
+            <div class="col-12 text-center">
+              <h4 class="text-secondary">Tu propia App</h4>
+            </div>
+          </div>
+          <div class="row mb-5">
+            <div class="col-12">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item lead text-secondary bg-light">
+                  <strong>Nombre Brandeado:</strong> Configura el nombre y los
+                  colores de la aplicación para reflejar tu identidad.
+                </li>
+                <li class="list-group-item lead text-secondary bg-light">
+                  <strong>Identidad Visual:</strong> Incluye tu logotipo y
+                  diseños personalizados para una experiencia profesional.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="bg-dark py-5">
+  <div class="container my-5">
+    <div class="row">
+      <div class="col-sm-12">
+        <h2 class="display-4 text-center text-white">
+          Beneficios para el Usuario y el Negocio
+        </h2>
+      </div>
+    </div>
+    <div class="row mt-5">
+      <div class="col-sm-12">
+        <h5 class="text-center text-white mb-3">Para el Usuario</h5>
+        <ul class="text-white list-group list-group-flush mb-3">
+          <li class="list-group-item bg-dark text-white">
+            Ahorra tiempo al gestionar reservas y acceder a las canchas.
+          </li>
+          <li class="list-group-item bg-dark text-white">
+            Disfruta de una experiencia ágil y profesional con beneficios
+            exclusivos.
+          </li>
+        </ul>
+      </div>
+      <div class="col-sm-12 mt-4">
+        <h5 class="text-center text-white mb-3">Para el Negocio</h5>
+        <ul class="text-white list-group list-group-flush">
+          <li class="list-group-item bg-dark text-white">
+            Incrementa la ocupación de las canchas y mejora la eficiencia
+            operativa.
+          </li>
+          <li class="list-group-item bg-dark text-white">
+            Aumenta la satisfacción de tus socios al ofrecerles una herramienta
+            confiable.
+          </li>
+          <li class="list-group-item bg-dark text-white">
+            Genera ingresos adicionales mediante la administración centralizada
+            de membresías y servicios.
+          </li>
+          <li class="list-group-item bg-dark text-white">
+            Fortalece tu identidad con una aplicación que lleva tu sello
+            personal.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="bg-light py-5">
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-sm-12">
+        <h2 class="display-4 text-center text-secondary">
+          ¡Es hora de llevar la gestión de tu club de pádel al siguiente nivel!
+        </h2>
+      </div>
+      <div class="col-12 text-center mt-3 mb-5">
+        <div class="card mt-4 mx-auto" style="width: 50%">
+          <div class="card-body container bg-light">
+            <div class="row">
+              <div class="col-sm-12">
+                <h4 class="card-title">Precio</h4>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>

@@ -2,7 +2,7 @@
   id="navbar"
   [class]="
     isMain
-      ? 'navbar navbar-expand-lg fixed-top py-3 d-block bg-white'
+      ? 'navbar navbar-expand-lg fixed-top py-3 d-block'
       : 'navbar navbar-expand-lg bg-white fixed-top py-3 d-block'
   "
   data-navbar-on-scroll="data-navbar-on-scroll"
@@ -10,6 +10,7 @@
   <div class="container-fluid">
     <a class="navbar-brand" href="#goTop">
       <img
+        id="logo"
         src="https://garbrix.com/intelipadel/assets/images/logo_intelipadel.png"
         alt="Intelipadel"
         height="30"
@@ -21,7 +22,7 @@
       <div class="text-center">
         <button
           *ngIf="isLogged"
-          class="btn btn-outline-dark btn-sm"
+          class="btn btn-outline-light btn-sm"
           (click)="goToMyDashboard()"
         >
           {{ titlePage }}
@@ -60,21 +61,21 @@
     <div class="d-none d-md-block">
       <button
         *ngIf="isLogged"
-        class="btn btn-outline-dark btn-sm"
+        class="btn btn-outline-light btn-sm changeable-button"
         (click)="goToMyDashboard()"
       >
         {{ titlePage }}
       </button>
       <button
         *ngIf="!isLogged"
-        class="btn btn-sm btn-outline-dark me-1 order-0"
+        class="btn btn-sm btn-outline-light me-1 order-0 changeable-button"
         (click)="login()"
       >
         <fa-icon [icon]="faUserCircle"></fa-icon>
       </button>
       <div *ngIf="isLogged" class="dropdown additional-content">
         <button
-          class="btn btn-sm btn-outline-dark dropdown-toggle"
+          class="btn btn-sm btn-outline-light dropdown-toggle changeable-button"
           type="button"
           id="dropdownMenuButton"
           data-bs-toggle="dropdown"
