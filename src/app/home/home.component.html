@@ -4,7 +4,10 @@
   id="goTop"
 >
   <div class="container py-vh-4 position-relative mt-5 px-vw-5 text-center">
-    <div class="row d-flex align-items-center justify-content-center py-vh-5">
+    <div
+      class="row d-flex align-items-center justify-content-center py-vh-5 mx-auto"
+      style="width: 70%"
+    >
       <div class="col-12 col-xl-10" id="target-element">
         <span class="h5 text-secondary fw-lighter text-white">
           Tu marca, tu propia app
@@ -278,15 +281,158 @@
         </h2>
       </div>
       <div class="col-12 text-center mt-3 mb-5">
-        <div class="card mt-4 mx-auto" style="width: 50%">
+        <div class="card mt-4 mx-auto" style="width: 60vw">
           <div class="card-body container bg-light">
             <div class="row">
-              <div class="col-sm-12">
-                <h4 class="card-title">Precio</h4>
+              <div class="col-sm-12 mb-2">
+                <h3 class="card-title">¿Cuál es el precio?</h3>
               </div>
             </div>
             <div class="row">
-              <div class="col-sm-12"></div>
+              <div class="col-sm-12">
+                <ul
+                  class="nav nav-tabs justify-content-center"
+                  id="tabContainer1"
+                  role="tablist"
+                >
+                  <li class="nav-item" role="presentation">
+                    <a
+                      class="nav-link active"
+                      id="tab1-1"
+                      data-bs-toggle="tab"
+                      href="#content1-1"
+                      role="tab"
+                      aria-controls="content1-1"
+                      aria-selected="true"
+                      >México</a
+                    >
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <a
+                      class="nav-link"
+                      id="tab1-2"
+                      data-bs-toggle="tab"
+                      href="#content1-2"
+                      role="tab"
+                      aria-controls="content1-2"
+                      aria-selected="false"
+                      >Estados Unidos</a
+                    >
+                  </li>
+                </ul>
+                <div class="tab-content mt-4" id="tabContent1">
+                  <div
+                    class="tab-pane fade show active"
+                    id="content1-1"
+                    role="tabpanel"
+                    aria-labelledby="tab1-1"
+                  >
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item bg-light">
+                        <div class="container">
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <h5>Pago único Vitalicio</h5>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <p class="lead text-center text-secondary">
+                                $14,999.00 MXN + IVA
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                      <li class="list-group-item bg-light">
+                        <div class="container">
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <h5>Comisión por servicio por transacción</h5>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <p class="lead text-center text-secondary">
+                                6.5% + 5 MXN + IVA
+                              </p>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <small class="econdary">
+                                La comisión puede asumirla el usuario, el
+                                negocio o compartirse. Cubre mantenimiento,
+                                actualizaciones, nuevas funciones y soporte,
+                                como en terminales físicas.
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                  <div
+                    class="tab-pane fade"
+                    id="content1-2"
+                    role="tabpanel"
+                    aria-labelledby="tab1-2"
+                  >
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item bg-light">
+                        <div class="container">
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <!--<h5>Lifetime One-Time Payment</h5>-->
+                              <h5>Pago único Vitalicio</h5>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <p class="lead text-center text-secondary">
+                                $1,100 USD + Tax
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                      <li class="list-group-item bg-light">
+                        <div class="container">
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <!--<h5>Transaction Service Fee</h5>-->
+                              <h5>Comisión por servicio por transacción</h5>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <p class="lead text-center text-secondary">
+                                11% + $2 USD + Tax
+                              </p>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <!--<small class="text-secondary">
+                                The fee can be covered by the user, the
+                                business, or shared. It includes maintenance,
+                                updates, new features, and support, similar to
+                                physical terminals.
+                              </small>-->
+                              <small class="econdary">
+                                La comisión puede asumirla el usuario, el
+                                negocio o compartirse. Cubre mantenimiento,
+                                actualizaciones, nuevas funciones y soporte,
+                                como en terminales físicas.
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
