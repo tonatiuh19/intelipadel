@@ -1,9 +1,18 @@
-<div class="d-flex justify-content-center align-items-center vh-100">
+<div
+  class="d-flex flex-column justify-content-center align-items-center vh-100"
+>
+  <div class="text-center mb-4">
+    <img
+      src="https://garbrix.com/intelipadel/assets/images/logo_intelipadel.png"
+      alt="Logo"
+      style="max-width: 400px; width: 100%"
+    />
+  </div>
   <div
     class="card p-4 shadow text-center"
     style="max-width: 100%; width: 300px"
   >
-    <h2 class="text-center mb-4">Iniciar Sesión</h2>
+    <h3 class="text-center mb-4">Iniciar Sesión</h3>
     <form *ngIf="!isUserValid" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <input

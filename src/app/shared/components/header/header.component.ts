@@ -14,6 +14,7 @@ import { UserState } from '../../../home/home.model';
 })
 export class HeaderComponent implements OnInit {
   @Input() isMain = true;
+  @Input() isNeutral = false;
 
   public selectUser$ = this.store.select(fromLanding.selectUser);
 
@@ -31,9 +32,12 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     this.selectUser$.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
-      if (user.id_platforms_user === 0) {
+      console.log(user);
+      if (user.id_platforms_user === 0 && !this.isNeutral) {
         this.isLogged = false;
         this.router.navigate(['']);
+      } else if (this.isNeutral) {
+        this.isLogged = false;
       } else {
         this.isLogged = true;
         this.user = user;
@@ -65,13 +69,12 @@ export class HeaderComponent implements OnInit {
     const navbar = document.getElementById('navbar');
     const logo = document.getElementById('logo') as HTMLImageElement;
     const targetElement = document.getElementById('target-element');
+    const changeableButtons = document.querySelectorAll('.changeable-button');
 
     if (this.isMain) {
       if (navbar && targetElement) {
         const targetPosition = targetElement.getBoundingClientRect().top;
         const navbarHeight = navbar.offsetHeight;
-        const changeableButtons =
-          document.querySelectorAll('.changeable-button');
 
         if (targetPosition <= navbarHeight) {
           navbar.classList.add('bg-light');
@@ -96,7 +99,17 @@ export class HeaderComponent implements OnInit {
         }
       }
     } else {
-      navbar ? navbar.classList.add('bg-light') : null;
+      if (navbar) {
+        navbar.classList.add('bg-light');
+        if (logo) {
+          logo.src =
+            'https://garbrix.com/intelipadel/assets/images/logo_intelipadel.png'; // Change to default logo
+        }
+        changeableButtons.forEach((button) => {
+          button.classList.remove('btn-outline-light');
+          button.classList.add('btn-outline-dark');
+        });
+      }
     }
   }
 }

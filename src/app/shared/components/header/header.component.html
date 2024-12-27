@@ -11,7 +11,11 @@
     <a class="navbar-brand" href="#goTop">
       <img
         id="logo"
-        src="https://garbrix.com/intelipadel/assets/images/logo_intelipadel.png"
+        [src]="
+          isMain
+            ? 'https://garbrix.com/intelipadel/assets/images/logo-intelipdale-white.png'
+            : 'https://garbrix.com/intelipadel/assets/images/logo_intelipadel.png'
+        "
         alt="Intelipadel"
         height="30"
         class="logo d-inline-block align-text-top"

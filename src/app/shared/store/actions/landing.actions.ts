@@ -250,3 +250,24 @@ export const deletePlatformDateTimeSlotWebFailure = createAction(
   `${actor} Delete Platform Date Time Slot Web Failure`,
   props<{ error: any }>()
 );
+
+export const insertContactWeb = createAction(
+  `${actor} Insert Contact Web`,
+  props<{
+    id_platforms: number;
+    name: string;
+    email: string;
+    phone: number;
+    message: string;
+  }>()
+);
+
+export const insertContactWebSuccess = createAction(
+  `${actor} Insert Contact Web Success`,
+  props<{ response: any }>()
+);
+
+export const insertContactWebFailure = createAction(
+  `${actor} Insert Contact Web Failure`,
+  props<{ error: any }>()
+);

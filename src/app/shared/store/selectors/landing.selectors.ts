@@ -39,3 +39,8 @@ export const selectPlatformsFields = createSelector(
   selectLandingState,
   (state: LandingState) => state.platformsFields
 );
+
+export const selectIsContactSent = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.isContactSent
+);

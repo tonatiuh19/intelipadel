@@ -403,6 +403,26 @@ export class LandingEffects {
     );
   });
 
+  insertContactWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.insertContactWeb),
+      switchMap(({ id_platforms, name, email, phone, message }) => {
+        return this.landingService
+          .insertContactWeb(id_platforms, name, email, phone, message)
+          .pipe(
+            map((response) => {
+              return LandingActions.insertContactWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.insertContactWebFailure({ error }));
+            })
+          );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

@@ -10,6 +10,7 @@ export interface LandingState {
   disabledSlots: string[];
   isLoading?: boolean;
   isError?: boolean;
+  isContactSent?: boolean;
 }
 
 export interface UserState {

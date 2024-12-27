@@ -418,5 +418,34 @@ export const LandingReducer = createRehydrateReducer(
         isError: true,
       };
     }
+  ),
+  on(LandingActions.insertContactWeb, (state: LandingState, {}) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.insertContactWebSuccess,
+    (state: LandingState, { response }) => {
+      console.log(response);
+      return {
+        ...state,
+        isContactSent: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.insertContactWebFailure,
+    (state: LandingState, { error }) => {
+      console.log('error', error);
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
   )
 );

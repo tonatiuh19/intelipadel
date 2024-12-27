@@ -13,6 +13,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { LoginModule } from './login/login.module';
 import { LoadingMaskModule } from './shared/components/loading-mask/loading-mask.module';
 import { provideHttpClient } from '@angular/common/http';
+import { TermsAndConditionsModule } from './termsandconditions/termsandconditions.module';
+import { PrivacyTermsModule } from './privacyterms/privacyterms.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -33,6 +35,8 @@ import { provideHttpClient } from '@angular/common/http';
     DashboardModule,
     LoginModule,
     LoadingMaskModule,
+    TermsAndConditionsModule,
+    PrivacyTermsModule,
   ],
   providers: [provideHttpClient()],
   bootstrap: [AppComponent],
