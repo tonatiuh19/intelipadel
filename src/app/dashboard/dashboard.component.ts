@@ -13,6 +13,7 @@ import {
   faUsers,
   faNewspaper,
   faCheck,
+  faTrophy
 } from '@fortawesome/free-solid-svg-icons';
 import { CalendarOptions } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -77,6 +78,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   faUsers = faUsers;
   faNewspaper = faNewspaper;
   faCheck = faCheck;
+  faTrophy = faTrophy;
 
   user: UserState | undefined;
 
@@ -95,6 +97,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   displayValidateModal: boolean = false;
   displayMarkDaysModal: boolean = false; // Control the visibility of the Mark Days modal
   displayScheduleCourtModal: boolean = false; // Control the visibility of the Schedule Court modal
+  displayScheduleEventModal: boolean = false; // Control the visibility of the Schedule Event modal
   displayUsersModal: boolean = false; // Control the visibility of the Users modal
   displayAnnouncementsModal: boolean = false;
   displayMarkedDayModal: boolean = false; // Control the visibility of the Marked Day modal
@@ -136,6 +139,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((markedDates) => {
         this.markedDates = markedDates;
+        console.log(this.markedDates);
         this.updateMarkedDates();
       });
   }
@@ -152,6 +156,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         break;
       case 'scheduleCourt':
         this.displayScheduleCourtModal = false;
+        break;
+      case 'scheduleEvent':
+        this.displayScheduleEventModal = false;
         break;
       case 'users':
         this.displayUsersModal = false;
@@ -170,7 +177,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const markedEvents = this.markedDates
       .filter((markedDate) => markedDate.active === 1)
       .map((markedDate) => ({
-        title: markedDate.title || 'Marked Day',
+        title: `${markedDate.title}: Deshabilitada` || 'Marked Day',
         start: markedDate.start_date_time,
         end: markedDate.end_date_time,
         color: markedDate.dotColor,
@@ -182,7 +189,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
       }));
 
-    const markedScheduledEvents = this.markedDates
+    const markedScheduledRange = this.markedDates
       .filter((markedDate) => markedDate.active === 2)
       .map((markedDate) => ({
         title: `${markedDate.title}: Rango` || 'Marked Day',
@@ -199,12 +206,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
       }));
 
+      const markedScheduledEvents = this.markedDates
+      .filter((markedDate) => markedDate.active === 3)
+      .map((markedDate) => ({
+        title: `${markedDate.title}: Evento` || 'Marked Day',
+        start: markedDate.start_date_time,
+        end: markedDate.end_date_time,
+        color: markedDate.dotColor,
+        textColor: 'blue',
+        extendedProps: {
+          markedScheduled: true,
+          id_platforms_date_time_slot: markedDate.id_platforms_disabled_date,
+          start: markedDate.start_date_time,
+          end: markedDate.end_date_time,
+          active: 3,
+        },
+      }));
+
     this.calendarOptions.events = [
       ...(Array.isArray(this.calendarOptions.events)
         ? this.calendarOptions.events
         : []),
       ...markedEvents,
       ...markedScheduledEvents,
+      ...markedScheduledRange,
     ];
     this.cdr.detectChanges(); // Trigger change detection
   }
@@ -225,6 +250,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   handleDateClick(arg: any) {
+    console.log(arg);
     this.selectedDateEvent = arg.event._def.extendedProps;
     this.reservationValidate = this.selectedDateEvent.validated === 1;
 

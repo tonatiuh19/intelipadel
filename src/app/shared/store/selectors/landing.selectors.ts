@@ -44,3 +44,8 @@ export const selectIsContactSent = createSelector(
   selectLandingState,
   (state: LandingState) => state.isContactSent
 );
+
+export const selectAds = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.ads
+);

@@ -30,6 +30,7 @@ export const initialLandingState: LandingState = {
     markedDates: [],
   },
   usersEnd: [],
+  ads: [],
   platformsFields: {
     title: '',
     today: new Date(),

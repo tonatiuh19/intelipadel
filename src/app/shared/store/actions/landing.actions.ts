@@ -271,3 +271,18 @@ export const insertContactWebFailure = createAction(
   `${actor} Insert Contact Web Failure`,
   props<{ error: any }>()
 );
+
+export const getAdsByIdWeb = createAction(
+  `${actor} Get Ads By Id Web`,
+  props<{ id_platform: number }>()
+);
+
+export const getAdsByIdWebSuccess = createAction(
+  `${actor} Get Ads By Id Web Success`,
+  props<{ response: any }>()
+);
+
+export const getAdsByIdWebFailure = createAction(
+  `${actor} Get Ads By Id Web Failure`,
+  props<{ error: any }>()
+);

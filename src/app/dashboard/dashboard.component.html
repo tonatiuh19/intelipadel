@@ -28,6 +28,12 @@
               </button>
               <button
                 class="btn btn-primary ms-2"
+                (click)="displayScheduleEventModal = true"
+              >
+                <fa-icon [icon]="faTrophy"></fa-icon> Agendar evento
+              </button>
+              <button
+                class="btn btn-primary ms-2"
                 (click)="displayUsersModal = true"
               >
                 <fa-icon [icon]="faUsers"></fa-icon> Usuarios
@@ -35,7 +41,6 @@
               <button
                 class="btn btn-primary ms-2"
                 (click)="displayAnnouncementsModal = true"
-                [disabled]="true"
               >
                 <fa-icon [icon]="faNewspaper"></fa-icon> Anuncios
               </button>
@@ -272,7 +277,11 @@
             class="btn btn-outline-danger"
             (click)="openDeleteConfirmModal()"
           >
-            Eliminar dia marcado
+            {{
+              displayMarkedDayModal && selectedDateEvent.active === 3
+                ? "Eliminar Evento"
+                : "Eliminar dia marcado"
+            }}
           </button>
           <button class="btn btn-primary ms-1" (click)="closeMarkedDayModal()">
             Cerrar
@@ -302,7 +311,13 @@
       </div>
       <div class="row mt-3">
         <div class="col-sm-12">
-          <p>¿Está seguro de que desea eliminar este día marcado?</p>
+          <p>
+            {{
+              displayDeleteConfirmModal && selectedDateEvent.active === 3
+                ? "¿Está seguro de que desea eliminar este evento?"
+                : "¿Está seguro de que desea eliminar este día marcado?"
+            }}
+          </p>
         </div>
       </div>
       <div class="row mt-3">
@@ -339,11 +354,17 @@
   [end_date]="end_date"
   (close)="closeModal('scheduleCourt')"
 ></app-schedule-court-modal>
+<app-schedule-event-modal
+  [display]="displayScheduleEventModal"
+  [start_date]="start_date"
+  [end_date]="end_date"
+  (close)="closeModal('scheduleEvent')"
+></app-schedule-event-modal>
 <app-users-modal
   [display]="displayUsersModal"
   (close)="closeModal('users')"
 ></app-users-modal>
-<app-announcements-modal
+<app-ads-modal
   [display]="displayAnnouncementsModal"
   (close)="closeModal('announcements')"
-></app-announcements-modal>
+></app-ads-modal>

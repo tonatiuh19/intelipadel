@@ -22,6 +22,7 @@ export class LandingService {
   public INSERT_DISABLED_SLOT = `${DOMAIN}/insertDisabledSlotsWeb.php`;
   public DELETE_DISABLED_SLOT = `${DOMAIN}/deleteDisabledPlatformDateTimeSlotWeb.php`;
   public INSERT_CONTACT = `${DOMAIN}/insertContactWeb.php`;
+  public GET_ADS_BY_ID = `${DOMAIN}/getAdsByIdWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -318,6 +319,18 @@ export class LandingService {
         email,
         phone,
         message,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public getAdsByIdWeb(id_platform: number): Observable<any> {
+    return this.httpClient
+      .post(this.GET_ADS_BY_ID, {
+        id_platform,
       })
       .pipe(
         map((response) => {

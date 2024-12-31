@@ -7,10 +7,11 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { DialogModule } from 'primeng/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { AnnouncementsModalModule } from './announcements-modal/announcements-modal.module';
 import { MarkDaysModalModule } from './mark-days-modal/mark-days-modal.module';
 import { ScheduleCourtModalModule } from './schedule-court-modal/schedule-court-modal.module';
 import { UsersModalModule } from './users-modal/users-modal.module';
+import { ScheduleEventModalModule } from './schedule-event-modal/schedule-event-modal.module';
+import { AdsModalModule } from './ads-modal/ads-modal.module';
 
 @NgModule({
   declarations: [DashboardComponent],
@@ -22,10 +23,11 @@ import { UsersModalModule } from './users-modal/users-modal.module';
     FullCalendarModule,
     DialogModule,
     BrowserAnimationsModule,
-    AnnouncementsModalModule,
     MarkDaysModalModule,
     ScheduleCourtModalModule,
     UsersModalModule,
+    ScheduleEventModalModule,
+    AdsModalModule
   ],
   exports: [DashboardComponent],
 })

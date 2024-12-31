@@ -6,6 +6,7 @@ export interface LandingState {
   user: UserState;
   reservations: ReservationsState;
   usersEnd: UserState[];
+  ads: AdsModel[];
   platformsFields: PlatformsFieldsState;
   disabledSlots: string[];
   isLoading?: boolean;
@@ -97,4 +98,13 @@ export interface PlatformsField {
 export interface CarrouselImage {
   name: string;
   path: string;
+}
+
+
+export interface AdsModel {
+  id_platforms_ad:    number;
+  id_platform:        number;
+  platforms_ad_title: string;
+  platforms_ad_image: string;
+  active:             number;
 }

@@ -1,0 +1,47 @@
+.ad-panel_container {
+  margin-top: 1rem;
+}
+
+.ad-panel_title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #405069;
+}
+
+.ad-panel_title-bold {
+  font-weight: 700;
+}
+
+:host ::ng-deep .p-element {
+  margin: 0;
+}
+
+:host ::ng-deep .p-dialog {
+  height: 100vh !important; /* Full height for the dialog */
+}
+
+:host ::ng-deep .p-dialog-content {
+  height: calc(
+    100vh - 4rem
+  ) !important; /* Adjust for header and footer height */
+  overflow: auto; /* Ensure content is scrollable if it overflows */
+}
+
+:host ::ng-deep .custom-p-table .p-datatable-wrapper {
+  height: 100vh; /* Adjust height to ensure pagination is at the bottom */
+  overflow: auto;
+}
+
+:host ::ng-deep .custom-p-table .p-paginator {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  z-index: 1;
+}
+
+.btn-close {
+  width: 1rem;
+  height: 1rem;
+  padding: 0.25rem;
+  font-size: 0.85rem;
+}

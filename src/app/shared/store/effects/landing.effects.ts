@@ -423,6 +423,27 @@ export class LandingEffects {
     );
   });
 
+  getAdsByIdWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getAdsByIdWeb),
+      switchMap(({ id_platform }) => {
+        return this.landingService
+          .getAdsByIdWeb(id_platform)
+          .pipe(
+            map((response) => {
+              return LandingActions.getAdsByIdWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.getAdsByIdWebFailure({ error }));
+            })
+          );
+      })
+    );
+  });
+
+
   constructor(
     private actions$: Actions,
     private store: Store,
