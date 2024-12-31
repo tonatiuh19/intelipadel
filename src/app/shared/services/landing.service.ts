@@ -23,6 +23,8 @@ export class LandingService {
   public DELETE_DISABLED_SLOT = `${DOMAIN}/deleteDisabledPlatformDateTimeSlotWeb.php`;
   public INSERT_CONTACT = `${DOMAIN}/insertContactWeb.php`;
   public GET_ADS_BY_ID = `${DOMAIN}/getAdsByIdWeb.php`;
+  public INSERT_AD_WEB = `${DOMAIN}/insertAdWeb.php`;
+  public UPDATE_AD_WEB = `${DOMAIN}/updateAdByIdWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -332,6 +334,48 @@ export class LandingService {
       .post(this.GET_ADS_BY_ID, {
         id_platform,
       })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public insertAdWeb(
+    id_platform: number,
+    platforms_ad_title: string,
+    active: number,
+    platforms_ad_image: File
+  ): Observable<any> {
+    const formData = new FormData();
+    formData.append('id_platform', id_platform.toString());
+    formData.append('platforms_ad_title', platforms_ad_title);
+    formData.append('active', active.toString());
+    formData.append('platforms_ad_image', platforms_ad_image);
+  
+    return this.httpClient
+      .post(this.INSERT_AD_WEB, formData)
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public updateAdWeb(
+    id_platforms_ad: number,
+    platforms_ad_title: string,
+    active: number,
+    platforms_ad_image: File | string
+  ): Observable<any> {
+    const formData = new FormData();
+    formData.append('id_platforms_ad', id_platforms_ad.toString());
+    formData.append('platforms_ad_title', platforms_ad_title);
+    formData.append('active', active.toString());
+    formData.append('platforms_ad_image', platforms_ad_image);
+  
+    return this.httpClient
+      .post(this.UPDATE_AD_WEB, formData)
       .pipe(
         map((response) => {
           return response;

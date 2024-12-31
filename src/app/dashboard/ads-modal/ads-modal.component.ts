@@ -1,10 +1,21 @@
-import { Component, EventEmitter, Input, OnInit, OnDestroy, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  OnDestroy,
+  Output,
+} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Subject, takeUntil } from 'rxjs';
 import { LandingActions } from '../../shared/store/actions';
 import { fromLanding } from '../../shared/store/selectors';
-import { faPlusCircle, faTrashAlt, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
+import {
+  faPlusCircle,
+  faTrashAlt,
+  faPencilAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import { AdsModel } from '../../home/home.model';
 
 @Component({
@@ -44,13 +55,13 @@ export class AdsModalComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.selectUser$.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
       this.platformsId = user.id_platforms;
-      this.store.dispatch(LandingActions.getAdsByIdWeb(
-        {
+      this.store.dispatch(
+        LandingActions.getAdsByIdWeb({
           id_platform: user.id_platforms,
-        }
-      ));
+        })
+      );
     });
-    
+
     this.selectAds$.pipe(takeUntil(this.unsubscribe$)).subscribe((ads) => {
       this.ads = ads;
     });
@@ -77,9 +88,25 @@ export class AdsModalComponent implements OnInit, OnDestroy {
       if (this.editingAd) {
         // Update the existing ad
         console.log('Updating ad:', this.adForm.value);
+        this.store.dispatch(
+          LandingActions.updateAdWeb({
+            id_platforms_ad: this.editingAd.id_platforms_ad,
+            platforms_ad_title: this.adForm.value.platforms_ad_title,
+            active: this.adForm.value.active,
+            platforms_ad_image: this.adForm.value.platforms_ad_image,
+          })
+        );
       } else {
         // Add a new ad
-       console.log('Adding ad:', this.adForm.value);
+        console.log('Adding ad:', this.adForm.value);
+        this.store.dispatch(
+          LandingActions.insertAdWeb({
+            id_platform: this.platformsId,
+            platforms_ad_title: this.adForm.value.platforms_ad_title,
+            active: this.adForm.value.active,
+            platforms_ad_image: this.adForm.value.platforms_ad_image,
+          })
+        );
       }
       this.adForm.reset();
       this.previousStep(); // Return to the ads table step

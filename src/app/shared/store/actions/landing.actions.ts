@@ -286,3 +286,43 @@ export const getAdsByIdWebFailure = createAction(
   `${actor} Get Ads By Id Web Failure`,
   props<{ error: any }>()
 );
+
+export const insertAdWeb = createAction(
+  `${actor} Insert Ad Web`,
+  props<{
+    id_platform: number;
+    platforms_ad_title: string;
+    active: number;
+    platforms_ad_image: File;
+  }>()
+);
+
+export const insertAdWebSuccess = createAction(
+  `${actor} Insert Ad Web Success`,
+  props<{ response: any }>()
+);
+
+export const insertAdWebFailure = createAction(
+  `${actor} Insert Ad Web Failure`,
+  props<{ error: any }>()
+);
+
+export const updateAdWeb = createAction(
+  `${actor} Update Ad Web`,
+  props<{
+    id_platforms_ad: number;
+    platforms_ad_title: string;
+    active: number;
+    platforms_ad_image: File | string;
+  }>()
+);
+
+export const updateAdWebSuccess = createAction(
+  `${actor} Update Ad Web Success`,
+  props<{ response: any }>()
+);
+
+export const updateAdWebFailure = createAction(
+  `${actor} Update Ad Web Failure`,
+  props<{ error: any }>()
+);

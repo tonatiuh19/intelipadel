@@ -468,5 +468,47 @@ export const LandingReducer = createRehydrateReducer(
       isLoading: false,
       isError: true,
     };
+  }),
+  on(LandingActions.insertAdWeb, (state: LandingState, {}) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(LandingActions.insertAdWebSuccess, (state: LandingState, { response }) => {
+    return {
+      ...state,
+      ads: response,
+      isLoading: false,
+      isError: false,
+    };
+  }),
+  on(LandingActions.insertAdWebFailure, (state: LandingState, { error }) => {
+    return {
+      ...state,
+      isLoading: false,
+      isError: true,
+    };
+  }),
+  on(LandingActions.updateAdWeb, (state: LandingState, {}) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(LandingActions.updateAdWebSuccess, (state: LandingState, { response }) => {
+    return {
+      ...state,
+      ads: response,
+      isLoading: false,
+      isError: false,
+    };
+  }),
+  on(LandingActions.updateAdWebFailure, (state: LandingState, { error }) => {
+    return {
+      ...state,
+      isLoading: false,
+      isError: true,
+    };
   })
 );

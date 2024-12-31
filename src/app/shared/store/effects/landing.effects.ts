@@ -443,6 +443,45 @@ export class LandingEffects {
     );
   });
 
+  insertAdWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.insertAdWeb),
+      switchMap(({ id_platform, platforms_ad_title, active, platforms_ad_image }) => {
+        return this.landingService
+          .insertAdWeb(id_platform, platforms_ad_title, active, platforms_ad_image)
+          .pipe(
+            map((response) => {
+              return LandingActions.insertAdWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.insertAdWebFailure({ error }));
+            })
+          );
+      })
+    );
+  });
+
+  updateAdWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.updateAdWeb),
+      switchMap(({ id_platforms_ad, platforms_ad_title, active, platforms_ad_image }) => {
+        return this.landingService
+          .updateAdWeb(id_platforms_ad, platforms_ad_title, active, platforms_ad_image)
+          .pipe(
+            map((response) => {
+              return LandingActions.updateAdWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.updateAdWebFailure({ error }));
+            })
+          );
+      })
+    );
+  });
 
   constructor(
     private actions$: Actions,
