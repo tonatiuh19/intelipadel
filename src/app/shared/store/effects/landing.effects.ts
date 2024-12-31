@@ -483,6 +483,26 @@ export class LandingEffects {
     );
   });
 
+  deleteAdWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.deleteAdWeb),
+      switchMap(({ id_platforms_ad, active }) => {
+        return this.landingService
+          .deleteAdWeb(id_platforms_ad, active)
+          .pipe(
+            map((response) => {
+              return LandingActions.deleteAdWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.deleteAdWebFailure({ error }));
+            })
+          );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

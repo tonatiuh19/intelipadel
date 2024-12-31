@@ -25,6 +25,7 @@ export class LandingService {
   public GET_ADS_BY_ID = `${DOMAIN}/getAdsByIdWeb.php`;
   public INSERT_AD_WEB = `${DOMAIN}/insertAdWeb.php`;
   public UPDATE_AD_WEB = `${DOMAIN}/updateAdByIdWeb.php`;
+  public DELETE_AD_WEB = `${DOMAIN}/updateStatusAdByIdWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -376,6 +377,22 @@ export class LandingService {
   
     return this.httpClient
       .post(this.UPDATE_AD_WEB, formData)
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public deleteAdWeb(
+    id_platforms_ad: number,
+    active: number
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.DELETE_AD_WEB, {
+        id_platforms_ad,
+        active,
+      })
       .pipe(
         map((response) => {
           return response;

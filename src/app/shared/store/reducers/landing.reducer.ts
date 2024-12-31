@@ -510,5 +510,26 @@ export const LandingReducer = createRehydrateReducer(
       isLoading: false,
       isError: true,
     };
+  }),
+  on(LandingActions.deleteAdWeb, (state: LandingState, {}) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(LandingActions.deleteAdWebSuccess, (state: LandingState, { response }) => {
+    return {
+      ...state,
+      ads: response,
+      isLoading: false,
+      isError: false,
+    };
+  }),
+  on(LandingActions.deleteAdWebFailure, (state: LandingState, { error }) => {
+    return {
+      ...state,
+      isLoading: false,
+      isError: true,
+    };
   })
 );

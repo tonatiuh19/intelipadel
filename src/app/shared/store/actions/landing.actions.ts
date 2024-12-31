@@ -326,3 +326,18 @@ export const updateAdWebFailure = createAction(
   `${actor} Update Ad Web Failure`,
   props<{ error: any }>()
 );
+
+export const deleteAdWeb = createAction(
+  `${actor} Delete Ad Web`,
+  props<{ id_platforms_ad: number; active: number }>()
+);
+
+export const deleteAdWebSuccess = createAction(
+  `${actor} Delete Ad Web Success`,
+  props<{ response: any }>()
+);
+
+export const deleteAdWebFailure = createAction(
+  `${actor} Delete Ad Web Failure`,
+  props<{ error: any }>()
+);

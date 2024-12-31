@@ -130,6 +130,12 @@ export class AdsModalComponent implements OnInit, OnDestroy {
   deleteAd() {
     if (this.deletingAd) {
       console.log('Deleting ad:', this.deletingAd);
+      this.store.dispatch(
+        LandingActions.deleteAdWeb({
+          id_platforms_ad: this.deletingAd.id_platforms_ad,
+          active: 0,
+        })
+      );
     }
     this.deletingAd = null;
     this.previousStep(); // Return to the ads table step
