@@ -411,3 +411,29 @@ export const insertFixedPriceWebFailure = createAction(
   `${actor} Insert Fixed Price Web Failure`,
   props<{ error: any }>()
 );
+
+export const insertEventDisabledSlotsWeb = createAction(
+  `${actor} Insert Event Disabled Slots Web`,
+  props<{
+    id_platforms_field: number;
+    id_platforms: number;
+    start_date_time: string;
+    end_date_time: string;
+    active: number;
+    start_date: string;
+    end_date: string;
+    price: number;
+    platforms_fields_price_start_time: string;
+    platforms_fields_price_end_time: string;
+  }>()
+);
+
+export const insertEventDisabledSlotsWebSuccess = createAction(
+  `${actor} Insert Event Disabled Slots Web Success`,
+  props<{ response: any }>()
+);
+
+export const insertEventDisabledSlotsWebFailure = createAction(
+  `${actor} Insert Event Disabled Slots Web Failure`,
+  props<{ error: any }>()
+);

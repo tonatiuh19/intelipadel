@@ -14,9 +14,7 @@ import { fromLanding } from '../../shared/store/selectors';
 import { Subject, takeUntil } from 'rxjs';
 import { LandingActions } from '../../shared/store/actions';
 import { UserState } from '../../home/home.model';
-import {
-  formatDateString,
-} from '../../shared/utils/help-functions';
+import { formatDateString } from '../../shared/utils/help-functions';
 
 @Component({
   selector: 'app-schedule-event-modal',
@@ -85,13 +83,13 @@ export class ScheduleEventModalComponent implements OnInit, OnDestroy {
       selectedField: [null, Validators.required],
       startTime: [null, Validators.required],
       endTime: [null, Validators.required],
+      price: [null, Validators.required],
     });
 
     this.generateTimeSlots();
   }
 
   ngOnInit() {
-
     this.markDaysForm
       .get('selectedField')
       ?.valueChanges.pipe(takeUntil(this.unsubscribe$))
@@ -205,8 +203,12 @@ export class ScheduleEventModalComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.markDaysForm.valid) {
+      const date = this.selectedDate;
+      const startTime = `${date} ${this.markDaysForm.value.startTime.value}:00`;
+      const endTime = `${date} ${this.markDaysForm.value.endTime.value}:00`;
+
       this.store.dispatch(
-        LandingActions.insertDisabledSlotsWeb({
+        LandingActions.insertEventDisabledSlotsWeb({
           id_platforms_field: this.markDaysForm.value.selectedField.code,
           id_platforms: this.platformsId,
           start_date_time: this.markDaysForm.value.startTime
@@ -218,6 +220,9 @@ export class ScheduleEventModalComponent implements OnInit, OnDestroy {
           active: 3,
           start_date: this.start_date,
           end_date: this.end_date,
+          price: this.markDaysForm.value.price,
+          platforms_fields_price_start_time: startTime,
+          platforms_fields_price_end_time: endTime,
         })
       );
       this.closeDialog();

@@ -30,6 +30,7 @@ export class LandingService {
   public UPDATE_PRICE = `${DOMAIN}/updatePriceByIdWeb.php`;
   public INSERT_PRICE = `${DOMAIN}/InsertPriceWeb.php`;
   public INSERT_FIXED_PRICE = `${DOMAIN}/InsertFixedPriceWeb.php`;
+  public INSERT_EVENT_DISABLED_DATE = `${DOMAIN}/insertEventDisabledSlotsWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -457,6 +458,38 @@ export class LandingService {
         id_platforms,
         timeRanges,
         active,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public insertEventDisabledSlotsWeb(
+    id_platforms_field: number,
+    id_platforms: number,
+    start_date_time: string,
+    end_date_time: string,
+    active: number,
+    start_date: string,
+    end_date: string,
+    price: number,
+    platforms_fields_price_start_time: string,
+    platforms_fields_price_end_time: string
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.INSERT_EVENT_DISABLED_DATE, {
+        id_platforms_field,
+        id_platforms,
+        start_date_time,
+        end_date_time,
+        active,
+        start_date,
+        end_date,
+        price,
+        platforms_fields_price_start_time,
+        platforms_fields_price_end_time,
       })
       .pipe(
         map((response) => {
