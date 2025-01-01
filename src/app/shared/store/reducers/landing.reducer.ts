@@ -615,5 +615,32 @@ export const LandingReducer = createRehydrateReducer(
       isLoading: false,
       isError: true,
     };
-  })
+  }),
+  on(LandingActions.insertFixedPriceWeb, (state: LandingState, {}) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.insertFixedPriceWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        prices: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.insertFixedPriceWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
+  )
 );

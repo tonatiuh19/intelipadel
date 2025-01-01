@@ -29,6 +29,7 @@ export class LandingService {
   public GET_PRICES_BY_ID = `${DOMAIN}/getPricesByIdWeb.php`;
   public UPDATE_PRICE = `${DOMAIN}/updatePriceByIdWeb.php`;
   public INSERT_PRICE = `${DOMAIN}/InsertPriceWeb.php`;
+  public INSERT_FIXED_PRICE = `${DOMAIN}/InsertFixedPriceWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -437,6 +438,24 @@ export class LandingService {
         price,
         platforms_fields_price_start_time,
         platforms_fields_price_end_time,
+        active,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public insertFixedPriceWeb(
+    id_platforms: number,
+    timeRanges: any[],
+    active: number
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.INSERT_FIXED_PRICE, {
+        id_platforms,
+        timeRanges,
         active,
       })
       .pipe(

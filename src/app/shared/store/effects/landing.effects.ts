@@ -590,6 +590,26 @@ export class LandingEffects {
     );
   });
 
+  insertFixedPriceWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.insertFixedPriceWeb),
+      switchMap(({ id_platforms, timeRanges, active }) => {
+        return this.landingService
+          .insertFixedPriceWeb(id_platforms, timeRanges, active)
+          .pipe(
+            map((response) => {
+              return LandingActions.insertFixedPriceWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.insertFixedPriceWebFailure({ error }));
+            })
+          );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

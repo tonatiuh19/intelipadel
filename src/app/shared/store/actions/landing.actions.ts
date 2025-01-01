@@ -392,3 +392,22 @@ export const insertPriceWebFailure = createAction(
   `${actor} Insert Price Web Failure`,
   props<{ error: any }>()
 );
+
+export const insertFixedPriceWeb = createAction(
+  `${actor} Insert Fixed Price Web`,
+  props<{
+    id_platforms: number;
+    timeRanges: any[];
+    active: number;
+  }>()
+);
+
+export const insertFixedPriceWebSuccess = createAction(
+  `${actor} Insert Fixed Price Web Success`,
+  props<{ response: any }>()
+);
+
+export const insertFixedPriceWebFailure = createAction(
+  `${actor} Insert Fixed Price Web Failure`,
+  props<{ error: any }>()
+);

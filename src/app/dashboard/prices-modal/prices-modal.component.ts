@@ -21,7 +21,13 @@ import {
   faPlus,
   faPencil,
 } from '@fortawesome/free-solid-svg-icons';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormArray,
+  FormControl,
+} from '@angular/forms';
 
 @Component({
   selector: 'app-prices-modal',
@@ -49,6 +55,8 @@ export class PricesModalComponent implements OnInit, OnChanges {
 
   currentStep: number = 1;
   specialPriceForm!: FormGroup;
+  fixedPriceForm!: FormGroup;
+  isTimeRangeValid: boolean = true;
 
   faTrashAlt = faTrashAlt;
   faPlus = faPlus;
@@ -62,6 +70,10 @@ export class PricesModalComponent implements OnInit, OnChanges {
       date: ['', Validators.required],
       start_time: ['', Validators.required],
       end_time: ['', Validators.required],
+    });
+
+    this.fixedPriceForm = this.fb.group({
+      timeRanges: this.fb.array([this.createTimeRange()]),
     });
   }
 
@@ -92,12 +104,6 @@ export class PricesModalComponent implements OnInit, OnChanges {
       .subscribe((prices) => {
         this.prices = prices;
         this.isSpecialPrice = (this.prices?.specialPrices?.length ?? 0) >= 1;
-        console.log('prices', this.prices);
-        console.log(
-          'isSpecialPrice',
-          this.isSpecialPrice,
-          this.prices?.specialPrices?.length
-        );
       });
   }
 
@@ -123,7 +129,6 @@ export class PricesModalComponent implements OnInit, OnChanges {
 
   deleteSpecialPrice() {
     if (this.priceToDelete) {
-      console.log('delete', this.priceToDelete);
       this.store.dispatch(
         LandingActions.updatePriceByIdWeb({
           id_platforms_fields_price:
@@ -143,6 +148,30 @@ export class PricesModalComponent implements OnInit, OnChanges {
     this.currentStep = 1;
   }
 
+  modifyFixedPrice() {
+    this.currentStep = 3;
+  }
+
+  createTimeRange(): FormGroup {
+    return this.fb.group({
+      price: ['', Validators.required],
+      start_time: ['', [Validators.required, this.timeRangeValidator]],
+      end_time: ['', [Validators.required, this.timeRangeValidator]],
+    });
+  }
+
+  get timeRanges(): FormArray {
+    return this.fixedPriceForm.get('timeRanges') as FormArray;
+  }
+
+  addTimeRange() {
+    this.timeRanges.push(this.createTimeRange());
+  }
+
+  removeTimeRange(index: number) {
+    this.timeRanges.removeAt(index);
+  }
+
   onSubmitSpecialPrice() {
     if (this.specialPriceForm.valid) {
       const date = this.specialPriceForm.value.date;
@@ -157,7 +186,6 @@ export class PricesModalComponent implements OnInit, OnChanges {
         active: 2,
       };
 
-      console.log(specialPrice);
       this.store.dispatch(LandingActions.insertPriceWeb(specialPrice));
 
       this.specialPriceForm.reset();
@@ -165,5 +193,65 @@ export class PricesModalComponent implements OnInit, OnChanges {
     } else {
       this.specialPriceForm.markAllAsTouched();
     }
+  }
+
+  onSubmitFixedPrice() {
+    if (this.fixedPriceForm.valid && this.validateTotalTimeRange()) {
+      const fixedPrice = {
+        id_platforms: this.platformsId,
+        timeRanges: this.fixedPriceForm.value.timeRanges.map((range: any) => ({
+          price: range.price,
+          start_time: range.start_time,
+          end_time: range.end_time,
+        })),
+        active: 1,
+      };
+
+      this.store.dispatch(LandingActions.insertFixedPriceWeb(fixedPrice));
+
+      this.timeRanges.clear();
+      this.fixedPriceForm.reset();
+      this.previousStep();
+    } else {
+      this.fixedPriceForm.markAllAsTouched();
+      this.isTimeRangeValid = false;
+    }
+  }
+
+  validateTotalTimeRange(): boolean {
+    const timeRanges = this.fixedPriceForm.value.timeRanges;
+    const totalTimeRanges = timeRanges.map((range: any) => ({
+      start: range.start_time,
+      end: range.end_time,
+    }));
+
+    const sortedRanges = totalTimeRanges.sort((a: any, b: any) =>
+      a.start.localeCompare(b.start)
+    );
+
+    let isValid = true;
+    let previousEnd = '08:00';
+
+    for (const range of sortedRanges) {
+      if (range.start < previousEnd || range.end > '23:00') {
+        isValid = false;
+        break;
+      }
+      previousEnd = range.end;
+    }
+
+    if (previousEnd !== '23:00') {
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  timeRangeValidator(control: FormControl): { [key: string]: boolean } | null {
+    const time = control.value;
+    if (time < '08:00' || time > '23:00') {
+      return { timeRange: true };
+    }
+    return null;
   }
 }

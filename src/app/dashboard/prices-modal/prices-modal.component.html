@@ -61,7 +61,7 @@
                 </div>
                 <div class="row mt-2">
                   <div class="col-sm-12">
-                    <button class="btn btn-dark">
+                    <button class="btn btn-dark" (click)="modifyFixedPrice()">
                       <fa-icon [icon]="faPencil"></fa-icon> Modificar precio
                       fijo
                     </button>
@@ -222,6 +222,89 @@
               </button>
               <button type="submit" class="btn btn-primary ms-2">
                 <fa-icon [icon]="faPlus"></fa-icon> Crear precio especial
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div *ngIf="currentStep === 3" class="row">
+        <div class="col-sm-12">
+          <form [formGroup]="fixedPriceForm" (ngSubmit)="onSubmitFixedPrice()">
+            <div formArrayName="timeRanges">
+              <div
+                *ngFor="let timeRange of timeRanges.controls; let i = index"
+                [formGroupName]="i"
+                class="form-group mb-2"
+              >
+                <label for="price_{{ i }}">Precio</label>
+                <input
+                  type="number"
+                  id="price_{{ i }}"
+                  formControlName="price"
+                  class="form-control"
+                  [ngClass]="{
+                    'is-invalid':
+                      timeRange.get('price')?.invalid &&
+                      timeRange.get('price')?.touched
+                  }"
+                />
+                <label for="start_time_{{ i }}">Hora de inicio</label>
+                <input
+                  type="time"
+                  id="start_time_{{ i }}"
+                  formControlName="start_time"
+                  class="form-control"
+                  [ngClass]="{
+                    'is-invalid':
+                      timeRange.get('start_time')?.invalid &&
+                      timeRange.get('start_time')?.touched
+                  }"
+                />
+                <label for="end_time_{{ i }}">Hora de fin</label>
+                <input
+                  type="time"
+                  id="end_time_{{ i }}"
+                  formControlName="end_time"
+                  class="form-control"
+                  [ngClass]="{
+                    'is-invalid':
+                      timeRange.get('end_time')?.invalid &&
+                      timeRange.get('end_time')?.touched
+                  }"
+                />
+                <button
+                  type="button"
+                  class="btn btn-danger mt-2"
+                  (click)="removeTimeRange(i)"
+                >
+                  Eliminar rango
+                </button>
+              </div>
+            </div>
+            <div class="form-group text-center">
+              <button
+                type="button"
+                class="btn btn-outline-primary"
+                (click)="addTimeRange()"
+              >
+                Agregar rango de tiempo
+              </button>
+            </div>
+            <div *ngIf="!isTimeRangeValid" class="alert alert-danger mt-3">
+              Para modificar el precio, debes cubrir todo el rango de 08:00 AM a
+              11:00 PM.
+            </div>
+            <div class="form-group text-center mt-3">
+              <button
+                type="button"
+                class="btn btn-outline-danger"
+                (click)="previousStep()"
+              >
+                Atrás
+              </button>
+              <button type="submit" class="btn btn-primary ms-2">
+                <fa-icon [icon]="faPencil"></fa-icon> Modificar precio fijo
               </button>
             </div>
           </form>
