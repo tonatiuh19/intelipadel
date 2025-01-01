@@ -121,4 +121,8 @@ export interface Price {
   platforms_fields_price_start_time: string;
   platforms_fields_price_end_time: string;
   active: number;
+  id_platforms_field: number;
+  id_platform: number;
+  title: string;
+  field_active: number;
 }

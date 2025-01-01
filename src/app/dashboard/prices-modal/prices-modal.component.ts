@@ -70,6 +70,7 @@ export class PricesModalComponent implements OnInit, OnChanges {
       date: ['', Validators.required],
       start_time: ['', Validators.required],
       end_time: ['', Validators.required],
+      id_platforms_field: ['', Validators.required],
     });
 
     this.fixedPriceForm = this.fb.group({
@@ -103,6 +104,7 @@ export class PricesModalComponent implements OnInit, OnChanges {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((prices) => {
         this.prices = prices;
+        console.log('prices', prices);
         this.isSpecialPrice = (this.prices?.specialPrices?.length ?? 0) >= 1;
       });
   }
@@ -183,6 +185,7 @@ export class PricesModalComponent implements OnInit, OnChanges {
         price: this.specialPriceForm.value.price,
         platforms_fields_price_start_time: startTime,
         platforms_fields_price_end_time: endTime,
+        id_platforms_field: this.specialPriceForm.value.id_platforms_field,
         active: 2,
       };
 

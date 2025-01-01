@@ -92,6 +92,7 @@
                           <th>#</th>
                           <th>Precio</th>
                           <th>Fecha</th>
+                          <th>Cancha</th>
                           <th>Hora de inicio</th>
                           <th>Hora de fin</th>
                           <th>Acciones</th>
@@ -113,6 +114,7 @@
                               )
                             }}
                           </td>
+                          <td>{{ price.title }}</td>
                           <td>
                             {{
                               fomatTime(price.platforms_fields_price_start_time)
@@ -211,6 +213,18 @@
                     specialPriceForm.get('end_time')?.touched
                 }"
               />
+            </div>
+            <div class="form-group mb-2">
+              <label for="id_platforms_field">Cancha</label>
+              <select
+                id="id_platforms_field"
+                formControlName="id_platforms_field"
+                class="form-control"
+              >
+                <option value="1">Cancha 1</option>
+                <option value="2">Cancha 2</option>
+                <option value="3">Cancha 3</option>
+              </select>
             </div>
             <div class="form-group text-center">
               <button
