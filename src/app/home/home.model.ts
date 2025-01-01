@@ -9,6 +9,7 @@ export interface LandingState {
   ads: AdsModel[];
   platformsFields: PlatformsFieldsState;
   disabledSlots: string[];
+  prices: PricesState;
   isLoading?: boolean;
   isError?: boolean;
   isContactSent?: boolean;
@@ -100,11 +101,24 @@ export interface CarrouselImage {
   path: string;
 }
 
-
 export interface AdsModel {
-  id_platforms_ad:    number;
-  id_platform:        number;
+  id_platforms_ad: number;
+  id_platform: number;
   platforms_ad_title: string;
   platforms_ad_image: string;
-  active:             number;
+  active: number;
+}
+
+export interface PricesState {
+  fixedPrices: Price[];
+  specialPrices: Price[];
+}
+
+export interface Price {
+  id_platforms_fields_price: number;
+  id_platforms: number;
+  price: number;
+  platforms_fields_price_start_time: string;
+  platforms_fields_price_end_time: string;
+  active: number;
 }

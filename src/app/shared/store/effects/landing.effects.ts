@@ -427,18 +427,16 @@ export class LandingEffects {
     return this.actions$.pipe(
       ofType(LandingActions.getAdsByIdWeb),
       switchMap(({ id_platform }) => {
-        return this.landingService
-          .getAdsByIdWeb(id_platform)
-          .pipe(
-            map((response) => {
-              return LandingActions.getAdsByIdWebSuccess({
-                response,
-              });
-            }),
-            catchError((error) => {
-              return of(LandingActions.getAdsByIdWebFailure({ error }));
-            })
-          );
+        return this.landingService.getAdsByIdWeb(id_platform).pipe(
+          map((response) => {
+            return LandingActions.getAdsByIdWebSuccess({
+              response,
+            });
+          }),
+          catchError((error) => {
+            return of(LandingActions.getAdsByIdWebFailure({ error }));
+          })
+        );
       })
     );
   });
@@ -446,40 +444,59 @@ export class LandingEffects {
   insertAdWeb$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(LandingActions.insertAdWeb),
-      switchMap(({ id_platform, platforms_ad_title, active, platforms_ad_image }) => {
-        return this.landingService
-          .insertAdWeb(id_platform, platforms_ad_title, active, platforms_ad_image)
-          .pipe(
-            map((response) => {
-              return LandingActions.insertAdWebSuccess({
-                response,
-              });
-            }),
-            catchError((error) => {
-              return of(LandingActions.insertAdWebFailure({ error }));
-            })
-          );
-      })
+      switchMap(
+        ({ id_platform, platforms_ad_title, active, platforms_ad_image }) => {
+          return this.landingService
+            .insertAdWeb(
+              id_platform,
+              platforms_ad_title,
+              active,
+              platforms_ad_image
+            )
+            .pipe(
+              map((response) => {
+                return LandingActions.insertAdWebSuccess({
+                  response,
+                });
+              }),
+              catchError((error) => {
+                return of(LandingActions.insertAdWebFailure({ error }));
+              })
+            );
+        }
+      )
     );
   });
 
   updateAdWeb$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(LandingActions.updateAdWeb),
-      switchMap(({ id_platforms_ad, platforms_ad_title, active, platforms_ad_image }) => {
-        return this.landingService
-          .updateAdWeb(id_platforms_ad, platforms_ad_title, active, platforms_ad_image)
-          .pipe(
-            map((response) => {
-              return LandingActions.updateAdWebSuccess({
-                response,
-              });
-            }),
-            catchError((error) => {
-              return of(LandingActions.updateAdWebFailure({ error }));
-            })
-          );
-      })
+      switchMap(
+        ({
+          id_platforms_ad,
+          platforms_ad_title,
+          active,
+          platforms_ad_image,
+        }) => {
+          return this.landingService
+            .updateAdWeb(
+              id_platforms_ad,
+              platforms_ad_title,
+              active,
+              platforms_ad_image
+            )
+            .pipe(
+              map((response) => {
+                return LandingActions.updateAdWebSuccess({
+                  response,
+                });
+              }),
+              catchError((error) => {
+                return of(LandingActions.updateAdWebFailure({ error }));
+              })
+            );
+        }
+      )
     );
   });
 
@@ -487,18 +504,34 @@ export class LandingEffects {
     return this.actions$.pipe(
       ofType(LandingActions.deleteAdWeb),
       switchMap(({ id_platforms_ad, active }) => {
-        return this.landingService
-          .deleteAdWeb(id_platforms_ad, active)
-          .pipe(
-            map((response) => {
-              return LandingActions.deleteAdWebSuccess({
-                response,
-              });
-            }),
-            catchError((error) => {
-              return of(LandingActions.deleteAdWebFailure({ error }));
-            })
-          );
+        return this.landingService.deleteAdWeb(id_platforms_ad, active).pipe(
+          map((response) => {
+            return LandingActions.deleteAdWebSuccess({
+              response,
+            });
+          }),
+          catchError((error) => {
+            return of(LandingActions.deleteAdWebFailure({ error }));
+          })
+        );
+      })
+    );
+  });
+
+  getPricesByIdWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getPricesByIdWeb),
+      switchMap(({ id_platforms }) => {
+        return this.landingService.getPricesByIdWeb(id_platforms).pipe(
+          map((response) => {
+            return LandingActions.getPricesByIdWebSuccess({
+              response,
+            });
+          }),
+          catchError((error) => {
+            return of(LandingActions.getPricesByIdWebFailure({ error }));
+          })
+        );
       })
     );
   });

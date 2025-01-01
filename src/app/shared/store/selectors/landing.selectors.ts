@@ -49,3 +49,8 @@ export const selectAds = createSelector(
   selectLandingState,
   (state: LandingState) => state.ads
 );
+
+export const selectPrices = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.prices
+);

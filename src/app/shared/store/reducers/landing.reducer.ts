@@ -454,14 +454,17 @@ export const LandingReducer = createRehydrateReducer(
       isLoading: true,
     };
   }),
-  on(LandingActions.getAdsByIdWebSuccess, (state: LandingState, { response }) => {
-    return {
-      ...state,
-      ads: response,
-      isLoading: false,
-      isError: false,
-    };
-  }),
+  on(
+    LandingActions.getAdsByIdWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        ads: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
   on(LandingActions.getAdsByIdWebFailure, (state: LandingState, { error }) => {
     return {
       ...state,
@@ -531,5 +534,35 @@ export const LandingReducer = createRehydrateReducer(
       isLoading: false,
       isError: true,
     };
-  })
+  }),
+  on(
+    LandingActions.getPricesByIdWeb,
+    (state: LandingState, { id_platforms }) => {
+      return {
+        ...state,
+        isLoading: true,
+      };
+    }
+  ),
+  on(
+    LandingActions.getPricesByIdWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        prices: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.getPricesByIdWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
+  )
 );

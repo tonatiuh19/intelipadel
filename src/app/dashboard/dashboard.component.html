@@ -9,7 +9,7 @@
         <div class="container-fluid">
           <div class="row">
             <div class="col-sm-12">
-              <h1 class="text-center">{{user?.title}}</h1>
+              <h1 class="text-center">{{ user?.title }}</h1>
             </div>
           </div>
           <div class="row text-center mt-3 mb-2">
@@ -37,6 +37,12 @@
                 (click)="displayUsersModal = true"
               >
                 <fa-icon [icon]="faUsers"></fa-icon> Usuarios
+              </button>
+              <button
+                class="btn btn-primary ms-2"
+                (click)="displayPricesModal = true"
+              >
+                <fa-icon [icon]="faDollarSign"></fa-icon> Precios
               </button>
               <button
                 class="btn btn-primary ms-2"
@@ -368,3 +374,7 @@
   [display]="displayAnnouncementsModal"
   (close)="closeModal('announcements')"
 ></app-ads-modal>
+<app-prices-modal
+  [display]="displayPricesModal"
+  (close)="closeModal('prices')"
+></app-prices-modal>

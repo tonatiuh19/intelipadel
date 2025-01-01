@@ -1,0 +1,29 @@
+.prices-panel_container {
+  margin-top: 1rem;
+}
+
+.prices-panel_title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #405069;
+}
+
+.prices-panel_title-bold {
+  font-weight: 700;
+}
+
+.btn-close {
+  width: 1rem;
+  height: 1rem;
+  padding: 0.25rem;
+  font-size: 0.85rem;
+}
+
+:host ::ng-deep .p-dropdown-items {
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+:host ::ng-deep .p-dropdown {
+  border: 0;
+}

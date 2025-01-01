@@ -12,6 +12,7 @@ import { ScheduleCourtModalModule } from './schedule-court-modal/schedule-court-
 import { UsersModalModule } from './users-modal/users-modal.module';
 import { ScheduleEventModalModule } from './schedule-event-modal/schedule-event-modal.module';
 import { AdsModalModule } from './ads-modal/ads-modal.module';
+import { PricesModalModule } from './prices-modal/prices-modal.module';
 
 @NgModule({
   declarations: [DashboardComponent],
@@ -27,7 +28,8 @@ import { AdsModalModule } from './ads-modal/ads-modal.module';
     ScheduleCourtModalModule,
     UsersModalModule,
     ScheduleEventModalModule,
-    AdsModalModule
+    AdsModalModule,
+    PricesModalModule,
   ],
   exports: [DashboardComponent],
 })

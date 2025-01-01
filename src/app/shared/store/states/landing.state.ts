@@ -49,4 +49,8 @@ export const initialLandingState: LandingState = {
     },
   },
   disabledSlots: [],
+  prices: {
+    fixedPrices: [],
+    specialPrices: [],
+  },
 };

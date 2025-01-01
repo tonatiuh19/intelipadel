@@ -13,7 +13,8 @@ import {
   faUsers,
   faNewspaper,
   faCheck,
-  faTrophy
+  faTrophy,
+  faDollarSign,
 } from '@fortawesome/free-solid-svg-icons';
 import { CalendarOptions } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -79,6 +80,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   faNewspaper = faNewspaper;
   faCheck = faCheck;
   faTrophy = faTrophy;
+  faDollarSign = faDollarSign;
 
   user: UserState | undefined;
 
@@ -99,6 +101,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   displayScheduleCourtModal: boolean = false; // Control the visibility of the Schedule Court modal
   displayScheduleEventModal: boolean = false; // Control the visibility of the Schedule Event modal
   displayUsersModal: boolean = false; // Control the visibility of the Users modal
+  displayPricesModal: boolean = false;
   displayAnnouncementsModal: boolean = false;
   displayMarkedDayModal: boolean = false; // Control the visibility of the Marked Day modal
   displayDeleteConfirmModal: boolean = false;
@@ -163,6 +166,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       case 'users':
         this.displayUsersModal = false;
         break;
+      case 'prices':
+        this.displayPricesModal = false;
+        break;
       case 'announcements':
         this.displayAnnouncementsModal = false;
         break;
@@ -206,7 +212,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
       }));
 
-      const markedScheduledEvents = this.markedDates
+    const markedScheduledEvents = this.markedDates
       .filter((markedDate) => markedDate.active === 3)
       .map((markedDate) => ({
         title: `${markedDate.title}: Evento` || 'Marked Day',

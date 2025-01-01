@@ -341,3 +341,18 @@ export const deleteAdWebFailure = createAction(
   `${actor} Delete Ad Web Failure`,
   props<{ error: any }>()
 );
+
+export const getPricesByIdWeb = createAction(
+  `${actor} Get Prices By Id Web`,
+  props<{ id_platforms: number }>()
+);
+
+export const getPricesByIdWebSuccess = createAction(
+  `${actor} Get Prices By Id Web Success`,
+  props<{ response: any }>()
+);
+
+export const getPricesByIdWebFailure = createAction(
+  `${actor} Get Prices By Id Web Failure`,
+  props<{ error: any }>()
+);

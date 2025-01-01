@@ -26,6 +26,7 @@ export class LandingService {
   public INSERT_AD_WEB = `${DOMAIN}/insertAdWeb.php`;
   public UPDATE_AD_WEB = `${DOMAIN}/updateAdByIdWeb.php`;
   public DELETE_AD_WEB = `${DOMAIN}/updateStatusAdByIdWeb.php`;
+  public GET_PRICES_BY_ID = `${DOMAIN}/getPricesByIdWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -353,14 +354,12 @@ export class LandingService {
     formData.append('platforms_ad_title', platforms_ad_title);
     formData.append('active', active.toString());
     formData.append('platforms_ad_image', platforms_ad_image);
-  
-    return this.httpClient
-      .post(this.INSERT_AD_WEB, formData)
-      .pipe(
-        map((response) => {
-          return response;
-        })
-      );
+
+    return this.httpClient.post(this.INSERT_AD_WEB, formData).pipe(
+      map((response) => {
+        return response;
+      })
+    );
   }
 
   public updateAdWeb(
@@ -374,9 +373,20 @@ export class LandingService {
     formData.append('platforms_ad_title', platforms_ad_title);
     formData.append('active', active.toString());
     formData.append('platforms_ad_image', platforms_ad_image);
-  
+
+    return this.httpClient.post(this.UPDATE_AD_WEB, formData).pipe(
+      map((response) => {
+        return response;
+      })
+    );
+  }
+
+  public deleteAdWeb(id_platforms_ad: number, active: number): Observable<any> {
     return this.httpClient
-      .post(this.UPDATE_AD_WEB, formData)
+      .post(this.DELETE_AD_WEB, {
+        id_platforms_ad,
+        active,
+      })
       .pipe(
         map((response) => {
           return response;
@@ -384,14 +394,10 @@ export class LandingService {
       );
   }
 
-  public deleteAdWeb(
-    id_platforms_ad: number,
-    active: number
-  ): Observable<any> {
+  public getPricesByIdWeb(id_platforms: number): Observable<any> {
     return this.httpClient
-      .post(this.DELETE_AD_WEB, {
-        id_platforms_ad,
-        active,
+      .post(this.GET_PRICES_BY_ID, {
+        id_platforms,
       })
       .pipe(
         map((response) => {
