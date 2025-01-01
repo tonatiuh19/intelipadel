@@ -356,3 +356,39 @@ export const getPricesByIdWebFailure = createAction(
   `${actor} Get Prices By Id Web Failure`,
   props<{ error: any }>()
 );
+
+export const updatePriceByIdWeb = createAction(
+  `${actor} Update Price By Id Web`,
+  props<{ id_platforms_fields_price: number; active: number }>()
+);
+
+export const updatePriceByIdWebSuccess = createAction(
+  `${actor} Update Price By Id Web Success`,
+  props<{ response: any }>()
+);
+
+export const updatePriceByIdWebFailure = createAction(
+  `${actor} Update Price By Id Web Failure`,
+  props<{ error: any }>()
+);
+
+export const insertPriceWeb = createAction(
+  `${actor} Insert Price Web`,
+  props<{
+    id_platforms: number;
+    price: number;
+    platforms_fields_price_start_time: string;
+    platforms_fields_price_end_time: string;
+    active: number;
+  }>()
+);
+
+export const insertPriceWebSuccess = createAction(
+  `${actor} Insert Price Web Success`,
+  props<{ response: any }>()
+);
+
+export const insertPriceWebFailure = createAction(
+  `${actor} Insert Price Web Failure`,
+  props<{ error: any }>()
+);

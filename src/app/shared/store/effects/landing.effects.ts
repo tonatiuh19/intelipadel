@@ -536,6 +536,60 @@ export class LandingEffects {
     );
   });
 
+  updatePriceByIdWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.updatePriceByIdWeb),
+      switchMap(({ id_platforms_fields_price, active }) => {
+        return this.landingService
+          .updatePriceByIdWeb(id_platforms_fields_price, active)
+          .pipe(
+            map((response) => {
+              return LandingActions.updatePriceByIdWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.updatePriceByIdWebFailure({ error }));
+            })
+          );
+      })
+    );
+  });
+
+  insertPriceWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.insertPriceWeb),
+      switchMap(
+        ({
+          id_platforms,
+          price,
+          platforms_fields_price_start_time,
+          platforms_fields_price_end_time,
+          active,
+        }) => {
+          return this.landingService
+            .insertPriceWeb(
+              id_platforms,
+              price,
+              platforms_fields_price_start_time,
+              platforms_fields_price_end_time,
+              active
+            )
+            .pipe(
+              map((response) => {
+                return LandingActions.insertPriceWebSuccess({
+                  response,
+                });
+              }),
+              catchError((error) => {
+                return of(LandingActions.insertPriceWebFailure({ error }));
+              })
+            );
+        }
+      )
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

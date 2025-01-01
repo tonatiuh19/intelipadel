@@ -564,5 +564,56 @@ export const LandingReducer = createRehydrateReducer(
         isError: true,
       };
     }
-  )
+  ),
+  on(LandingActions.updatePriceByIdWeb, (state: LandingState, {}) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.updatePriceByIdWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        prices: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.updatePriceByIdWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
+  ),
+  on(LandingActions.insertPriceWeb, (state: LandingState, {}) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.insertPriceWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        prices: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(LandingActions.insertPriceWebFailure, (state: LandingState, { error }) => {
+    return {
+      ...state,
+      isLoading: false,
+      isError: true,
+    };
+  })
 );

@@ -27,6 +27,8 @@ export class LandingService {
   public UPDATE_AD_WEB = `${DOMAIN}/updateAdByIdWeb.php`;
   public DELETE_AD_WEB = `${DOMAIN}/updateStatusAdByIdWeb.php`;
   public GET_PRICES_BY_ID = `${DOMAIN}/getPricesByIdWeb.php`;
+  public UPDATE_PRICE = `${DOMAIN}/updatePriceByIdWeb.php`;
+  public INSERT_PRICE = `${DOMAIN}/InsertPriceWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -398,6 +400,44 @@ export class LandingService {
     return this.httpClient
       .post(this.GET_PRICES_BY_ID, {
         id_platforms,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public updatePriceByIdWeb(
+    id_platforms_fields_price: number,
+    active: number
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.UPDATE_PRICE, {
+        id_platforms_fields_price,
+        active,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public insertPriceWeb(
+    id_platforms: number,
+    price: number,
+    platforms_fields_price_start_time: string,
+    platforms_fields_price_end_time: string,
+    active: number
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.INSERT_PRICE, {
+        id_platforms,
+        price,
+        platforms_fields_price_start_time,
+        platforms_fields_price_end_time,
+        active,
       })
       .pipe(
         map((response) => {

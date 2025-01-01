@@ -1,7 +1,7 @@
 <p-dialog
   [(visible)]="display"
   [modal]="true"
-  [style]="{ width: '90vw', }"
+  [style]="{ width: '90vw' }"
   position="center"
   [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
   (onHide)="closeDialog()"
@@ -21,13 +21,19 @@
           </div>
         </div>
       </div>
-      <div class="row">
+      <div *ngIf="currentStep === 1" class="row">
         <div class="container">
           <div class="row">
-            <div class="col-sm-6 text-center">
+            <div
+              [class]="
+                isSpecialPrice
+                  ? 'col-sm-6 text-center'
+                  : 'col-sm-12 text-center'
+              "
+            >
               <div class="container">
                 <div class="row mb-3">
-                  <div class="col-sm-12">
+                  <div *ngIf="isSpecialPrice" class="col-sm-12">
                     <h4>Precio fijo</h4>
                   </div>
                 </div>
@@ -59,11 +65,19 @@
                       <fa-icon [icon]="faPencil"></fa-icon> Modificar precio
                       fijo
                     </button>
+                    <button
+                      *ngIf="!isSpecialPrice"
+                      class="btn btn-dark ms-1"
+                      (click)="nextStep()"
+                    >
+                      <fa-icon [icon]="faPlus"></fa-icon> Agregar precio
+                      especial
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="col-sm-6 text-center">
+            <div *ngIf="isSpecialPrice" class="col-sm-6 text-center">
               <div class="container">
                 <div class="row mb-3">
                   <div class="col-sm-12">
@@ -124,7 +138,7 @@
                 </div>
                 <div class="row">
                   <div class="col-sm-12">
-                    <button class="btn btn-dark">
+                    <button class="btn btn-dark" (click)="nextStep()">
                       <fa-icon [icon]="faPlus"></fa-icon> Agregar precio
                       especial
                     </button>
@@ -133,6 +147,84 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div *ngIf="currentStep === 2" class="row">
+        <div class="col-sm-12">
+          <form
+            [formGroup]="specialPriceForm"
+            (ngSubmit)="onSubmitSpecialPrice()"
+          >
+            <div class="form-group mb-2">
+              <label for="price">Precio</label>
+              <input
+                type="number"
+                id="price"
+                formControlName="price"
+                class="form-control"
+                [ngClass]="{
+                  'is-invalid':
+                    specialPriceForm.get('price')?.invalid &&
+                    specialPriceForm.get('price')?.touched
+                }"
+              />
+            </div>
+            <div class="form-group mb-2">
+              <label for="date">Fecha</label>
+              <input
+                type="date"
+                id="date"
+                formControlName="date"
+                class="form-control"
+                [ngClass]="{
+                  'is-invalid':
+                    specialPriceForm.get('date')?.invalid &&
+                    specialPriceForm.get('date')?.touched
+                }"
+              />
+            </div>
+            <div class="form-group mb-2">
+              <label for="start_time">Hora de inicio</label>
+              <input
+                type="time"
+                id="start_time"
+                formControlName="start_time"
+                class="form-control"
+                [ngClass]="{
+                  'is-invalid':
+                    specialPriceForm.get('start_time')?.invalid &&
+                    specialPriceForm.get('start_time')?.touched
+                }"
+              />
+            </div>
+            <div class="form-group mb-2">
+              <label for="end_time">Hora de fin</label>
+              <input
+                type="time"
+                id="end_time"
+                formControlName="end_time"
+                class="form-control"
+                [ngClass]="{
+                  'is-invalid':
+                    specialPriceForm.get('end_time')?.invalid &&
+                    specialPriceForm.get('end_time')?.touched
+                }"
+              />
+            </div>
+            <div class="form-group text-center">
+              <button
+                type="button"
+                class="btn btn-outline-danger"
+                (click)="previousStep()"
+              >
+                Atrás
+              </button>
+              <button type="submit" class="btn btn-primary ms-2">
+                <fa-icon [icon]="faPlus"></fa-icon> Crear precio especial
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
