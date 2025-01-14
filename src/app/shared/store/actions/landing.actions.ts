@@ -437,3 +437,18 @@ export const insertEventDisabledSlotsWebFailure = createAction(
   `${actor} Insert Event Disabled Slots Web Failure`,
   props<{ error: any }>()
 );
+
+export const getEventsUsersByIdPlatformWeb = createAction(
+  `${actor} Get Events Users By Id Platform Web`,
+  props<{ id_platform: number; id_platforms_disabled_date: number }>()
+);
+
+export const getEventsUsersByIdPlatformWebSuccess = createAction(
+  `${actor} Get Events Users By Id Platform Web Success`,
+  props<{ response: any }>()
+);
+
+export const getEventsUsersByIdPlatformWebFailure = createAction(
+  `${actor} Get Events Users By Id Platform Web Failure`,
+  props<{ error: any }>()
+);

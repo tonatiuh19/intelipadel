@@ -656,6 +656,31 @@ export class LandingEffects {
     );
   });
 
+  getEventsUsersByIdPlatformWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getEventsUsersByIdPlatformWeb),
+      switchMap(({ id_platform, id_platforms_disabled_date }) => {
+        return this.landingService
+          .getEventsUsersByIdPlatformWeb(
+            id_platform,
+            id_platforms_disabled_date
+          )
+          .pipe(
+            map((response) => {
+              return LandingActions.getEventsUsersByIdPlatformWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(
+                LandingActions.getEventsUsersByIdPlatformWebFailure({ error })
+              );
+            })
+          );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

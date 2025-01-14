@@ -10,6 +10,7 @@ export interface LandingState {
   platformsFields: PlatformsFieldsState;
   disabledSlots: string[];
   prices: PricesState;
+  eventUsers: EventUsers[];
   isLoading?: boolean;
   isError?: boolean;
   isContactSent?: boolean;
@@ -125,4 +126,21 @@ export interface Price {
   id_platform: number;
   title: string;
   field_active: number;
+}
+
+export interface EventUsers {
+  id_platforms_fields_events_users: number;
+  id_platforms_user: number;
+  id_platforms_disabled_date: number;
+  stripe_id: string;
+  active: number;
+  validated: number;
+  platforms_fields_events_users_inserted: string;
+  full_name: string;
+  email: string;
+  id_platforms_field: number;
+  start_date_time: string;
+  end_date_time: string;
+  id_platform: number;
+  title: string;
 }

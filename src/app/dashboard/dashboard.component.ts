@@ -15,6 +15,7 @@ import {
   faCheck,
   faTrophy,
   faDollarSign,
+  faPen,
 } from '@fortawesome/free-solid-svg-icons';
 import { CalendarOptions } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -81,6 +82,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   faCheck = faCheck;
   faTrophy = faTrophy;
   faDollarSign = faDollarSign;
+  faPen = faPen;
 
   user: UserState | undefined;
 
@@ -108,6 +110,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   start_date: string = '';
   end_date: string = '';
+
+  isEventUsers: boolean = false;
 
   private unsubscribe$ = new Subject<void>();
 
@@ -225,6 +229,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           id_platforms_date_time_slot: markedDate.id_platforms_disabled_date,
           start: markedDate.start_date_time,
           end: markedDate.end_date_time,
+          title: markedDate.title,
           active: 3,
         },
       }));
@@ -329,5 +334,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.displayMarkedDayModal = false;
     this.displayDeleteConfirmModal = false;
     this.cdr.detectChanges(); // Trigger change detection
+  }
+
+  handleUsersUpdated(hasUsers: boolean): void {
+    if (hasUsers) {
+      this.isEventUsers = true;
+    } else {
+      this.isEventUsers = false;
+    }
+  }
+
+  editEvent(): void {
+    console.log('Edit event');
   }
 }

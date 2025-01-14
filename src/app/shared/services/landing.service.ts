@@ -31,6 +31,7 @@ export class LandingService {
   public INSERT_PRICE = `${DOMAIN}/InsertPriceWeb.php`;
   public INSERT_FIXED_PRICE = `${DOMAIN}/InsertFixedPriceWeb.php`;
   public INSERT_EVENT_DISABLED_DATE = `${DOMAIN}/insertEventDisabledSlotsWeb.php`;
+  public GET_EVENTS_USERS_BY_ID_PLATFORM = `${DOMAIN}/getEventsUsersByIdPlatformWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -490,6 +491,22 @@ export class LandingService {
         price,
         platforms_fields_price_start_time,
         platforms_fields_price_end_time,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public getEventsUsersByIdPlatformWeb(
+    id_platform: number,
+    id_platforms_disabled_date: number
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.GET_EVENTS_USERS_BY_ID_PLATFORM, {
+        id_platform,
+        id_platforms_disabled_date,
       })
       .pipe(
         map((response) => {

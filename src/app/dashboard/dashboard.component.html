@@ -240,14 +240,56 @@
   maskStyleClass="backdrop-blur-sm"
   [(visible)]="displayMarkedDayModal"
   [modal]="true"
-  [style]="{ width: '50vw' }"
+  [style]="{ width: '70vw' }"
 >
   <div class="panel_reservation-container">
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-12">
           <div class="panel_reservation-title">
-            <span class="panel_reservation-title-bold">Día Marcado</span>
+            <span
+              *ngIf="displayMarkedDayModal && selectedDateEvent.active !== 3"
+              class="panel_reservation-title-bold"
+              >Día Marcado</span
+            >
+            <div
+              *ngIf="displayMarkedDayModal && selectedDateEvent.active === 3"
+              class="container"
+            >
+              <div class="row">
+                <div class="col-sm-12">
+                  <span class="panel_reservation-title-bold"
+                    >Evento, {{ selectedDateEvent.title }}:</span
+                  >
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-12">
+                  <small class="panel_reservation-title-schedule-bold">{{
+                    selectedDateEvent
+                      ? fomatTime(selectedDateEvent.start || "")
+                      : ""
+                  }}</small>
+                  -
+                  <small class="panel_reservation-title-schedule-bold">{{
+                    selectedDateEvent
+                      ? fomatTime(selectedDateEvent.end || "")
+                      : ""
+                  }}</small>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col text-end">
+                  <button
+                    class="btn btn-primary"
+                    [disabled]="isEventUsers"
+                    (click)="editEvent()"
+                  >
+                    <fa-icon [icon]="faPen"></fa-icon> Editar Evento
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -276,18 +318,38 @@
             }}</span>
           </p>
         </div>
+        <div
+          *ngIf="displayMarkedDayModal && selectedDateEvent.active === 3"
+          class="col-sm-12"
+        >
+          <app-users-event-table
+            [idEvent]="selectedDateEvent.id_platforms_date_time_slot"
+            (usersUpdated)="handleUsersUpdated($event)"
+          ></app-users-event-table>
+        </div>
       </div>
       <div class="row mt-3">
         <div class="col-sm-12 text-center">
           <button
+            *ngIf="displayMarkedDayModal && selectedDateEvent.active !== 3"
             class="btn btn-outline-danger"
             (click)="openDeleteConfirmModal()"
           >
-            {{
-              displayMarkedDayModal && selectedDateEvent.active === 3
-                ? "Eliminar Evento"
-                : "Eliminar dia marcado"
-            }}
+            Eliminar dia marcado
+          </button>
+          <button
+            *ngIf="
+              displayMarkedDayModal &&
+              selectedDateEvent.active === 3 &&
+              isEventUsers
+            "
+            class="btn btn-outline-danger"
+            (click)="openDeleteConfirmModal()"
+            [disabled]="isEventUsers"
+            pTooltip="No se puede eliminar el evento porque tiene usuarios"
+            tooltipPosition="top"
+          >
+            Eliminar Evento
           </button>
           <button class="btn btn-primary ms-1" (click)="closeMarkedDayModal()">
             Cerrar

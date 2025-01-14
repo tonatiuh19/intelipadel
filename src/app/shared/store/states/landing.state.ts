@@ -53,4 +53,5 @@ export const initialLandingState: LandingState = {
     fixedPrices: [],
     specialPrices: [],
   },
+  eventUsers: [],
 };

@@ -669,5 +669,35 @@ export const LandingReducer = createRehydrateReducer(
         isError: true,
       };
     }
+  ),
+  on(
+    LandingActions.getEventsUsersByIdPlatformWeb,
+    (state: LandingState, {}) => {
+      return {
+        ...state,
+        isLoading: true,
+      };
+    }
+  ),
+  on(
+    LandingActions.getEventsUsersByIdPlatformWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        eventUsers: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.getEventsUsersByIdPlatformWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
   )
 );

@@ -12,7 +12,9 @@ import { ScheduleCourtModalModule } from './schedule-court-modal/schedule-court-
 import { UsersModalModule } from './users-modal/users-modal.module';
 import { ScheduleEventModalModule } from './schedule-event-modal/schedule-event-modal.module';
 import { AdsModalModule } from './ads-modal/ads-modal.module';
+import { UsersEventTableModule } from './users-event-table/users-event-table.module';
 import { PricesModalModule } from './prices-modal/prices-modal.module';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
   declarations: [DashboardComponent],
@@ -30,6 +32,8 @@ import { PricesModalModule } from './prices-modal/prices-modal.module';
     ScheduleEventModalModule,
     AdsModalModule,
     PricesModalModule,
+    UsersEventTableModule,
+    TooltipModule,
   ],
   exports: [DashboardComponent],
 })

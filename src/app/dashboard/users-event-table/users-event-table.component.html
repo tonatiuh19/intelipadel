@@ -1,0 +1,66 @@
+<p-table
+  [value]="eventUsers"
+  [paginator]="true"
+  [rows]="10"
+  [rowsPerPageOptions]="[5, 10, 20]"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      <th>#</th>
+      <th>Nombre</th>
+      <th></th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-user>
+    <tr>
+      <td>{{ eventUsers.indexOf(user) + 1 }}</td>
+      <td>{{ user.full_name }}</td>
+      <td>
+        <button
+          *ngIf="user.validated === 0"
+          class="btn btn-primary"
+          (click)="showConfirm(user)"
+        >
+          Check-in
+        </button>
+        <button *ngIf="user.validated === 1" class="btn btn-outline-success">
+          <fa-icon [icon]="faCheckCircle"></fa-icon> Check-in
+        </button>
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="paginatorleft" let-options> </ng-template>
+</p-table>
+
+<p-dialog
+  header="Confirmación"
+  [(visible)]="displayConfirmation"
+  [modal]="true"
+  [closable]="false"
+>
+  <div class="container mt-3">
+    <div class="row">
+      <div class="col">
+        <h2>¿Estás seguro de realizar el check-in?</h2>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <button
+          type="button"
+          class="btn btn-outline-success m-1"
+          (click)="confirmCheckIn()"
+        >
+          Si
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-danger m-1"
+          (click)="displayConfirmation = false"
+        >
+          No
+        </button>
+      </div>
+    </div>
+  </div>
+</p-dialog>
