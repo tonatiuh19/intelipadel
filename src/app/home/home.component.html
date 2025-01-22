@@ -21,15 +21,21 @@
           Control total, tranquilidad absoluta
         </p>
       </div>
-      <div class="col-12 text-center">
-        <a href="#vermas" class="btn btn-xl btn-light w-25">Ver mas</a>
+      <div class="col-12 text-center mt-5">
+        <a
+          href="#vermas"
+          class="btn btn-xl btn-light"
+          [ngClass]="{ 'w-50': isMobile }"
+          [ngClass]="{ 'w-25': !isMobile }"
+          >Ver mas</a
+        >
       </div>
     </div>
   </div>
 </section>
 <section class="bg-light py-5" id="vermas">
   <div class="container my-5">
-    <div class="row">
+    <div class="row my-5">
       <div class="col-sm-12">
         <h2 class="display-4 text-center text-secondary">
           Bienvenido a la Revolución del Pádel
@@ -46,20 +52,29 @@
 </section>
 <section class="bg-light">
   <div class="container-fluid">
+    <div class="row h-100 d-flex my-5">
+      <div
+        class="col-sm-12 bg-light d-flex align-items-center justify-content-center"
+      >
+        <img
+          src="https://garbrix.com/padel/assets/images/your_club_admin.png"
+          alt="Booking"
+          class="img-fluid responsive-image"
+        />
+      </div>
+    </div>
     <div class="row h-100 d-flex">
       <div
-        class="col-sm-3 bg-dark d-flex align-items-center justify-content-center"
-      >
-        <fa-icon
-          [icon]="faCalendar"
-          class="text-white icon-responsive"
-        ></fa-icon>
-      </div>
-      <div
-        class="col-sm-9 bg-light d-flex align-items-center justify-content-center"
+        class="col-sm-4 bg-light d-flex align-items-center justify-content-center"
       >
         <div class="container my-5">
           <div class="row">
+            <div class="col-12 text-center mb-2">
+              <fa-icon
+                [icon]="faCalendar"
+                class="text-dark icon-responsive"
+              ></fa-icon>
+            </div>
             <div class="col-12 text-center"><h5>Gestor de Reservas</h5></div>
           </div>
           <div class="row">
@@ -72,18 +87,17 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="row h-100 d-flex">
       <div
-        class="col-sm-3 bg-dark d-flex align-items-center justify-content-center"
-      >
-        <fa-icon [icon]="faKey" class="text-white icon-responsive"></fa-icon>
-      </div>
-      <div
-        class="col-sm-9 bg-light d-flex align-items-center justify-content-center"
+        class="col-sm-4 bg-light d-flex align-items-center justify-content-center"
       >
         <div class="container my-5">
           <div class="row">
+            <div class="col-12 text-center m-2">
+              <fa-icon
+                [icon]="faKey"
+                class="text-dark icon-responsive"
+              ></fa-icon>
+            </div>
             <div class="col-12 text-center"><h5>Control de Accesos</h5></div>
           </div>
           <div class="row">
@@ -96,19 +110,18 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="row h-100 d-flex">
       <div
-        class="col-sm-3 bg-dark d-flex align-items-center justify-content-center"
-      >
-        <fa-icon [icon]="faUsers" class="text-white icon-responsive"></fa-icon>
-      </div>
-      <div
-        class="col-sm-9 bg-light d-flex align-items-center justify-content-center"
+        class="col-sm-4 bg-light d-flex align-items-center justify-content-center"
       >
         <div class="container my-5">
           <div class="row">
-            <div class="col-12 text-center"><h5>Gestor de Socios</h5></div>
+            <div class="col-12 text-center mb-2">
+              <fa-icon
+                [icon]="faUsers"
+                class="text-dark icon-responsive"
+              ></fa-icon>
+            </div>
+            <div class="col-12 text-center"><h5>Gestor de Usuarios</h5></div>
           </div>
           <div class="row">
             <div class="col-12">
@@ -123,18 +136,16 @@
     </div>
     <div class="row h-100 d-flex">
       <div
-        class="col-sm-3 bg-dark d-flex align-items-center justify-content-center"
-      >
-        <fa-icon
-          [icon]="faDesktop"
-          class="text-white icon-responsive"
-        ></fa-icon>
-      </div>
-      <div
-        class="col-sm-9 bg-light d-flex align-items-center justify-content-center"
+        class="col-sm-4 bg-light d-flex align-items-center justify-content-center"
       >
         <div class="container my-5">
           <div class="row">
+            <div class="col-12 text-center mb-2">
+              <fa-icon
+                [icon]="faDesktop"
+                class="text-dark icon-responsive"
+              ></fa-icon>
+            </div>
             <div class="col-12 text-center"><h5>Navegación Intuitiva</h5></div>
           </div>
           <div class="row">
@@ -147,21 +158,17 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="row h-100 d-flex">
       <div
-        class="col-sm-3 mb-5 bg-dark d-flex align-items-center justify-content-center"
-      >
-        <fa-icon
-          [icon]="faBullhorn"
-          class="text-white icon-responsive"
-        ></fa-icon>
-      </div>
-      <div
-        class="col-sm-9 bg-light d-flex align-items-center justify-content-center"
+        class="col-sm-4 bg-light d-flex align-items-center justify-content-center"
       >
         <div class="container my-5">
           <div class="row">
+            <div class="col-12 text-center mb-2">
+              <fa-icon
+                [icon]="faBullhorn"
+                class="text-dark icon-responsive"
+              ></fa-icon>
+            </div>
             <div class="col-12 text-center">
               <h5>Notificaciones y Recordatorios</h5>
             </div>
@@ -171,6 +178,31 @@
               <p class="lead text-center text-secondary">
                 Recibe alertas automáticas para eventos importantes,
                 recordatorios de reservas y actualizaciones de tus canchas.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="col-sm-4 bg-light d-flex align-items-center justify-content-center"
+      >
+        <div class="container my-5">
+          <div class="row">
+            <div class="col-12 text-center mb-2">
+              <fa-icon
+                [icon]="faTrophy"
+                class="text-dark icon-responsive"
+              ></fa-icon>
+            </div>
+            <div class="col-12 text-center">
+              <h5>Organización de Eventos, Torneos y Ligas</h5>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <p class="lead text-center text-secondary">
+                Crea y gestiona eventos, torneos y ligas de pádel con facilidad,
+                manteniendo a tus usuarios informados y comprometidos.
               </p>
             </div>
           </div>
@@ -228,42 +260,53 @@
 </section>
 <section class="bg-dark py-5">
   <div class="container my-5">
-    <div class="row">
-      <div class="col-sm-12">
-        <h2 class="display-4 text-center text-white">
-          Beneficios para el Usuario y el Negocio
-        </h2>
-      </div>
-    </div>
     <div class="row mt-5">
-      <div class="col-sm-12">
-        <h5 class="text-center text-white mb-3">Para el Usuario</h5>
+      <div class="col-sm-6" [ngClass]="{ 'mb-5': isMobile }">
+        <h4 class="text-center text-white mb-4">
+          <strong>Beneficios para el Usuario</strong>
+        </h4>
         <ul class="text-white list-group list-group-flush mb-3">
           <li class="list-group-item bg-dark text-white">
-            Ahorra tiempo al gestionar reservas y acceder a las canchas.
+            <fa-icon [icon]="faArrowRight" class="text-white"></fa-icon> Ahorra
+            tiempo al gestionar reservas y acceder a las canchas.
           </li>
           <li class="list-group-item bg-dark text-white">
+            <fa-icon [icon]="faArrowRight" class="text-white"></fa-icon>
             Disfruta de una experiencia ágil y profesional con beneficios
             exclusivos.
           </li>
+          <li class="list-group-item bg-dark text-white">
+            <fa-icon [icon]="faArrowRight" class="text-white"></fa-icon> Recibe
+            notificaciones automáticas para eventos y recordatorios.
+          </li>
+          <li class="list-group-item bg-dark text-white">
+            <fa-icon [icon]="faArrowRight" class="text-white"></fa-icon> Accede
+            a información relevante sobre torneos, ligas y eventos.
+          </li>
         </ul>
       </div>
-      <div class="col-sm-12 mt-4">
-        <h5 class="text-center text-white mb-3">Para el Negocio</h5>
+      <div class="col-sm-6" [ngClass]="{ 'mt-5': isMobile }">
+        <h4 class="text-center text-white mb-4">
+          <strong>Beneficios para el Negocio</strong>
+        </h4>
         <ul class="text-white list-group list-group-flush">
           <li class="list-group-item bg-dark text-white">
+            <fa-icon [icon]="faArrowRight" class="text-white"></fa-icon>
             Incrementa la ocupación de las canchas y mejora la eficiencia
             operativa.
           </li>
           <li class="list-group-item bg-dark text-white">
-            Aumenta la satisfacción de tus socios al ofrecerles una herramienta
+            <fa-icon [icon]="faArrowRight" class="text-white"></fa-icon> Aumenta
+            la satisfacción de tus socios al ofrecerles una herramienta
             confiable.
           </li>
           <li class="list-group-item bg-dark text-white">
-            Genera ingresos adicionales mediante la administración centralizada
-            de membresías y servicios.
+            <fa-icon [icon]="faArrowRight" class="text-white"></fa-icon> Genera
+            ingresos adicionales mediante la administración centralizada de
+            membresías y servicios.
           </li>
           <li class="list-group-item bg-dark text-white">
+            <fa-icon [icon]="faArrowRight" class="text-white"></fa-icon>
             Fortalece tu identidad con una aplicación que lleva tu sello
             personal.
           </li>

@@ -6,6 +6,7 @@ import { fromLanding } from '../../store/selectors';
 import { Subject, takeUntil } from 'rxjs';
 import { LandingActions } from '../../store/actions';
 import { UserState } from '../../../home/home.model';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-header',
@@ -28,7 +29,11 @@ export class HeaderComponent implements OnInit {
 
   private unsubscribe$ = new Subject<void>();
 
-  constructor(private router: Router, private store: Store) {}
+  constructor(
+    private router: Router,
+    private store: Store,
+    private titleService: Title
+  ) {}
 
   ngOnInit(): void {
     this.selectUser$.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
@@ -42,6 +47,7 @@ export class HeaderComponent implements OnInit {
         this.isLogged = true;
         this.user = user;
         this.titlePage = user.title;
+        this.titleService.setTitle(this.titlePage);
       }
     });
   }

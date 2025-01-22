@@ -103,4 +103,8 @@ export class LoginComponent implements OnInit {
     this.store.dispatch(LandingActions.resetLandingState());
     this.router.navigate(['iniciarsesion']);
   }
+
+  goToHome(): void {
+    this.router.navigate(['']);
+  }
 }

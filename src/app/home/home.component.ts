@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   faCalendar,
@@ -8,6 +8,8 @@ import {
   faBullhorn,
   faHeadset,
   faEnvelope,
+  faTrophy,
+  faArrowRight,
 } from '@fortawesome/free-solid-svg-icons';
 import { Store } from '@ngrx/store';
 import { LandingActions } from '../shared/store/actions';
@@ -31,11 +33,14 @@ export class HomeComponent {
   faBullhorn = faBullhorn;
   faHeadset = faHeadset;
   faEnvelope = faEnvelope;
+  faTrophy = faTrophy;
+  faArrowRight = faArrowRight;
 
   showContactForm: boolean = false;
   contactForm: FormGroup;
 
   isContactSent: boolean = true;
+  isMobile: boolean = false;
 
   private unsubscribe$ = new Subject<void>();
 
@@ -60,6 +65,15 @@ export class HomeComponent {
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any): void {
+    this.checkIfMobile();
+  }
+
+  checkIfMobile(): void {
+    this.isMobile = window.innerWidth <= 576;
   }
 
   onSubmit() {
