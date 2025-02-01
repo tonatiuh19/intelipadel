@@ -15,6 +15,7 @@ import { LoadingMaskModule } from './shared/components/loading-mask/loading-mask
 import { provideHttpClient } from '@angular/common/http';
 import { TermsAndConditionsModule } from './termsandconditions/termsandconditions.module';
 import { PrivacyTermsModule } from './privacyterms/privacyterms.module';
+import { NeedHelpModule } from './need-help/need-help.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -37,6 +38,7 @@ import { PrivacyTermsModule } from './privacyterms/privacyterms.module';
     LoadingMaskModule,
     TermsAndConditionsModule,
     PrivacyTermsModule,
+    NeedHelpModule,
   ],
   providers: [provideHttpClient()],
   bootstrap: [AppComponent],

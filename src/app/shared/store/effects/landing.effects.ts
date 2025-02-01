@@ -721,6 +721,44 @@ export class LandingEffects {
     );
   });
 
+  getActivePlatforms$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getActivePlatformsWeb),
+      switchMap(() => {
+        return this.landingService.getActivePlatformsWeb().pipe(
+          map((response) => {
+            return LandingActions.getActivePlatformsWebSuccess({
+              response,
+            });
+          }),
+          catchError((error) => {
+            return of(LandingActions.getActivePlatformsWebFailure({ error }));
+          })
+        );
+      })
+    );
+  });
+
+  insertSupportHelp$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.insertSupportHelpWeb),
+      switchMap(({ id_platforms, name, email, message }) => {
+        return this.landingService
+          .insertSupportHelp(id_platforms, name, email, message)
+          .pipe(
+            map((response) => {
+              return LandingActions.insertSupportHelpWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.insertSupportHelpWebFailure({ error }));
+            })
+          );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

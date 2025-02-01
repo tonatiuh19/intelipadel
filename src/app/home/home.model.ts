@@ -16,6 +16,8 @@ export interface LandingState {
   isContactSent?: boolean;
   termsAndConditions: TermsAndConditionsModel;
   privacyTerms: PrivacyTermsModel;
+  activePlatforms: ActivePlatformsModel[];
+  isSupportSent?: boolean;
 }
 
 export interface UserState {
@@ -157,4 +159,10 @@ export interface PrivacyTermsModel {
   privacy_terms: string;
   privacy_terms_date: string;
   title: string;
+}
+
+export interface ActivePlatformsModel {
+  id_platform: string;
+  title: string;
+  active: string;
 }

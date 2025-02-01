@@ -751,5 +751,66 @@ export const LandingReducer = createRehydrateReducer(
         isError: true,
       };
     }
-  )
+  ),
+  on(LandingActions.getActivePlatformsWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.getActivePlatformsWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        activePlatforms: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.getActivePlatformsWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
+  ),
+  on(LandingActions.insertSupportHelpWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.insertSupportHelpWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        isSupportSent: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.insertSupportHelpWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isSupportSent: false,
+        isLoading: false,
+        isError: true,
+      };
+    }
+  ),
+  on(LandingActions.resetSupportHelpWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isSupportSent: false,
+    };
+  })
 );

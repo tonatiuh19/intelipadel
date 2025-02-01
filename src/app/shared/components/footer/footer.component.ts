@@ -29,4 +29,8 @@ export class FooterComponent {
       '_blank'
     );
   }
+
+  goToNeedHelp() {
+    this.router.navigate(['necesitoayuda']);
+  }
 }

@@ -5,6 +5,7 @@ import { LoginComponent } from './login/login.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { TermsandconditionsComponent } from './termsandconditions/termsandconditions.component';
 import { PrivacytermsComponent } from './privacyterms/privacyterms.component';
+import { NeedHelpComponent } from './need-help/need-help.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -15,6 +16,9 @@ const routes: Routes = [
 
   { path: 'terminosycondiciones/:id', component: TermsandconditionsComponent },
   { path: 'avisodeprivacidad/:id', component: PrivacytermsComponent },
+
+  { path: 'necesitoayuda', component: NeedHelpComponent },
+  { path: 'necesitoayuda/:id', component: NeedHelpComponent },
 ];
 
 @NgModule({

@@ -69,3 +69,13 @@ export const selectPrivacyTerms = createSelector(
   selectLandingState,
   (state: LandingState) => state.privacyTerms
 );
+
+export const selectActivePlatforms = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.activePlatforms
+);
+
+export const selectIsSupportSent = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.isSupportSent
+);

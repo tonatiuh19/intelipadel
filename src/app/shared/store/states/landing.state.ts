@@ -64,4 +64,5 @@ export const initialLandingState: LandingState = {
     privacy_terms_date: '',
     title: '',
   },
+  activePlatforms: [],
 };

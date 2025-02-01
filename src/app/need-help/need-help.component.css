@@ -1,0 +1,54 @@
+.main-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+section {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  padding: 2rem;
+}
+
+h2 {
+  margin-bottom: 1rem;
+}
+
+.lead {
+  margin-bottom: 2rem;
+}
+
+button {
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .mt-mobile {
+    margin-top: 2rem;
+  }
+}
+
+.custom-accordion-button {
+  background-color: #000000; /* Change background color */
+  color: white; /* Change text color */
+  border: none; /* Remove border */
+}
+
+.custom-accordion-button:focus {
+  box-shadow: none; /* Remove focus outline */
+}
+
+.custom-accordion-button:not(.collapsed) {
+  background-color: #000000; /* Change background color when expanded */
+  color: white; /* Change text color when expanded */
+}
+
+.custom-accordion-body {
+  background-color: #f8f9fa; /* Change background color of the body */
+  color: #343a40; /* Change text color of the body */
+}

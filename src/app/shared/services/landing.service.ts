@@ -34,6 +34,8 @@ export class LandingService {
   public GET_EVENTS_USERS_BY_ID_PLATFORM = `${DOMAIN}/getEventsUsersByIdPlatformWeb.php`;
   public GET_TERMS_AND_CONDITIONS = `${DOMAIN}/getTermsAndConditionsByIdWeb.php`;
   public GET_PRIVACY_TERMS = `${DOMAIN}/getPrivacyTermsByIdWeb.php`;
+  public GET_ACTIVE_PLATFORMS = `${DOMAIN}/getActivePlatformsWeb.php`;
+  public INSERT_SUPPORT_HELP = `${DOMAIN}/insertSupportHelp.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -533,6 +535,34 @@ export class LandingService {
     return this.httpClient
       .post(this.GET_PRIVACY_TERMS, {
         id_platforms,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public getActivePlatformsWeb(): Observable<any> {
+    return this.httpClient.post(this.GET_ACTIVE_PLATFORMS, {}).pipe(
+      map((response) => {
+        return response;
+      })
+    );
+  }
+
+  public insertSupportHelp(
+    id_platforms: number,
+    name: string,
+    email: string,
+    message: string
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.INSERT_SUPPORT_HELP, {
+        id_platforms,
+        name,
+        email,
+        message,
       })
       .pipe(
         map((response) => {

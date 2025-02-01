@@ -482,3 +482,41 @@ export const getPrivacyTermsByIdWebFailure = createAction(
   `${actor} Get Privacy Terms By Id Web Failure`,
   props<{ error: any }>()
 );
+
+export const getActivePlatformsWeb = createAction(
+  `${actor} Get Active Platforms Web`
+);
+
+export const getActivePlatformsWebSuccess = createAction(
+  `${actor} Get Active Platforms Web Success`,
+  props<{ response: any }>()
+);
+
+export const getActivePlatformsWebFailure = createAction(
+  `${actor} Get Active Platforms Web Failure`,
+  props<{ error: any }>()
+);
+
+export const insertSupportHelpWeb = createAction(
+  `${actor} Insert Support Help Web`,
+  props<{
+    id_platforms: number;
+    name: string;
+    email: string;
+    message: string;
+  }>()
+);
+
+export const insertSupportHelpWebSuccess = createAction(
+  `${actor} Insert Support Help Web Success`,
+  props<{ response: any }>()
+);
+
+export const insertSupportHelpWebFailure = createAction(
+  `${actor} Insert Support Help Web Failure`,
+  props<{ error: any }>()
+);
+
+export const resetSupportHelpWeb = createAction(
+  `${actor} Reset Support Help Web`
+);
