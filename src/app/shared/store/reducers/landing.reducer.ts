@@ -428,7 +428,6 @@ export const LandingReducer = createRehydrateReducer(
   on(
     LandingActions.insertContactWebSuccess,
     (state: LandingState, { response }) => {
-      console.log(response);
       return {
         ...state,
         isContactSent: response,
@@ -440,7 +439,6 @@ export const LandingReducer = createRehydrateReducer(
   on(
     LandingActions.insertContactWebFailure,
     (state: LandingState, { error }) => {
-      console.log('error', error);
       return {
         ...state,
         isLoading: false,
@@ -692,6 +690,60 @@ export const LandingReducer = createRehydrateReducer(
   ),
   on(
     LandingActions.getEventsUsersByIdPlatformWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
+  ),
+  on(LandingActions.getTermsAndConditionsByIdWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.getTermsAndConditionsByIdWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        termsAndConditions: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.getTermsAndConditionsByIdWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
+  ),
+  on(LandingActions.getPrivacyTermsByIdWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.getPrivacyTermsByIdWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        privacyTerms: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.getPrivacyTermsByIdWebFailure,
     (state: LandingState, { error }) => {
       return {
         ...state,

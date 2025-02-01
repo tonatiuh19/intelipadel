@@ -37,7 +37,6 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     this.selectUser$.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
-      console.log(user);
       if (user.id_platforms_user === 0 && !this.isNeutral) {
         this.isLogged = false;
         this.router.navigate(['']);

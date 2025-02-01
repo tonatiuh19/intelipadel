@@ -59,3 +59,13 @@ export const selectEventUsers = createSelector(
   selectLandingState,
   (state: LandingState) => state.eventUsers
 );
+
+export const selectTermsAndConditions = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.termsAndConditions
+);
+
+export const selectPrivacyTerms = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.privacyTerms
+);

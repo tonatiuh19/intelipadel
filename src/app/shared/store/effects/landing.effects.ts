@@ -681,6 +681,46 @@ export class LandingEffects {
     );
   });
 
+  getTermsAndConditionsByIdWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getTermsAndConditionsByIdWeb),
+      switchMap(({ id_platforms }) => {
+        return this.landingService
+          .getTermsAndConditionsByIdWeb(id_platforms)
+          .pipe(
+            map((response) => {
+              return LandingActions.getTermsAndConditionsByIdWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(
+                LandingActions.getTermsAndConditionsByIdWebFailure({ error })
+              );
+            })
+          );
+      })
+    );
+  });
+
+  getPrivacyTermsByIdWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getPrivacyTermsByIdWeb),
+      switchMap(({ id_platforms }) => {
+        return this.landingService.getPrivacyTermsByIdWeb(id_platforms).pipe(
+          map((response) => {
+            return LandingActions.getPrivacyTermsByIdWebSuccess({
+              response,
+            });
+          }),
+          catchError((error) => {
+            return of(LandingActions.getPrivacyTermsByIdWebFailure({ error }));
+          })
+        );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,

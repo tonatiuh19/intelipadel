@@ -452,3 +452,33 @@ export const getEventsUsersByIdPlatformWebFailure = createAction(
   `${actor} Get Events Users By Id Platform Web Failure`,
   props<{ error: any }>()
 );
+
+export const getTermsAndConditionsByIdWeb = createAction(
+  `${actor} Get Terms And Conditions By Id Web`,
+  props<{ id_platforms: number }>()
+);
+
+export const getTermsAndConditionsByIdWebSuccess = createAction(
+  `${actor} Get Terms And Conditions By Id Web Success`,
+  props<{ response: any }>()
+);
+
+export const getTermsAndConditionsByIdWebFailure = createAction(
+  `${actor} Get Terms And Conditions By Id Web Failure`,
+  props<{ error: any }>()
+);
+
+export const getPrivacyTermsByIdWeb = createAction(
+  `${actor} Get Privacy Terms By Id Web`,
+  props<{ id_platforms: number }>()
+);
+
+export const getPrivacyTermsByIdWebSuccess = createAction(
+  `${actor} Get Privacy Terms By Id Web Success`,
+  props<{ response: any }>()
+);
+
+export const getPrivacyTermsByIdWebFailure = createAction(
+  `${actor} Get Privacy Terms By Id Web Failure`,
+  props<{ error: any }>()
+);

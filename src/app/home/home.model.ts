@@ -14,6 +14,8 @@ export interface LandingState {
   isLoading?: boolean;
   isError?: boolean;
   isContactSent?: boolean;
+  termsAndConditions: TermsAndConditionsModel;
+  privacyTerms: PrivacyTermsModel;
 }
 
 export interface UserState {
@@ -142,5 +144,17 @@ export interface EventUsers {
   start_date_time: string;
   end_date_time: string;
   id_platform: number;
+  title: string;
+}
+
+export interface TermsAndConditionsModel {
+  terms_and_conditions: string;
+  terms_and_conditions_date: string;
+  title: string;
+}
+
+export interface PrivacyTermsModel {
+  privacy_terms: string;
+  privacy_terms_date: string;
   title: string;
 }

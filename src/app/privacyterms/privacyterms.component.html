@@ -1,14 +1,18 @@
 <app-header [isMain]="false" [isNeutral]="true"></app-header>
 <section
-  class="d-flex justify-content-center align-items-center main-container bg-white"
+  class="d-flex justify-content-center align-items-center main-container bg-white my-5"
 >
-  <div class="container mb-5">
+  <div class="container my-5">
     <div class="row">
       <div class="col-sm-12">
-        <h1>Aviso de privacidad De Plataforma “INTELIPADEL”</h1>
+        <h1>
+          Aviso de privacidad De
+          <span *ngIf="!isClubPrivacy">Plataforma “INTELIPADEL”</span
+          ><span *ngIf="isClubPrivacy">{{ privacyTerms.title }}</span>
+        </h1>
 
         <hr />
-        <div class="col-sm-12">
+        <div class="col-sm-12" *ngIf="!isClubPrivacy">
           <p style="text-align: right">
             <span style="font-weight: 400"
               >&Uacute;ltima actualizaci&oacute;n: 22 de Septiembre de
@@ -167,6 +171,16 @@
               dihola&#64;INTELIPADEL.com</span
             >
           </p>
+        </div>
+        <div class="col-sm-12" *ngIf="isClubPrivacy">
+          <p style="text-align: right">
+            <span style="font-weight: 400"
+              >&Uacute;ltima actualizaci&oacute;n:
+              {{ privacyTerms.privacy_terms_date }}</span
+            >
+          </p>
+          <p>&nbsp;</p>
+          <div [innerHTML]="privacyTerms.privacy_terms"></div>
         </div>
       </div>
     </div>

@@ -46,7 +46,6 @@ export class UsersEventTableComponent implements OnInit {
     this.selectEventUsers$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((eventUsers) => {
-        console.log(eventUsers);
         this.eventUsers = eventUsers;
         this.usersUpdated.emit(this.eventUsers.length > 0);
       });
@@ -62,7 +61,5 @@ export class UsersEventTableComponent implements OnInit {
     this.displayConfirmation = true;
   }
 
-  confirmCheckIn(): void {
-    console.log('Check in confirmed', this.selectedUser);
-  }
+  confirmCheckIn(): void {}
 }

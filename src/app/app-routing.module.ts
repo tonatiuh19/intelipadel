@@ -12,6 +12,9 @@ const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent },
   { path: 'terminosycondiciones', component: TermsandconditionsComponent },
   { path: 'avisodeprivacidad', component: PrivacytermsComponent },
+
+  { path: 'terminosycondiciones/:id', component: TermsandconditionsComponent },
+  { path: 'avisodeprivacidad/:id', component: PrivacytermsComponent },
 ];
 
 @NgModule({

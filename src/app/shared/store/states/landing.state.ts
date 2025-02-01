@@ -54,4 +54,14 @@ export const initialLandingState: LandingState = {
     specialPrices: [],
   },
   eventUsers: [],
+  termsAndConditions: {
+    terms_and_conditions: '',
+    terms_and_conditions_date: '',
+    title: '',
+  },
+  privacyTerms: {
+    privacy_terms: '',
+    privacy_terms_date: '',
+    title: '',
+  },
 };

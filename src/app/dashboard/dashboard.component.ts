@@ -146,7 +146,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((markedDates) => {
         this.markedDates = markedDates;
-        console.log(this.markedDates);
         this.updateMarkedDates();
       });
   }
@@ -261,7 +260,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   handleDateClick(arg: any) {
-    console.log(arg);
     this.selectedDateEvent = arg.event._def.extendedProps;
     this.reservationValidate = this.selectedDateEvent.validated === 1;
 
@@ -344,7 +342,5 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  editEvent(): void {
-    console.log('Edit event');
-  }
+  editEvent(): void {}
 }

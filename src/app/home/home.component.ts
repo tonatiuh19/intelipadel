@@ -57,7 +57,6 @@ export class HomeComponent {
     this.selectIsContactSent$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((isContactSent) => {
-        console.log('isContactSent', isContactSent);
         this.isContactSent = isContactSent ?? false;
       });
   }
@@ -78,7 +77,6 @@ export class HomeComponent {
 
   onSubmit() {
     if (this.contactForm.valid) {
-      console.log('Formulario de Contacto Enviado', this.contactForm.value);
       this.store.dispatch(
         LandingActions.insertContactWeb({
           id_platforms: 0,

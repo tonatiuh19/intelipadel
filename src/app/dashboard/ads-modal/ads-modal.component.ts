@@ -87,7 +87,6 @@ export class AdsModalComponent implements OnInit, OnDestroy {
     if (this.adForm.valid) {
       if (this.editingAd) {
         // Update the existing ad
-        console.log('Updating ad:', this.adForm.value);
         this.store.dispatch(
           LandingActions.updateAdWeb({
             id_platforms_ad: this.editingAd.id_platforms_ad,
@@ -98,7 +97,6 @@ export class AdsModalComponent implements OnInit, OnDestroy {
         );
       } else {
         // Add a new ad
-        console.log('Adding ad:', this.adForm.value);
         this.store.dispatch(
           LandingActions.insertAdWeb({
             id_platform: this.platformsId,
@@ -129,7 +127,6 @@ export class AdsModalComponent implements OnInit, OnDestroy {
 
   deleteAd() {
     if (this.deletingAd) {
-      console.log('Deleting ad:', this.deletingAd);
       this.store.dispatch(
         LandingActions.deleteAdWeb({
           id_platforms_ad: this.deletingAd.id_platforms_ad,

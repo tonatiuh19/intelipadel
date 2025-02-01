@@ -104,7 +104,6 @@ export class PricesModalComponent implements OnInit, OnChanges {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((prices) => {
         this.prices = prices;
-        console.log('prices', prices);
         this.isSpecialPrice = (this.prices?.specialPrices?.length ?? 0) >= 1;
       });
   }

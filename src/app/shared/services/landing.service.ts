@@ -32,6 +32,8 @@ export class LandingService {
   public INSERT_FIXED_PRICE = `${DOMAIN}/InsertFixedPriceWeb.php`;
   public INSERT_EVENT_DISABLED_DATE = `${DOMAIN}/insertEventDisabledSlotsWeb.php`;
   public GET_EVENTS_USERS_BY_ID_PLATFORM = `${DOMAIN}/getEventsUsersByIdPlatformWeb.php`;
+  public GET_TERMS_AND_CONDITIONS = `${DOMAIN}/getTermsAndConditionsByIdWeb.php`;
+  public GET_PRIVACY_TERMS = `${DOMAIN}/getPrivacyTermsByIdWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -507,6 +509,30 @@ export class LandingService {
       .post(this.GET_EVENTS_USERS_BY_ID_PLATFORM, {
         id_platform,
         id_platforms_disabled_date,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public getTermsAndConditionsByIdWeb(id_platforms: number): Observable<any> {
+    return this.httpClient
+      .post(this.GET_TERMS_AND_CONDITIONS, {
+        id_platforms,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public getPrivacyTermsByIdWeb(id_platforms: number): Observable<any> {
+    return this.httpClient
+      .post(this.GET_PRIVACY_TERMS, {
+        id_platforms,
       })
       .pipe(
         map((response) => {
