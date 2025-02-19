@@ -812,5 +812,62 @@ export const LandingReducer = createRehydrateReducer(
       ...state,
       isSupportSent: false,
     };
+  }),
+  on(LandingActions.getUserFullInfoByIdWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.getUserFullInfoByIdWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        userFullInfo: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(
+    LandingActions.getUserFullInfoByIdWebFailure,
+    (state: LandingState, { error }) => {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    }
+  ),
+  on(LandingActions.deactivateUserWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.deactivateUserWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        isAccountDeactivated: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(LandingActions.deactivateUserWebFailure, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: false,
+      isError: true,
+    };
+  }),
+  on(LandingActions.resetDeactivateUserWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isAccountDeactivated: false,
+    };
   })
 );

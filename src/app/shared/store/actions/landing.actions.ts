@@ -520,3 +520,37 @@ export const insertSupportHelpWebFailure = createAction(
 export const resetSupportHelpWeb = createAction(
   `${actor} Reset Support Help Web`
 );
+
+export const getUserFullInfoByIdWeb = createAction(
+  `${actor} Get User Full Info By Id Web`,
+  props<{ id_platforms_user: number }>()
+);
+
+export const getUserFullInfoByIdWebSuccess = createAction(
+  `${actor} Get User Full Info By Id Web Success`,
+  props<{ response: any }>()
+);
+
+export const getUserFullInfoByIdWebFailure = createAction(
+  `${actor} Get User Full Info By Id Web Failure`,
+  props<{ error: any }>()
+);
+
+export const deactivateUserWeb = createAction(
+  `${actor} Deactivate User Web`,
+  props<{ id_platforms_user: number; motivation: number }>()
+);
+
+export const deactivateUserWebSuccess = createAction(
+  `${actor} Deactivate User Web Success`,
+  props<{ response: any }>()
+);
+
+export const deactivateUserWebFailure = createAction(
+  `${actor} Deactivate User Web Failure`,
+  props<{ error: any }>()
+);
+
+export const resetDeactivateUserWeb = createAction(
+  `${actor} Reset Deactivate User Web`
+);

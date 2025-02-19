@@ -79,3 +79,13 @@ export const selectIsSupportSent = createSelector(
   selectLandingState,
   (state: LandingState) => state.isSupportSent
 );
+
+export const selectUserFullInfo = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.userFullInfo
+);
+
+export const selectIsAccountDeactivated = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.isAccountDeactivated
+);

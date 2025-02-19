@@ -17,7 +17,9 @@ export interface LandingState {
   termsAndConditions: TermsAndConditionsModel;
   privacyTerms: PrivacyTermsModel;
   activePlatforms: ActivePlatformsModel[];
+  userFullInfo?: FullUserInfoModel;
   isSupportSent?: boolean;
+  isAccountDeactivated?: boolean;
 }
 
 export interface UserState {
@@ -165,4 +167,17 @@ export interface ActivePlatformsModel {
   id_platform: string;
   title: string;
   active: string;
+}
+
+export interface FullUserInfoModel {
+  id_platforms_user: number;
+  id_platforms: number;
+  full_name: string;
+  age: number;
+  date_of_birth: string;
+  email: string;
+  stripe_id: string;
+  type: number;
+  date_created: string;
+  title: string;
 }

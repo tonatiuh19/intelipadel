@@ -36,6 +36,8 @@ export class LandingService {
   public GET_PRIVACY_TERMS = `${DOMAIN}/getPrivacyTermsByIdWeb.php`;
   public GET_ACTIVE_PLATFORMS = `${DOMAIN}/getActivePlatformsWeb.php`;
   public INSERT_SUPPORT_HELP = `${DOMAIN}/insertSupportHelp.php`;
+  public GET_FULL_USER_INFO_BY_ID = `${DOMAIN}/getFullUserInfoByIdWeb.php`;
+  public DEACTIVATE_ACCOUNT = `${DOMAIN}/deactivateUserWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -563,6 +565,34 @@ export class LandingService {
         name,
         email,
         message,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public getFullUserInfoByIdWeb(id_platforms_user: number): Observable<any> {
+    return this.httpClient
+      .post(this.GET_FULL_USER_INFO_BY_ID, {
+        id_platforms_user,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public deactivateUserWeb(
+    id_platforms_user: number,
+    motivation: number
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.DEACTIVATE_ACCOUNT, {
+        id_platforms_user,
+        motivation,
       })
       .pipe(
         map((response) => {

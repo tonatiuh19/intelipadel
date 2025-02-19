@@ -6,6 +6,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { TermsandconditionsComponent } from './termsandconditions/termsandconditions.component';
 import { PrivacytermsComponent } from './privacyterms/privacyterms.component';
 import { NeedHelpComponent } from './need-help/need-help.component';
+import { DeactivateAccountComponent } from './deactivate-account/deactivate-account.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -19,6 +20,9 @@ const routes: Routes = [
 
   { path: 'necesitoayuda', component: NeedHelpComponent },
   { path: 'necesitoayuda/:id', component: NeedHelpComponent },
+
+  { path: 'desactivarcuenta', component: DeactivateAccountComponent },
+  { path: 'desactivarcuenta/:id', component: DeactivateAccountComponent },
 ];
 
 @NgModule({

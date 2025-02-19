@@ -4,12 +4,13 @@ import {
   faCalendar,
   faKey,
   faUsers,
-  faDesktop,
+  faIdCard,
   faBullhorn,
   faHeadset,
   faEnvelope,
   faTrophy,
   faArrowRight,
+  faUserGraduate,
 } from '@fortawesome/free-solid-svg-icons';
 import { Store } from '@ngrx/store';
 import { LandingActions } from '../shared/store/actions';
@@ -29,12 +30,13 @@ export class HomeComponent {
   faCalendar = faCalendar;
   faKey = faKey;
   faUsers = faUsers;
-  faDesktop = faDesktop;
   faBullhorn = faBullhorn;
   faHeadset = faHeadset;
   faEnvelope = faEnvelope;
   faTrophy = faTrophy;
   faArrowRight = faArrowRight;
+  faUserGraduate = faUserGraduate;
+  faIdCard = faIdCard;
 
   showContactForm: boolean = false;
   contactForm: FormGroup;

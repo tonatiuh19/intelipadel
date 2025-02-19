@@ -16,6 +16,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { TermsAndConditionsModule } from './termsandconditions/termsandconditions.module';
 import { PrivacyTermsModule } from './privacyterms/privacyterms.module';
 import { NeedHelpModule } from './need-help/need-help.module';
+import { DeactivateAccountModule } from './deactivate-account/deactivate-account.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -39,6 +40,7 @@ import { NeedHelpModule } from './need-help/need-help.module';
     TermsAndConditionsModule,
     PrivacyTermsModule,
     NeedHelpModule,
+    DeactivateAccountModule,
   ],
   providers: [provideHttpClient()],
   bootstrap: [AppComponent],

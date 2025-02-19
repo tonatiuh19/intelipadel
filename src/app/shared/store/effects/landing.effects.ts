@@ -759,6 +759,48 @@ export class LandingEffects {
     );
   });
 
+  getUserFullInfoByIdWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getUserFullInfoByIdWeb),
+      switchMap(({ id_platforms_user }) => {
+        return this.landingService
+          .getFullUserInfoByIdWeb(id_platforms_user)
+          .pipe(
+            map((response) => {
+              return LandingActions.getUserFullInfoByIdWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(
+                LandingActions.getUserFullInfoByIdWebFailure({ error })
+              );
+            })
+          );
+      })
+    );
+  });
+
+  deactivateUserWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.deactivateUserWeb),
+      switchMap(({ id_platforms_user, motivation }) => {
+        return this.landingService
+          .deactivateUserWeb(id_platforms_user, motivation)
+          .pipe(
+            map((response) => {
+              return LandingActions.deactivateUserWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.deactivateUserWebFailure({ error }));
+            })
+          );
+      })
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private store: Store,
