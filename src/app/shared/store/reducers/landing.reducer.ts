@@ -869,5 +869,77 @@ export const LandingReducer = createRehydrateReducer(
       ...state,
       isAccountDeactivated: false,
     };
+  }),
+  on(LandingActions.getProductsWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.getProductsWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        products: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(LandingActions.getProductsWebFailure, (state: LandingState, { error }) => {
+    return {
+      ...state,
+      isLoading: false,
+      isError: true,
+    };
+  }),
+  on(LandingActions.insertProductWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.insertProductWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        products: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(LandingActions.insertProductWebFailure, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: false,
+      isError: true,
+    };
+  }),
+  on(LandingActions.updateProductWeb, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }),
+  on(
+    LandingActions.updateProductWebSuccess,
+    (state: LandingState, { response }) => {
+      return {
+        ...state,
+        products: response,
+        isLoading: false,
+        isError: false,
+      };
+    }
+  ),
+  on(LandingActions.updateProductWebFailure, (state: LandingState) => {
+    return {
+      ...state,
+      isLoading: false,
+      isError: true,
+    };
   })
 );

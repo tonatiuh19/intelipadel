@@ -9,7 +9,7 @@
       <div class="row text-center mb-3">
         <div class="col-sm-12">
           <div class="mark-days-panel_title">
-            <span class="mark-days-panel_title-bold">Agendar Evento</span>
+            <span class="mark-days-panel_title-bold">Generar Clase</span>
             <button
               type="button"
               class="btn-close float-end"
@@ -71,7 +71,64 @@
                   curso
                 </h5>
               </div>
-              <div *ngIf="!isFieldDisabled" class="col-sm-12 mb-1">
+              <div
+                *ngIf="selectedField && !isFieldDisabled"
+                class="col-sm-12 mb-1"
+              >
+                <div class="card">
+                  <div class="card-body">
+                    <h5>Selecciona el tipo de horario:</h5>
+                    <p-dropdown
+                      [options]="options"
+                      formControlName="selectedOption"
+                      [showClear]="true"
+                      optionLabel="name"
+                      placeholder="Ver opciones"
+                      class="w-full"
+                    ></p-dropdown>
+                    <div
+                      *ngIf="
+                        markDaysForm.get('selectedOption')?.invalid &&
+                        markDaysForm.get('selectedOption')?.touched
+                      "
+                      class="invalid-feedback"
+                    >
+                      Selecciona una opción
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                *ngIf="selectedField && !isFieldDisabled && selectedIntervals"
+                class="col-sm-12 mb-1"
+              >
+                <div class="card">
+                  <div class="card-body">
+                    <h5>Selecciona el tipo de intervalo:</h5>
+                    <p-dropdown
+                      [options]="optionsIntervals"
+                      formControlName="selectedInterval"
+                      [showClear]="true"
+                      optionLabel="name"
+                      placeholder="Ver opciones"
+                      class="w-full"
+                    ></p-dropdown>
+                    <div
+                      *ngIf="
+                        markDaysForm.get('selectedInterval')?.invalid &&
+                        markDaysForm.get('selectedInterval')?.touched
+                      "
+                      class="invalid-feedback"
+                    >
+                      Selecciona una opción
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                *ngIf="selectedField && !isFieldDisabled"
+                class="col-sm-12 mb-1"
+              >
                 <div class="card">
                   <div class="card-body">
                     <h5>Selecciona el horario:</h5>
@@ -150,19 +207,19 @@
                         "
                         class="invalid-feedback"
                       >
-                        Necisitas incluir un precio
+                        Necesitas incluir un precio
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="col-sm-12">
+              <div *ngIf="selectedField && !isFieldDisabled" class="col-sm-12">
                 <button
                   type="submit"
                   class="btn btn-dark w-100"
                   [disabled]="!markDaysForm.valid || !markDaysForm.dirty"
                 >
-                  <fa-icon [icon]="faTrophy"></fa-icon> Agendar Evento
+                  <fa-icon [icon]="faGraduationCap"></fa-icon> Generar Clase
                 </button>
               </div>
             </div>

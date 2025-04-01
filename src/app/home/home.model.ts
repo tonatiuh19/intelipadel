@@ -11,6 +11,7 @@ export interface LandingState {
   disabledSlots: string[];
   prices: PricesState;
   eventUsers: EventUsers[];
+  products: any[];
   isLoading?: boolean;
   isError?: boolean;
   isContactSent?: boolean;
@@ -54,6 +55,7 @@ export interface ReservationsModel {
   platforms_date_time_start: string;
   platforms_date_time_end: string;
   title: string;
+  event_title: string;
   active: number;
   validated: number;
   full_name: string;

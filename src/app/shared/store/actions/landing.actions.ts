@@ -425,6 +425,8 @@ export const insertEventDisabledSlotsWeb = createAction(
     price: number;
     platforms_fields_price_start_time: string;
     platforms_fields_price_end_time: string;
+    title: string;
+    eventType: number;
   }>()
 );
 
@@ -553,4 +555,63 @@ export const deactivateUserWebFailure = createAction(
 
 export const resetDeactivateUserWeb = createAction(
   `${actor} Reset Deactivate User Web`
+);
+
+export const getProductsWeb = createAction(
+  `${actor} Get Products Web`,
+  props<{ id_platform: number; productType: number }>()
+);
+
+export const getProductsWebSuccess = createAction(
+  `${actor} Get Products Web Success`,
+  props<{ response: any }>()
+);
+
+export const getProductsWebFailure = createAction(
+  `${actor} Get Products Web Failure`,
+  props<{ error: any }>()
+);
+
+export const insertProductWeb = createAction(
+  `${actor} Insert Product Web`,
+  props<{
+    name: string;
+    description: string;
+    price: number;
+    id_platforms: number;
+    productType: number;
+    active: boolean;
+  }>()
+);
+
+export const insertProductWebSuccess = createAction(
+  `${actor} Insert Product Web Success`,
+  props<{ response: any }>()
+);
+
+export const insertProductWebFailure = createAction(
+  `${actor} Insert Product Web Failure`,
+  props<{ error: any }>()
+);
+
+export const updateProductWeb = createAction(
+  `${actor} Update Product Web`,
+  props<{
+    id_platforms_product: number;
+    name: string;
+    description: string;
+    price: number;
+    productType: number;
+    active: boolean;
+  }>()
+);
+
+export const updateProductWebSuccess = createAction(
+  `${actor} Update Product Web Success`,
+  props<{ response: any }>()
+);
+
+export const updateProductWebFailure = createAction(
+  `${actor} Update Product Web Failure`,
+  props<{ error: any }>()
 );

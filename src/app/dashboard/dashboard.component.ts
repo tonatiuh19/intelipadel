@@ -16,6 +16,8 @@ import {
   faTrophy,
   faDollarSign,
   faPen,
+  faHandHoldingDollar,
+  faGraduationCap,
 } from '@fortawesome/free-solid-svg-icons';
 import { CalendarOptions } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -83,6 +85,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   faTrophy = faTrophy;
   faDollarSign = faDollarSign;
   faPen = faPen;
+  faHandHoldingDollar = faHandHoldingDollar;
+  faGraduationCap = faGraduationCap;
 
   user: UserState | undefined;
 
@@ -107,6 +111,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   displayAnnouncementsModal: boolean = false;
   displayMarkedDayModal: boolean = false; // Control the visibility of the Marked Day modal
   displayDeleteConfirmModal: boolean = false;
+  displayClassesModal: boolean = false;
+
+  displayBalancesModal: boolean = false;
 
   start_date: string = '';
   end_date: string = '';
@@ -178,6 +185,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
       case 'deleteConfirm':
         this.displayDeleteConfirmModal = false;
         break;
+      case 'balances':
+        this.displayBalancesModal = false;
+        break;
+      case 'classes':
+        this.displayClassesModal = false;
+        break;
     }
     this.cdr.detectChanges();
   }
@@ -218,7 +231,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const markedScheduledEvents = this.markedDates
       .filter((markedDate) => markedDate.active === 3)
       .map((markedDate) => ({
-        title: `${markedDate.title}: Evento` || 'Marked Day',
+        title: `${markedDate.title}: ${markedDate.event_title}` || 'Marked Day',
         start: markedDate.start_date_time,
         end: markedDate.end_date_time,
         color: markedDate.dotColor,
@@ -229,7 +242,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
           start: markedDate.start_date_time,
           end: markedDate.end_date_time,
           title: markedDate.title,
+          event_title: markedDate.event_title,
           active: 3,
+        },
+      }));
+
+    const markedScheduledClasses = this.markedDates
+      .filter((markedDate) => markedDate.active === 4)
+      .map((markedDate) => ({
+        title: `${markedDate.title}: ${markedDate.event_title}` || 'Marked Day',
+        start: markedDate.start_date_time,
+        end: markedDate.end_date_time,
+        color: markedDate.dotColor,
+        textColor: 'orange',
+        extendedProps: {
+          markedScheduled: true,
+          id_platforms_date_time_slot: markedDate.id_platforms_disabled_date,
+          start: markedDate.start_date_time,
+          end: markedDate.end_date_time,
+          title: markedDate.title,
+          event_title: markedDate.event_title,
+          active: 4,
         },
       }));
 
@@ -240,6 +273,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       ...markedEvents,
       ...markedScheduledEvents,
       ...markedScheduledRange,
+      //...markedScheduledClasses,
     ];
     this.cdr.detectChanges(); // Trigger change detection
   }

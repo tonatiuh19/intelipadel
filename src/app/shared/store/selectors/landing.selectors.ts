@@ -89,3 +89,8 @@ export const selectIsAccountDeactivated = createSelector(
   selectLandingState,
   (state: LandingState) => state.isAccountDeactivated
 );
+
+export const selectProducts = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.products
+);

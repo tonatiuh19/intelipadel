@@ -1,14 +1,21 @@
 import {
-  Component,
-  Input,
-  OnInit,
-  OnDestroy,
-  EventEmitter,
-  Output,
   ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { faTrophy } from '@fortawesome/free-solid-svg-icons';
+import {
+  faPlusCircle,
+  faTrashAlt,
+  faPencilAlt,
+  faTrophy,
+  faGraduationCap,
+} from '@fortawesome/free-solid-svg-icons';
 import { Store } from '@ngrx/store';
 import { fromLanding } from '../../shared/store/selectors';
 import { Subject, takeUntil } from 'rxjs';
@@ -17,11 +24,11 @@ import { UserState } from '../../home/home.model';
 import { formatDateString } from '../../shared/utils/help-functions';
 
 @Component({
-  selector: 'app-schedule-event-modal',
-  templateUrl: './schedule-event-modal.component.html',
-  styleUrls: ['./schedule-event-modal.component.css'],
+  selector: 'app-classes-modal',
+  templateUrl: './classes-modal.component.html',
+  styleUrls: ['./classes-modal.component.css'],
 })
-export class ScheduleEventModalComponent implements OnInit, OnDestroy {
+export class ClassesModalComponent implements OnInit, OnDestroy {
   @Input() display: boolean = false;
 
   @Input() start_date: string = '';
@@ -33,6 +40,8 @@ export class ScheduleEventModalComponent implements OnInit, OnDestroy {
   selectDate: string | null = null;
   selectedDate = '';
   selectedField: any | undefined;
+
+  selectedIntervals: boolean = false;
 
   platformsId: number = 0;
 
@@ -47,14 +56,20 @@ export class ScheduleEventModalComponent implements OnInit, OnDestroy {
 
   markDaysForm!: FormGroup;
 
-  faTrophy = faTrophy;
+  faGraduationCap = faGraduationCap;
 
   minDate!: Date;
   maxDate!: Date;
 
   options = [
-    { name: 'Todo el dia', value: 1 },
+    { name: 'Intervalo de horas', value: 1 },
     { name: 'Horario Especifico', value: 2 },
+  ];
+
+  optionsIntervals = [
+    { name: 'Media hora', value: 0 },
+    { name: '1 hora', value: 1 },
+    { name: '1 hora y media', value: 2 },
   ];
 
   user: UserState | undefined;
@@ -81,13 +96,15 @@ export class ScheduleEventModalComponent implements OnInit, OnDestroy {
 
     this.markDaysForm = this.fb.group({
       selectedField: [null, Validators.required],
+      selectedOption: [null, Validators.required],
+      selectedInterval: [null, Validators.required],
       startTime: [null, Validators.required],
       endTime: [null, Validators.required],
       price: [null, Validators.required],
       title: [null, Validators.required],
     });
 
-    this.generateTimeSlots();
+    this.generateTimeSlots(0);
   }
 
   ngOnInit() {
@@ -96,6 +113,33 @@ export class ScheduleEventModalComponent implements OnInit, OnDestroy {
       ?.valueChanges.pipe(takeUntil(this.unsubscribe$))
       .subscribe((value) => {
         this.onSelectedFieldChange(value);
+      });
+
+    this.markDaysForm
+      .get('selectedOption')
+      ?.valueChanges.pipe(takeUntil(this.unsubscribe$))
+      .subscribe((value) => {
+        if (value && value.value !== 1) {
+          this.markDaysForm
+            .get('selectedInterval')
+            ?.removeValidators([Validators.required]);
+          this.selectedIntervals = false;
+        } else if (value) {
+          this.markDaysForm
+            .get('selectedInterval')
+            ?.addValidators([Validators.required]);
+          this.selectedIntervals = true;
+        }
+        this.markDaysForm.get('selectedInterval')?.updateValueAndValidity(); // Update validation state
+      });
+
+    this.markDaysForm
+      .get('selectedInterval')
+      ?.valueChanges.pipe(takeUntil(this.unsubscribe$))
+      .subscribe((value) => {
+        if (value) {
+          this.generateTimeSlots(value.value); // Pass the selected interval value
+        }
       });
 
     this.markDaysForm
@@ -134,18 +178,26 @@ export class ScheduleEventModalComponent implements OnInit, OnDestroy {
     this.unsubscribe$.complete();
   }
 
-  generateTimeSlots() {
+  generateTimeSlots(interval: number): void {
+    this.timeSlots = []; // Clear existing time slots
     const startTime = new Date();
-    startTime.setHours(8, 0, 0, 0);
+    startTime.setHours(8, 0, 0, 0); // Start at 8:00 AM
     const endTime = new Date();
-    endTime.setHours(23, 0, 0, 0);
+    endTime.setHours(23, 0, 0, 0); // End at 11:00 PM
+
+    let incrementMinutes = 30; // Default to half-hour intervals
+    if (interval === 1) {
+      incrementMinutes = 60; // 1-hour intervals
+    } else if (interval === 2) {
+      incrementMinutes = 90; // 1.5-hour intervals
+    }
 
     while (startTime <= endTime) {
       this.timeSlots.push({
         label: startTime.toTimeString().substring(0, 5),
         value: startTime.toTimeString().substring(0, 5),
       });
-      startTime.setMinutes(startTime.getMinutes() + 90);
+      startTime.setMinutes(startTime.getMinutes() + incrementMinutes);
     }
   }
 
@@ -208,6 +260,25 @@ export class ScheduleEventModalComponent implements OnInit, OnDestroy {
       const startTime = `${date} ${this.markDaysForm.value.startTime.value}:00`;
       const endTime = `${date} ${this.markDaysForm.value.endTime.value}:00`;
 
+      console.log('startTime', {
+        id_platforms_field: this.markDaysForm.value.selectedField.code,
+        id_platforms: this.platformsId,
+        start_date_time: this.markDaysForm.value.startTime
+          ? this.selectedDate + ' ' + this.markDaysForm.value.startTime.value
+          : this.selectedDate + ' ' + '00:00',
+        end_date_time: this.markDaysForm.value.endTime
+          ? this.selectedDate + ' ' + this.markDaysForm.value.endTime.value
+          : this.selectedDate + ' ' + '23:59',
+        active: 4,
+        start_date: this.start_date,
+        end_date: this.end_date,
+        price: this.markDaysForm.value.price,
+        title: this.markDaysForm.value.title,
+        type: this.markDaysForm.value.selectedOption.value,
+        platforms_fields_price_start_time: startTime,
+        platforms_fields_price_end_time: endTime,
+      });
+
       this.store.dispatch(
         LandingActions.insertEventDisabledSlotsWeb({
           id_platforms_field: this.markDaysForm.value.selectedField.code,
@@ -218,14 +289,14 @@ export class ScheduleEventModalComponent implements OnInit, OnDestroy {
           end_date_time: this.markDaysForm.value.endTime
             ? this.selectedDate + ' ' + this.markDaysForm.value.endTime.value
             : this.selectedDate + ' ' + '23:59',
-          active: 3,
+          active: 4,
           start_date: this.start_date,
           end_date: this.end_date,
           price: this.markDaysForm.value.price,
           platforms_fields_price_start_time: startTime,
           platforms_fields_price_end_time: endTime,
           title: this.markDaysForm.value.title,
-          eventType: 0,
+          eventType: this.markDaysForm.value.selectedOption.value,
         })
       );
       this.closeDialog();

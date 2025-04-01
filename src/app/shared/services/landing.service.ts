@@ -38,6 +38,9 @@ export class LandingService {
   public INSERT_SUPPORT_HELP = `${DOMAIN}/insertSupportHelp.php`;
   public GET_FULL_USER_INFO_BY_ID = `${DOMAIN}/getFullUserInfoByIdWeb.php`;
   public DEACTIVATE_ACCOUNT = `${DOMAIN}/deactivateUserWeb.php`;
+  public GET_PRODUCTS_WEB = `${DOMAIN}/getProductsWeb.php`;
+  public INSERT_PRODUCT_WEB = `${DOMAIN}/insertProductWeb.php`;
+  public UPDATE_PRODUCT_WEB = `${DOMAIN}/updateProductWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -483,7 +486,9 @@ export class LandingService {
     end_date: string,
     price: number,
     platforms_fields_price_start_time: string,
-    platforms_fields_price_end_time: string
+    platforms_fields_price_end_time: string,
+    title: string,
+    type: number
   ): Observable<any> {
     return this.httpClient
       .post(this.INSERT_EVENT_DISABLED_DATE, {
@@ -497,6 +502,8 @@ export class LandingService {
         price,
         platforms_fields_price_start_time,
         platforms_fields_price_end_time,
+        title,
+        type,
       })
       .pipe(
         map((response) => {
@@ -593,6 +600,70 @@ export class LandingService {
       .post(this.DEACTIVATE_ACCOUNT, {
         id_platforms_user,
         motivation,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public getProductsWeb(
+    id_platform: number,
+    productType: number
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.GET_PRODUCTS_WEB, {
+        id_platform,
+        productType,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public insertProductWeb(
+    id_platforms: number,
+    productType: number,
+    name: string,
+    description: string,
+    price: number,
+    active: boolean
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.INSERT_PRODUCT_WEB, {
+        id_platforms,
+        productType,
+        name,
+        description,
+        price,
+        active,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public updateProductWeb(
+    id_platforms_product: number,
+    name: string,
+    description: string,
+    price: number,
+    productType: number,
+    active: boolean
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.UPDATE_PRODUCT_WEB, {
+        id_platforms_product,
+        name,
+        description,
+        price,
+        productType,
+        active,
       })
       .pipe(
         map((response) => {

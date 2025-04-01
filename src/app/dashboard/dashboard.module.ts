@@ -15,6 +15,8 @@ import { AdsModalModule } from './ads-modal/ads-modal.module';
 import { UsersEventTableModule } from './users-event-table/users-event-table.module';
 import { PricesModalModule } from './prices-modal/prices-modal.module';
 import { TooltipModule } from 'primeng/tooltip';
+import { BalancesModalModule } from './balances-modal/balances-modal.module';
+import { ClassesModalModule } from './classes-modal/classes-modal.module';
 
 @NgModule({
   declarations: [DashboardComponent],
@@ -34,6 +36,8 @@ import { TooltipModule } from 'primeng/tooltip';
     PricesModalModule,
     UsersEventTableModule,
     TooltipModule,
+    BalancesModalModule,
+    ClassesModalModule,
   ],
   exports: [DashboardComponent],
 })

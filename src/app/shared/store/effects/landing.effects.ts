@@ -625,6 +625,8 @@ export class LandingEffects {
           price,
           platforms_fields_price_start_time,
           platforms_fields_price_end_time,
+          title,
+          eventType,
         }) => {
           return this.landingService
             .insertEventDisabledSlotsWeb(
@@ -637,7 +639,9 @@ export class LandingEffects {
               end_date,
               price,
               platforms_fields_price_start_time,
-              platforms_fields_price_end_time
+              platforms_fields_price_end_time,
+              title,
+              eventType
             )
             .pipe(
               map((response) => {
@@ -798,6 +802,91 @@ export class LandingEffects {
             })
           );
       })
+    );
+  });
+
+  getProductsWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getProductsWeb),
+      switchMap(({ id_platform, productType }) => {
+        return this.landingService
+          .getProductsWeb(id_platform, productType)
+          .pipe(
+            map((response) => {
+              return LandingActions.getProductsWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.getProductsWebFailure({ error }));
+            })
+          );
+      })
+    );
+  });
+
+  insertProductWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.insertProductWeb),
+      switchMap(
+        ({ id_platforms, productType, name, description, price, active }) => {
+          return this.landingService
+            .insertProductWeb(
+              id_platforms,
+              productType,
+              name,
+              description,
+              price,
+              active
+            )
+            .pipe(
+              map((response) => {
+                return LandingActions.insertProductWebSuccess({
+                  response,
+                });
+              }),
+              catchError((error) => {
+                return of(LandingActions.insertProductWebFailure({ error }));
+              })
+            );
+        }
+      )
+    );
+  });
+
+  updateProductWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.updateProductWeb),
+      switchMap(
+        ({
+          id_platforms_product,
+          name,
+          description,
+          price,
+          productType,
+          active,
+        }) => {
+          return this.landingService
+            .updateProductWeb(
+              id_platforms_product,
+              name,
+              description,
+              price,
+              productType,
+              active
+            )
+            .pipe(
+              map((response) => {
+                return LandingActions.updateProductWebSuccess({
+                  response,
+                });
+              }),
+              catchError((error) => {
+                return of(LandingActions.updateProductWebFailure({ error }));
+              })
+            );
+        }
+      )
     );
   });
 

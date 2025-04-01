@@ -54,6 +54,7 @@ export const initialLandingState: LandingState = {
     specialPrices: [],
   },
   eventUsers: [],
+  products: [],
   termsAndConditions: {
     terms_and_conditions: '',
     terms_and_conditions_date: '',

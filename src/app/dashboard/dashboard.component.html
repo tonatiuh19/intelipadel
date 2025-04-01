@@ -50,6 +50,19 @@
               >
                 <fa-icon [icon]="faNewspaper"></fa-icon> Anuncios
               </button>
+              <button
+                class="btn btn-primary ms-2"
+                (click)="displayClassesModal = true"
+              >
+                <fa-icon [icon]="faGraduationCap"></fa-icon> Clases
+              </button>
+              <button
+                disabled
+                class="btn btn-primary ms-2"
+                (click)="displayBalancesModal = true"
+              >
+                <fa-icon [icon]="faHandHoldingDollar"></fa-icon> Balances
+              </button>
             </div>
           </div>
           <hr />
@@ -259,7 +272,8 @@
               <div class="row">
                 <div class="col-sm-12">
                   <span class="panel_reservation-title-bold"
-                    >Evento, {{ selectedDateEvent.title }}:</span
+                    >{{ selectedDateEvent.event_title }},
+                    {{ selectedDateEvent.title }}:</span
                   >
                 </div>
               </div>
@@ -440,3 +454,13 @@
   [display]="displayPricesModal"
   (close)="closeModal('prices')"
 ></app-prices-modal>
+<app-balances-modal
+  [display]="displayBalancesModal"
+  (close)="closeModal('balances')"
+></app-balances-modal>
+<app-classes-modal
+  [display]="displayClassesModal"
+  [start_date]="start_date"
+  [end_date]="end_date"
+  (close)="closeModal('classes')"
+></app-classes-modal>
