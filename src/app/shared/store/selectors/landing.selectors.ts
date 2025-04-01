@@ -94,3 +94,8 @@ export const selectProducts = createSelector(
   selectLandingState,
   (state: LandingState) => state.products
 );
+
+export const selectClasses = createSelector(
+  selectLandingState,
+  (state: LandingState) => state.classes
+);

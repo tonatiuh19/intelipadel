@@ -66,4 +66,5 @@ export const initialLandingState: LandingState = {
     title: '',
   },
   activePlatforms: [],
+  classes: [],
 };

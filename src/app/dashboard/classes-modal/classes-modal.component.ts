@@ -3,6 +3,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
@@ -10,25 +11,26 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
-  faPlusCircle,
-  faTrashAlt,
-  faPencilAlt,
-  faTrophy,
+  faArrowLeft,
   faGraduationCap,
+  faTrashAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import { Store } from '@ngrx/store';
 import { fromLanding } from '../../shared/store/selectors';
 import { Subject, takeUntil } from 'rxjs';
 import { LandingActions } from '../../shared/store/actions';
-import { UserState } from '../../home/home.model';
-import { formatDateString } from '../../shared/utils/help-functions';
+import { ClassesModel, UserState } from '../../home/home.model';
+import {
+  formatDateString,
+  formatTime,
+} from '../../shared/utils/help-functions';
 
 @Component({
   selector: 'app-classes-modal',
   templateUrl: './classes-modal.component.html',
   styleUrls: ['./classes-modal.component.css'],
 })
-export class ClassesModalComponent implements OnInit, OnDestroy {
+export class ClassesModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() display: boolean = false;
 
   @Input() start_date: string = '';
@@ -44,6 +46,7 @@ export class ClassesModalComponent implements OnInit, OnDestroy {
   selectedIntervals: boolean = false;
 
   platformsId: number = 0;
+  platformId: number = 0;
 
   public selectUser$ = this.store.select(fromLanding.selectUser);
   public selectPlatformsFields$ = this.store.select(
@@ -53,10 +56,13 @@ export class ClassesModalComponent implements OnInit, OnDestroy {
   public selectReservations$ = this.store.select(
     fromLanding.selectReservations
   );
+  public selectClasses$ = this.store.select(fromLanding.selectClasses);
 
   markDaysForm!: FormGroup;
 
   faGraduationCap = faGraduationCap;
+  faArrowLeft = faArrowLeft;
+  faTrashAlt = faArrowLeft;
 
   minDate!: Date;
   maxDate!: Date;
@@ -79,8 +85,17 @@ export class ClassesModalComponent implements OnInit, OnDestroy {
 
   isFieldDisabled: boolean = false;
 
+  formatTime = formatTime;
+  formatDateString = formatDateString;
+
   timeSlots: any[] = [];
   filteredEndTimeSlots: any[] = [];
+
+  classes: ClassesModel[] = []; // Array to store the list of classes
+  deletingClass: any = null; // Holds the class to be deleted
+  isDeletingClass: boolean = false;
+
+  isCreatingClass: boolean = false;
 
   private unsubscribe$ = new Subject<void>();
 
@@ -171,6 +186,34 @@ export class ClassesModalComponent implements OnInit, OnDestroy {
       .subscribe((reservations) => {
         this.reservations = reservations;
       });
+
+    if (this.display) {
+      this.loadClassessData();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['display'] && this.display) {
+      this.loadClassessData();
+    }
+  }
+
+  loadClassessData() {
+    this.selectUser$.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
+      this.platformsId = user.id_platforms;
+      this.platformId = user.id_platform;
+      this.store.dispatch(
+        LandingActions.getClassesByIdPlatformWeb({
+          id_platform: user.id_platform,
+        })
+      );
+    });
+
+    this.selectClasses$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((classes) => {
+        this.classes = classes;
+      });
   }
 
   ngOnDestroy(): void {
@@ -260,25 +303,6 @@ export class ClassesModalComponent implements OnInit, OnDestroy {
       const startTime = `${date} ${this.markDaysForm.value.startTime.value}:00`;
       const endTime = `${date} ${this.markDaysForm.value.endTime.value}:00`;
 
-      console.log('startTime', {
-        id_platforms_field: this.markDaysForm.value.selectedField.code,
-        id_platforms: this.platformsId,
-        start_date_time: this.markDaysForm.value.startTime
-          ? this.selectedDate + ' ' + this.markDaysForm.value.startTime.value
-          : this.selectedDate + ' ' + '00:00',
-        end_date_time: this.markDaysForm.value.endTime
-          ? this.selectedDate + ' ' + this.markDaysForm.value.endTime.value
-          : this.selectedDate + ' ' + '23:59',
-        active: 4,
-        start_date: this.start_date,
-        end_date: this.end_date,
-        price: this.markDaysForm.value.price,
-        title: this.markDaysForm.value.title,
-        type: this.markDaysForm.value.selectedOption.value,
-        platforms_fields_price_start_time: startTime,
-        platforms_fields_price_end_time: endTime,
-      });
-
       this.store.dispatch(
         LandingActions.insertEventDisabledSlotsWeb({
           id_platforms_field: this.markDaysForm.value.selectedField.code,
@@ -299,9 +323,36 @@ export class ClassesModalComponent implements OnInit, OnDestroy {
           eventType: this.markDaysForm.value.selectedOption.value,
         })
       );
-      this.closeDialog();
+
+      this.isCreatingClass = false;
     } else {
       this.markDaysForm.markAllAsTouched();
     }
+  }
+
+  confirmDeleteClass(classItem: any): void {
+    this.deletingClass = classItem;
+    this.isDeletingClass = true;
+  }
+
+  deleteClass(): void {
+    if (this.deletingClass) {
+      this.store.dispatch(
+        LandingActions.deleteClassByIdWeb({
+          id_platforms_disabled_date:
+            this.deletingClass.id_platforms_disabled_date,
+          id_platform: this.platformId,
+        })
+      );
+
+      this.isCreatingClass = false;
+      this.deletingClass = null;
+      this.isDeletingClass = false;
+    }
+  }
+
+  cancelDelete(): void {
+    this.deletingClass = null;
+    this.isDeletingClass = false;
   }
 }

@@ -21,6 +21,7 @@ export interface LandingState {
   userFullInfo?: FullUserInfoModel;
   isSupportSent?: boolean;
   isAccountDeactivated?: boolean;
+  classes: ClassesModel[];
 }
 
 export interface UserState {
@@ -182,4 +183,16 @@ export interface FullUserInfoModel {
   type: number;
   date_created: string;
   title: string;
+}
+
+export interface ClassesModel {
+  id_platforms_disabled_date: number;
+  start_date_time: string;
+  end_date_time: string;
+  active: number;
+  title: string;
+  id_platforms_field: number;
+  event_title: string;
+  type: number;
+  price: string;
 }

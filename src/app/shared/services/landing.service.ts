@@ -41,6 +41,8 @@ export class LandingService {
   public GET_PRODUCTS_WEB = `${DOMAIN}/getProductsWeb.php`;
   public INSERT_PRODUCT_WEB = `${DOMAIN}/insertProductWeb.php`;
   public UPDATE_PRODUCT_WEB = `${DOMAIN}/updateProductWeb.php`;
+  public GET_CLASSES_BY_ID = `${DOMAIN}/getClassesByIdPlatformWeb.php`;
+  public DELETE_CLASS_WEB = `${DOMAIN}/deleteClassByIdWeb.php`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -664,6 +666,34 @@ export class LandingService {
         price,
         productType,
         active,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public getClassesByIdPlatformWeb(id_platform: number): Observable<any> {
+    return this.httpClient
+      .post(this.GET_CLASSES_BY_ID, {
+        id_platform,
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        })
+      );
+  }
+
+  public deleteClassByIdWeb(
+    id_platforms_disabled_date: number,
+    id_platform: number
+  ): Observable<any> {
+    return this.httpClient
+      .post(this.DELETE_CLASS_WEB, {
+        id_platforms_disabled_date,
+        id_platform,
       })
       .pipe(
         map((response) => {

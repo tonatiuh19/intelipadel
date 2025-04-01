@@ -5,11 +5,11 @@
   header="Marcar días"
 >
   <div class="mark-days-panel_container">
-    <div class="container-fluid">
+    <div *ngIf="!isCreatingClass" class="container-fluid">
       <div class="row text-center mb-3">
         <div class="col-sm-12">
           <div class="mark-days-panel_title">
-            <span class="mark-days-panel_title-bold">Generar Clase</span>
+            <span class="mark-days-panel_title-bold">Clases</span>
             <button
               type="button"
               class="btn-close float-end"
@@ -20,211 +20,311 @@
         </div>
       </div>
       <div class="row text-center mb-3">
-        <div [class]="selectedDate ? 'col-sm-7' : 'col-sm-12'">
-          <p-calendar
-            [(ngModel)]="selectDate"
-            [inline]="true"
-            [showIcon]="true"
-            [monthNavigator]="true"
-            [yearNavigator]="false"
-            [minDate]="minDate"
-            [maxDate]="maxDate"
-            (onSelect)="onDateSelect($event)"
+        <div class="col-sm-12">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="isCreatingClass = true"
           >
-          </p-calendar>
+            <fa-icon [icon]="faGraduationCap"></fa-icon> Generar Nueva Clase
+          </button>
         </div>
-        <form
-          *ngIf="selectedDate"
-          class="col-sm-5"
-          [formGroup]="markDaysForm"
-          (ngSubmit)="onSubmit()"
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Cancha</th>
+                <th>Fecha</th>
+                <th>Hora Inicio</th>
+                <th>Hora Fin</th>
+                <th>Precio</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let classItem of classes">
+                <td>{{ classItem.event_title }}</td>
+                <td>{{ classItem.title }}</td>
+                <td>{{ formatDateString(classItem.start_date_time) }}</td>
+                <td>{{ formatTime(classItem.start_date_time) }}</td>
+                <td>{{ formatTime(classItem.end_date_time) }}</td>
+                <td>{{ classItem.price | currency }}</td>
+                <td>
+                  <button
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="confirmDeleteClass(classItem)"
+                  >
+                    <fa-icon [icon]="faTrashAlt"></fa-icon> Eliminar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="isCreatingClass" class="container-fluid">
+    <div class="row text-center mb-3">
+      <div class="col-sm-12">
+        <div class="mark-days-panel_title">
+          <button
+            type="button"
+            class="btn float-start"
+            (click)="isCreatingClass = false"
+          >
+            <fa-icon [icon]="faArrowLeft"></fa-icon>
+          </button>
+          <span class="mark-days-panel_title-bold">Generar Clase</span>
+          <button
+            type="button"
+            class="btn-close float-end"
+            aria-label="Close"
+            (click)="closeDialog()"
+          ></button>
+        </div>
+      </div>
+    </div>
+    <div class="row text-center mb-3">
+      <div [class]="selectedDate ? 'col-sm-7' : 'col-sm-12'">
+        <p-calendar
+          [(ngModel)]="selectDate"
+          [inline]="true"
+          [showIcon]="true"
+          [monthNavigator]="true"
+          [yearNavigator]="false"
+          [minDate]="minDate"
+          [maxDate]="maxDate"
+          (onSelect)="onDateSelect($event)"
         >
-          <div class="container-fluid h-100">
-            <div class="row h-100 align-items-center">
-              <div class="col-sm-12 mb-1">
-                <div class="card">
-                  <div class="card-body">
-                    <h5>Selecciona la cancha:</h5>
-                    <p-dropdown
-                      [options]="fields"
-                      formControlName="selectedField"
-                      [showClear]="true"
-                      optionLabel="name"
-                      placeholder="Ver canchas"
-                      class="w-full"
-                    ></p-dropdown>
-                    <div
-                      *ngIf="
-                        markDaysForm.get('selectedField')?.invalid &&
-                        markDaysForm.get('selectedField')?.touched
-                      "
-                      class="invalid-feedback"
-                    >
-                      Selecciona una cancha
-                    </div>
+        </p-calendar>
+      </div>
+      <form
+        *ngIf="selectedDate"
+        class="col-sm-5"
+        [formGroup]="markDaysForm"
+        (ngSubmit)="onSubmit()"
+      >
+        <div class="container-fluid h-100">
+          <div class="row h-100 align-items-center">
+            <div class="col-sm-12 mb-1">
+              <div class="card">
+                <div class="card-body">
+                  <h5>Selecciona la cancha:</h5>
+                  <p-dropdown
+                    [options]="fields"
+                    formControlName="selectedField"
+                    [showClear]="true"
+                    optionLabel="name"
+                    placeholder="Ver canchas"
+                    class="w-full"
+                  ></p-dropdown>
+                  <div
+                    *ngIf="
+                      markDaysForm.get('selectedField')?.invalid &&
+                      markDaysForm.get('selectedField')?.touched
+                    "
+                    class="invalid-feedback"
+                  >
+                    Selecciona una cancha
                   </div>
                 </div>
-              </div>
-              <div *ngIf="isFieldDisabled" class="col-sm-12">
-                <h5>
-                  Este dia, esta cancha ya esta marcada o hay una reserva en
-                  curso
-                </h5>
-              </div>
-              <div
-                *ngIf="selectedField && !isFieldDisabled"
-                class="col-sm-12 mb-1"
-              >
-                <div class="card">
-                  <div class="card-body">
-                    <h5>Selecciona el tipo de horario:</h5>
-                    <p-dropdown
-                      [options]="options"
-                      formControlName="selectedOption"
-                      [showClear]="true"
-                      optionLabel="name"
-                      placeholder="Ver opciones"
-                      class="w-full"
-                    ></p-dropdown>
-                    <div
-                      *ngIf="
-                        markDaysForm.get('selectedOption')?.invalid &&
-                        markDaysForm.get('selectedOption')?.touched
-                      "
-                      class="invalid-feedback"
-                    >
-                      Selecciona una opción
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                *ngIf="selectedField && !isFieldDisabled && selectedIntervals"
-                class="col-sm-12 mb-1"
-              >
-                <div class="card">
-                  <div class="card-body">
-                    <h5>Selecciona el tipo de intervalo:</h5>
-                    <p-dropdown
-                      [options]="optionsIntervals"
-                      formControlName="selectedInterval"
-                      [showClear]="true"
-                      optionLabel="name"
-                      placeholder="Ver opciones"
-                      class="w-full"
-                    ></p-dropdown>
-                    <div
-                      *ngIf="
-                        markDaysForm.get('selectedInterval')?.invalid &&
-                        markDaysForm.get('selectedInterval')?.touched
-                      "
-                      class="invalid-feedback"
-                    >
-                      Selecciona una opción
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                *ngIf="selectedField && !isFieldDisabled"
-                class="col-sm-12 mb-1"
-              >
-                <div class="card">
-                  <div class="card-body">
-                    <h5>Selecciona el horario:</h5>
-                    <p-dropdown
-                      [options]="timeSlots"
-                      formControlName="startTime"
-                      [showClear]="true"
-                      optionLabel="label"
-                      placeholder="Hora de inicio"
-                      class="w-full"
-                    ></p-dropdown>
-                    <p-dropdown
-                      [options]="filteredEndTimeSlots"
-                      formControlName="endTime"
-                      [showClear]="true"
-                      optionLabel="label"
-                      placeholder="Hora de fin"
-                      class="w-full"
-                    ></p-dropdown>
-                    <div
-                      *ngIf="
-                        markDaysForm.get('startTime')?.invalid &&
-                        markDaysForm.get('startTime')?.touched
-                      "
-                      class="invalid-feedback"
-                    >
-                      Selecciona una hora de inicio
-                    </div>
-                    <div
-                      *ngIf="
-                        markDaysForm.get('endTime')?.invalid &&
-                        markDaysForm.get('endTime')?.touched
-                      "
-                      class="invalid-feedback"
-                    >
-                      Selecciona una hora de fin
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-12 mb-1 mt-2">
-                  <div class="card">
-                    <div class="card-body">
-                      <h5>Incluye un titulo:</h5>
-                      <input
-                        type="text"
-                        formControlName="title"
-                        class="form-control"
-                        placeholder="Titulo"
-                      />
-                      <div
-                        *ngIf="
-                          markDaysForm.get('title')?.invalid &&
-                          markDaysForm.get('title')?.touched
-                        "
-                        class="invalid-feedback"
-                      >
-                        Necesitas incluir un titulo
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-12 mb-1 mt-2">
-                  <div class="card">
-                    <div class="card-body">
-                      <h5>Incluye el precio:</h5>
-                      <input
-                        type="number"
-                        formControlName="price"
-                        class="form-control"
-                        placeholder="Precio"
-                      />
-                      <div
-                        *ngIf="
-                          markDaysForm.get('price')?.invalid &&
-                          markDaysForm.get('price')?.touched
-                        "
-                        class="invalid-feedback"
-                      >
-                        Necesitas incluir un precio
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div *ngIf="selectedField && !isFieldDisabled" class="col-sm-12">
-                <button
-                  type="submit"
-                  class="btn btn-dark w-100"
-                  [disabled]="!markDaysForm.valid || !markDaysForm.dirty"
-                >
-                  <fa-icon [icon]="faGraduationCap"></fa-icon> Generar Clase
-                </button>
               </div>
             </div>
+            <div *ngIf="isFieldDisabled" class="col-sm-12">
+              <h5>
+                Este dia, esta cancha ya esta marcada o hay una reserva en curso
+              </h5>
+            </div>
+            <div
+              *ngIf="selectedField && !isFieldDisabled"
+              class="col-sm-12 mb-1"
+            >
+              <div class="card">
+                <div class="card-body">
+                  <h5>Selecciona el tipo de horario:</h5>
+                  <p-dropdown
+                    [options]="options"
+                    formControlName="selectedOption"
+                    [showClear]="true"
+                    optionLabel="name"
+                    placeholder="Ver opciones"
+                    class="w-full"
+                  ></p-dropdown>
+                  <div
+                    *ngIf="
+                      markDaysForm.get('selectedOption')?.invalid &&
+                      markDaysForm.get('selectedOption')?.touched
+                    "
+                    class="invalid-feedback"
+                  >
+                    Selecciona una opción
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              *ngIf="selectedField && !isFieldDisabled && selectedIntervals"
+              class="col-sm-12 mb-1"
+            >
+              <div class="card">
+                <div class="card-body">
+                  <h5>Selecciona el tipo de intervalo:</h5>
+                  <p-dropdown
+                    [options]="optionsIntervals"
+                    formControlName="selectedInterval"
+                    [showClear]="true"
+                    optionLabel="name"
+                    placeholder="Ver opciones"
+                    class="w-full"
+                  ></p-dropdown>
+                  <div
+                    *ngIf="
+                      markDaysForm.get('selectedInterval')?.invalid &&
+                      markDaysForm.get('selectedInterval')?.touched
+                    "
+                    class="invalid-feedback"
+                  >
+                    Selecciona una opción
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              *ngIf="selectedField && !isFieldDisabled"
+              class="col-sm-12 mb-1"
+            >
+              <div class="card">
+                <div class="card-body">
+                  <h5>Selecciona el horario:</h5>
+                  <p-dropdown
+                    [options]="timeSlots"
+                    formControlName="startTime"
+                    [showClear]="true"
+                    optionLabel="label"
+                    placeholder="Hora de inicio"
+                    class="w-full"
+                  ></p-dropdown>
+                  <p-dropdown
+                    [options]="filteredEndTimeSlots"
+                    formControlName="endTime"
+                    [showClear]="true"
+                    optionLabel="label"
+                    placeholder="Hora de fin"
+                    class="w-full"
+                  ></p-dropdown>
+                  <div
+                    *ngIf="
+                      markDaysForm.get('startTime')?.invalid &&
+                      markDaysForm.get('startTime')?.touched
+                    "
+                    class="invalid-feedback"
+                  >
+                    Selecciona una hora de inicio
+                  </div>
+                  <div
+                    *ngIf="
+                      markDaysForm.get('endTime')?.invalid &&
+                      markDaysForm.get('endTime')?.touched
+                    "
+                    class="invalid-feedback"
+                  >
+                    Selecciona una hora de fin
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-12 mb-1 mt-2">
+                <div class="card">
+                  <div class="card-body">
+                    <h5>Incluye un titulo:</h5>
+                    <input
+                      type="text"
+                      formControlName="title"
+                      class="form-control"
+                      placeholder="Titulo"
+                    />
+                    <div
+                      *ngIf="
+                        markDaysForm.get('title')?.invalid &&
+                        markDaysForm.get('title')?.touched
+                      "
+                      class="invalid-feedback"
+                    >
+                      Necesitas incluir un titulo
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-12 mb-1 mt-2">
+                <div class="card">
+                  <div class="card-body">
+                    <h5>Incluye el precio:</h5>
+                    <input
+                      type="number"
+                      formControlName="price"
+                      class="form-control"
+                      placeholder="Precio"
+                    />
+                    <div
+                      *ngIf="
+                        markDaysForm.get('price')?.invalid &&
+                        markDaysForm.get('price')?.touched
+                      "
+                      class="invalid-feedback"
+                    >
+                      Necesitas incluir un precio
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="selectedField && !isFieldDisabled" class="col-sm-12">
+              <button
+                type="submit"
+                class="btn btn-dark w-100"
+                [disabled]="!markDaysForm.valid || !markDaysForm.dirty"
+              >
+                <fa-icon [icon]="faGraduationCap"></fa-icon> Generar Clase
+              </button>
+            </div>
           </div>
-        </form>
+        </div>
+      </form>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="isDeletingClass"
+  [modal]="true"
+  [style]="{ width: '40vw' }"
+  header="Confirmar Eliminación"
+>
+  <div class="container-fluid">
+    <div class="row mt-3">
+      <div class="col-sm-12">
+        <h5 class="mb-3">
+          ¿Está seguro de que desea eliminar este precio especial?
+        </h5>
+        <div class="form-group text-center">
+          <button
+            type="button"
+            class="btn btn-outline-danger"
+            (click)="cancelDelete()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger ms-2"
+            (click)="deleteClass()"
+          >
+            Eliminar
+          </button>
+        </div>
       </div>
     </div>
   </div>

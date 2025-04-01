@@ -645,9 +645,15 @@ export class LandingEffects {
             )
             .pipe(
               map((response) => {
-                return LandingActions.insertEventDisabledSlotsWebSuccess({
-                  response,
-                });
+                if (active === 4) {
+                  return LandingActions.getClassesByIdPlatformWebSuccess({
+                    response,
+                  });
+                } else {
+                  return LandingActions.insertEventDisabledSlotsWebSuccess({
+                    response,
+                  });
+                }
               }),
               catchError((error) => {
                 return of(
@@ -887,6 +893,46 @@ export class LandingEffects {
             );
         }
       )
+    );
+  });
+
+  getClassesByIdPlatformWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.getClassesByIdPlatformWeb),
+      switchMap(({ id_platform }) => {
+        return this.landingService.getClassesByIdPlatformWeb(id_platform).pipe(
+          map((response) => {
+            return LandingActions.getClassesByIdPlatformWebSuccess({
+              response,
+            });
+          }),
+          catchError((error) => {
+            return of(
+              LandingActions.getClassesByIdPlatformWebFailure({ error })
+            );
+          })
+        );
+      })
+    );
+  });
+
+  deleteClassByIdWeb$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LandingActions.deleteClassByIdWeb),
+      switchMap(({ id_platforms_disabled_date, id_platform }) => {
+        return this.landingService
+          .deleteClassByIdWeb(id_platforms_disabled_date, id_platform)
+          .pipe(
+            map((response) => {
+              return LandingActions.deleteClassByIdWebSuccess({
+                response,
+              });
+            }),
+            catchError((error) => {
+              return of(LandingActions.deleteClassByIdWebFailure({ error }));
+            })
+          );
+      })
     );
   });
 

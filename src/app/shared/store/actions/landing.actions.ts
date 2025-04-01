@@ -615,3 +615,33 @@ export const updateProductWebFailure = createAction(
   `${actor} Update Product Web Failure`,
   props<{ error: any }>()
 );
+
+export const getClassesByIdPlatformWeb = createAction(
+  `${actor} Get Classes By Id Platform Web`,
+  props<{ id_platform: number }>()
+);
+
+export const getClassesByIdPlatformWebSuccess = createAction(
+  `${actor} Get Classes By Id Platform Web Success`,
+  props<{ response: any }>()
+);
+
+export const getClassesByIdPlatformWebFailure = createAction(
+  `${actor} Get Classes By Id Platform Web Failure`,
+  props<{ error: any }>()
+);
+
+export const deleteClassByIdWeb = createAction(
+  `${actor} Delete Class By Id Web`,
+  props<{ id_platforms_disabled_date: number; id_platform: number }>()
+);
+
+export const deleteClassByIdWebSuccess = createAction(
+  `${actor} Delete Class By Id Web Success`,
+  props<{ response: any }>()
+);
+
+export const deleteClassByIdWebFailure = createAction(
+  `${actor} Delete Class By Id Web Failure`,
+  props<{ error: any }>()
+);
