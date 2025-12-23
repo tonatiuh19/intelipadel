@@ -1,0 +1,116 @@
+import { useEffect } from "react";
+import Header from "@/components/Header";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ArrowRight, MapPin, Star } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchClubs } from "@/store/slices/clubsSlice";
+import { motion } from "framer-motion";
+
+export default function Clubs() {
+  const dispatch = useAppDispatch();
+  const { clubs, loading, error } = useAppSelector((state) => state.clubs);
+
+  useEffect(() => {
+    dispatch(fetchClubs());
+  }, [dispatch]);
+
+  return (
+    <div className="min-h-screen bg-white">
+      <Header />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-secondary mb-4">
+            Explorar Todos los Clubes
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Descubre clubes de padel premium en tu área
+          </p>
+        </div>
+
+        {loading && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Cargando clubes...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-red-500">{error}</p>
+            <Button onClick={() => dispatch(fetchClubs())} className="mt-4">
+              Intentar de nuevo
+            </Button>
+          </div>
+        )}
+
+        {!loading && !error && clubs.length > 0 && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {clubs.map((club, idx) => (
+              <motion.div
+                key={club.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+              >
+                <Card className="overflow-hidden hover:shadow-xl transition-all">
+                  <div className="aspect-video bg-muted overflow-hidden">
+                    <img
+                      src={club.image}
+                      alt={club.name}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-bold text-xl text-secondary mb-2">
+                      {club.name}
+                    </h3>
+                    <div className="flex items-center text-muted-foreground mb-3">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      <span className="text-sm">{club.location}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                      <span className="font-semibold">{club.rating}</span>
+                      <span className="text-sm text-muted-foreground">
+                        ({club.reviews} reseñas)
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Desde</p>
+                        <p className="text-lg font-bold text-primary">
+                          ${club.pricePerHour}/hr
+                        </p>
+                      </div>
+                      <Button asChild>
+                        <Link to="/booking">
+                          Reservar
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {!loading && !error && clubs.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">
+              No hay clubes disponibles
+            </p>
+            <Button asChild size="lg">
+              <Link to="/">
+                Volver al Inicio
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
