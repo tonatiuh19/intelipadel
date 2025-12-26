@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.production
+.env.vercel
+service-account-key.json
+*.key.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -24,7 +33,6 @@ dist-ssr
 *.sw?
 
 .config/
-!.env
 
 # Markdown files (except README)
 *.md
