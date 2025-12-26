@@ -10,6 +10,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { confirmPayment, setPaymentStatus } from "@/store/slices/paymentSlice";
+import ClubPolicyModal from "./ClubPolicyModal";
 
 interface StripePaymentFormProps {
   bookingData: {
@@ -40,6 +41,15 @@ export default function StripePaymentForm({
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showPolicyModal, setShowPolicyModal] = useState(false);
+  const [selectedPolicyType, setSelectedPolicyType] = useState<
+    "terms" | "privacy" | "cancellation"
+  >("terms");
+
+  const handleOpenPolicy = (type: "terms" | "privacy" | "cancellation") => {
+    setSelectedPolicyType(type);
+    setShowPolicyModal(true);
+  };
 
   // Reset status when component mounts
   useEffect(() => {
@@ -163,16 +173,40 @@ export default function StripePaymentForm({
       </Button>
 
       <p className="text-xs text-center text-muted-foreground">
-        Al realizar el pago, aceptas nuestros{" "}
-        <a href="#" className="text-primary hover:underline">
+        Al realizar el pago, aceptas los{" "}
+        <button
+          type="button"
+          onClick={() => handleOpenPolicy("terms")}
+          className="text-primary hover:underline font-medium"
+        >
           términos y condiciones
-        </a>{" "}
+        </button>{" "}
         y la{" "}
-        <a href="#" className="text-primary hover:underline">
+        <button
+          type="button"
+          onClick={() => handleOpenPolicy("cancellation")}
+          className="text-primary hover:underline font-medium"
+        >
           política de cancelación
-        </a>
+        </button>{" "}
+        del club. Lee nuestra{" "}
+        <button
+          type="button"
+          onClick={() => handleOpenPolicy("privacy")}
+          className="text-primary hover:underline font-medium"
+        >
+          política de privacidad
+        </button>
         .
       </p>
+
+      {/* Policy Modal */}
+      <ClubPolicyModal
+        open={showPolicyModal}
+        onOpenChange={setShowPolicyModal}
+        clubId={bookingData.club_id}
+        policyType={selectedPolicyType}
+      />
     </form>
   );
 }

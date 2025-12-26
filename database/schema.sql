@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 26, 2025 at 02:15 PM
+-- Generation Time: Dec 26, 2025 at 02:49 PM
 -- Server version: 5.7.23-23
 -- PHP Version: 8.1.34
 
@@ -135,7 +135,8 @@ CREATE TABLE `bookings` (
 
 INSERT INTO `bookings` (`id`, `booking_number`, `user_id`, `club_id`, `court_id`, `time_slot_id`, `booking_date`, `start_time`, `end_time`, `duration_minutes`, `total_price`, `status`, `payment_status`, `payment_method`, `stripe_payment_intent_id`, `booking_type`, `is_recurring`, `notes`, `factura_requested`, `factura_requested_at`, `factura_sent_at`, `cancellation_reason`, `cancelled_at`, `confirmed_at`, `created_at`, `updated_at`) VALUES
 (3, 'BK1766778360951457', 2, 1, 13, 2, '2025-12-28', '10:00:00', '11:00:00', 60, 45.00, 'confirmed', 'paid', 'card', NULL, 'single', 0, NULL, 1, '2025-12-26 20:07:59', NULL, NULL, NULL, '2025-12-26 19:46:01', '2025-12-26 19:46:01', '2025-12-26 20:07:59'),
-(4, 'BK1766778754513559', 2, 1, 5, 3, '2025-12-28', '09:00:00', '10:00:00', 60, 45.00, 'confirmed', 'paid', 'card', 'pi_3Sih3VCDsJ3n85lg0zGGh6PU', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-26 19:52:34', '2025-12-26 19:52:34', '2025-12-26 19:52:34');
+(4, 'BK1766778754513559', 2, 1, 5, 3, '2025-12-28', '09:00:00', '10:00:00', 60, 45.00, 'confirmed', 'paid', 'card', 'pi_3Sih3VCDsJ3n85lg0zGGh6PU', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-26 19:52:34', '2025-12-26 19:52:34', '2025-12-26 19:52:34'),
+(5, 'BK1766781405527755', 2, 1, 13, 4, '2025-12-28', '22:00:00', '23:00:00', 60, 45.00, 'confirmed', 'paid', 'card', 'pi_3SihkQCDsJ3n85lg0c7KlutU', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-26 20:36:45', '2025-12-26 20:36:45', '2025-12-26 20:36:45');
 
 -- --------------------------------------------------------
 
@@ -180,6 +181,58 @@ INSERT INTO `clubs` (`id`, `name`, `slug`, `description`, `address`, `city`, `st
 (2, 'Padel Barcelona Center', 'padel-barcelona-center', 'Modern padel facility in the heart of Barcelona', 'Avinguda Diagonal 123', 'Barcelona', 'Barcelona', '08019', 'España', NULL, NULL, '+34 933 456 789', 'contact@barcapadel.es', NULL, 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=800', NULL, '[\"parking\", \"lockers\", \"showers\", \"cafe\"]', 4.70, 189, 42.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (3, 'Valencia Padel Club', 'valencia-padel-club', 'Premium outdoor courts with ocean views', 'Carrer de la Mar 89', 'Valencia', 'Valencia', '46001', 'España', NULL, NULL, '+34 963 567 890', 'hello@valenciapadel.es', NULL, 'https://images.unsplash.com/photo-1519505907962-0a6cb0167c73?w=800', NULL, '[\"parking\", \"showers\", \"pro_shop\", \"cafe\"]', 4.90, 312, 40.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (4, 'Sevilla Sports Complex', 'sevilla-sports-complex', 'Multi-sport facility with excellent padel courts', 'Avenida de la Constitución 56', 'Sevilla', 'Sevilla', '41001', 'España', NULL, NULL, '+34 954 678 901', 'info@sevillapadel.es', NULL, 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800', NULL, '[\"parking\", \"lockers\", \"showers\"]', 4.60, 156, 38.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `club_cancellation_policy`
+--
+
+CREATE TABLE `club_cancellation_policy` (
+  `id` int(11) NOT NULL,
+  `club_id` int(11) NOT NULL,
+  `version` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1.0',
+  `content` longtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Cancellation policy content in HTML or markdown',
+  `hours_before_cancellation` int(11) DEFAULT '24' COMMENT 'Minimum hours before booking to cancel',
+  `refund_percentage` decimal(5,2) DEFAULT '100.00' COMMENT 'Percentage of refund if cancelled in time',
+  `effective_date` date NOT NULL COMMENT 'Date when this policy becomes effective',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT 'Whether this version is currently active',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `club_cancellation_policy`
+--
+
+INSERT INTO `club_cancellation_policy` (`id`, `club_id`, `version`, `content`, `hours_before_cancellation`, `refund_percentage`, `effective_date`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 1, '1.0', '<h2>Política de Cancelación de Pádel Club Premium</h2>\r\n<h3>Cancelaciones con Reembolso Completo</h3>\r\n<p>Recibirá un reembolso del 100% si cancela con al menos 24 horas de anticipación.</p>\r\n<h3>Cancelaciones Tardías</h3>\r\n<p>Cancelaciones con menos de 24 horas no son elegibles para reembolso.</p>\r\n<h3>Proceso de Reembolso</h3>\r\n<p>Los reembolsos se procesan en 5-7 días hábiles a su método de pago original.</p>', 24, 100.00, '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-26 20:49:30'),
+(2, 2, '1.0', '<h2>Política de Cancelación de Pádel Arena</h2>\r\n<h3>Términos de Cancelación</h3>\r\n<ul>\r\n  <li>Más de 24 horas: Reembolso completo</li>\r\n  <li>12-24 horas: Reembolso del 50%</li>\r\n  <li>Menos de 12 horas: Sin reembolso</li>\r\n</ul>\r\n<h3>Cómo Cancelar</h3>\r\n<p>Puede cancelar desde su cuenta en la sección \"Mis Reservas\".</p>', 24, 100.00, '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-26 20:49:30');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `club_privacy_policy`
+--
+
+CREATE TABLE `club_privacy_policy` (
+  `id` int(11) NOT NULL,
+  `club_id` int(11) NOT NULL,
+  `version` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1.0',
+  `content` longtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Privacy policy content in HTML or markdown',
+  `effective_date` date NOT NULL COMMENT 'Date when this policy becomes effective',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT 'Whether this version is currently active',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `club_privacy_policy`
+--
+
+INSERT INTO `club_privacy_policy` (`id`, `club_id`, `version`, `content`, `effective_date`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 1, '1.0', '<h2>Política de Privacidad de Pádel Club Premium</h2>\r\n<h3>Recopilación de Datos</h3>\r\n<p>Recopilamos la siguiente información personal:</p>\r\n<ul>\r\n  <li>Nombre y apellidos</li>\r\n  <li>Correo electrónico</li>\r\n  <li>Número de teléfono</li>\r\n  <li>Información de pago (procesada de forma segura por Stripe)</li>\r\n</ul>\r\n<h3>Uso de la Información</h3>\r\n<p>Utilizamos su información para:</p>\r\n<ul>\r\n  <li>Procesar sus reservas</li>\r\n  <li>Enviar confirmaciones y recordatorios</li>\r\n  <li>Mejorar nuestros servicios</li>\r\n  <li>Comunicaciones de marketing (con su consentimiento)</li>\r\n</ul>\r\n<h3>Protección de Datos</h3>\r\n<p>Sus datos están protegidos según la LFPDPPP mexicana. No compartimos su información con terceros sin su consentimiento.</p>', '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-26 20:49:30'),
+(2, 2, '1.0', '<h2>Política de Privacidad de Pádel Arena</h2>\r\n<h3>Información que Recopilamos</h3>\r\n<p>Recopilamos datos necesarios para brindar nuestros servicios:</p>\r\n<ul>\r\n  <li>Datos de contacto (nombre, email, teléfono)</li>\r\n  <li>Historial de reservas</li>\r\n  <li>Preferencias de juego</li>\r\n</ul>\r\n<h3>Derechos del Usuario</h3>\r\n<p>Usted tiene derecho a:</p>\r\n<ul>\r\n  <li>Acceder a sus datos personales</li>\r\n  <li>Rectificar información incorrecta</li>\r\n  <li>Solicitar la eliminación de sus datos</li>\r\n  <li>Oponerse al procesamiento de sus datos</li>\r\n</ul>\r\n<h3>Contacto</h3>\r\n<p>Para ejercer sus derechos, contáctenos en privacy@padelarena.com</p>', '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-26 20:49:30');
 
 -- --------------------------------------------------------
 
@@ -229,6 +282,31 @@ INSERT INTO `club_schedules` (`id`, `club_id`, `day_of_week`, `opens_at`, `close
 (26, 2, 6, '08:00:00', '23:00:00', 0),
 (27, 3, 6, '08:00:00', '23:00:00', 0),
 (28, 4, 6, '08:00:00', '23:00:00', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `club_terms_conditions`
+--
+
+CREATE TABLE `club_terms_conditions` (
+  `id` int(11) NOT NULL,
+  `club_id` int(11) NOT NULL,
+  `version` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1.0',
+  `content` longtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Terms and conditions content in HTML or markdown',
+  `effective_date` date NOT NULL COMMENT 'Date when these terms become effective',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT 'Whether this version is currently active',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `club_terms_conditions`
+--
+
+INSERT INTO `club_terms_conditions` (`id`, `club_id`, `version`, `content`, `effective_date`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 1, '1.0', '<h2>Términos y Condiciones de Pádel Club Premium</h2>\r\n<p>Bienvenido a Pádel Club Premium. Al realizar una reserva, usted acepta los siguientes términos y condiciones:</p>\r\n<h3>1. Reservas</h3>\r\n<ul>\r\n  <li>Las reservas deben realizarse con al menos 1 hora de anticipación</li>\r\n  <li>El pago debe completarse al momento de la reserva</li>\r\n  <li>Las reservas no utilizadas no serán reembolsadas sin previo aviso</li>\r\n</ul>\r\n<h3>2. Cancelaciones</h3>\r\n<ul>\r\n  <li>Cancelaciones con más de 24 horas: reembolso completo</li>\r\n  <li>Cancelaciones con menos de 24 horas: sin reembolso</li>\r\n</ul>\r\n<h3>3. Normas del Club</h3>\r\n<ul>\r\n  <li>El uso de calzado deportivo adecuado es obligatorio</li>\r\n  <li>Respete los horarios de inicio y fin de su reserva</li>\r\n  <li>Mantenga las instalaciones limpias</li>\r\n</ul>', '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-26 20:49:30'),
+(2, 2, '1.0', '<h2>Términos y Condiciones de Pádel Arena</h2>\r\n<p>Al utilizar las instalaciones de Pádel Arena, usted acepta cumplir con estos términos:</p>\r\n<h3>1. Uso de Instalaciones</h3>\r\n<ul>\r\n  <li>Las canchas deben ser reservadas con anticipación</li>\r\n  <li>El tiempo de juego incluye el tiempo de preparación</li>\r\n  <li>No se permite el ingreso de mascotas</li>\r\n</ul>\r\n<h3>2. Responsabilidad</h3>\r\n<ul>\r\n  <li>Los usuarios son responsables de su propia seguridad</li>\r\n  <li>El club no se hace responsable por objetos personales perdidos</li>\r\n</ul>', '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-26 20:49:30');
 
 -- --------------------------------------------------------
 
@@ -468,7 +546,8 @@ INSERT INTO `payment_transactions` (`id`, `transaction_number`, `user_id`, `club
 (4, 'TXN1766777884014930', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'EUR', 'pending', NULL, 'stripe', 'pi_3SigprCDsJ3n85lg1SnOd7um', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"12:00\", \"start_time\": \"11:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:38:04', '2025-12-26 19:38:04'),
 (5, 'TXN1766778228543403', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'EUR', 'pending', NULL, 'stripe', 'pi_3SigvQCDsJ3n85lg05dWZp2Q', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:43:48', '2025-12-26 19:43:48'),
 (6, 'TXN1766778345200606', 2, 1, 'booking', 3, NULL, NULL, NULL, 45.00, 'EUR', 'completed', NULL, 'stripe', 'pi_3SigxJCDsJ3n85lg1dWU5kO5', 'ch_3SigxJCDsJ3n85lg1JfleqEN', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 19:46:01', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:45:45', '2025-12-26 19:46:01'),
-(7, 'TXN1766778729944755', 2, 1, 'booking', 4, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sih3VCDsJ3n85lg0zGGh6PU', 'ch_3Sih3VCDsJ3n85lg0BhnRHIS', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 19:52:35', NULL, NULL, NULL, '{\"court_id\": 5, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:52:10', '2025-12-26 19:52:35');
+(7, 'TXN1766778729944755', 2, 1, 'booking', 4, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sih3VCDsJ3n85lg0zGGh6PU', 'ch_3Sih3VCDsJ3n85lg0BhnRHIS', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 19:52:35', NULL, NULL, NULL, '{\"court_id\": 5, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:52:10', '2025-12-26 19:52:35'),
+(8, 'TXN1766781390788962', 2, 1, 'booking', 5, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SihkQCDsJ3n85lg0c7KlutU', 'ch_3SihkQCDsJ3n85lg0p2mxQOB', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 20:36:46', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"23:00\", \"start_time\": \"22:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 20:36:30', '2025-12-26 20:36:46');
 
 -- --------------------------------------------------------
 
@@ -650,7 +729,8 @@ CREATE TABLE `time_slots` (
 
 INSERT INTO `time_slots` (`id`, `court_id`, `date`, `start_time`, `end_time`, `duration_minutes`, `price`, `is_available`, `availability_status`, `created_at`, `updated_at`) VALUES
 (2, 13, '2025-12-28', '10:00:00', '11:00:00', 60, 45.00, 0, 'booked', '2025-12-26 19:46:01', '2025-12-26 19:46:01'),
-(3, 5, '2025-12-28', '09:00:00', '10:00:00', 60, 45.00, 0, 'booked', '2025-12-26 19:52:34', '2025-12-26 19:52:34');
+(3, 5, '2025-12-28', '09:00:00', '10:00:00', 60, 45.00, 0, 'booked', '2025-12-26 19:52:34', '2025-12-26 19:52:34'),
+(4, 13, '2025-12-28', '22:00:00', '23:00:00', 60, 45.00, 0, 'booked', '2025-12-26 20:36:45', '2025-12-26 20:36:45');
 
 -- --------------------------------------------------------
 
@@ -677,7 +757,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `email`, `name`, `phone`, `avatar_url`, `stripe_customer_id`, `is_active`, `created_at`, `updated_at`, `last_login_at`) VALUES
 (1, 'user@example.com', 'John Doe', NULL, NULL, NULL, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49', NULL),
-(2, 'axgoomez@gmail.com', 'Felix Gomez', '4741400363', NULL, NULL, 1, '2025-12-23 18:23:11', '2025-12-26 19:34:51', '2025-12-26 19:34:51');
+(2, 'axgoomez@gmail.com', 'Felix Gomez', '4741400363', NULL, NULL, 1, '2025-12-23 18:23:11', '2025-12-26 20:29:34', '2025-12-26 20:29:34');
 
 -- --------------------------------------------------------
 
@@ -702,7 +782,7 @@ CREATE TABLE `users_sessions` (
 --
 
 INSERT INTO `users_sessions` (`id`, `user_id`, `session_code`, `user_session`, `user_session_date_start`, `created_at`, `expires_at`, `ip_address`, `user_agent`) VALUES
-(3, 2, 667644, 1, '2025-12-26 18:34:35', '2025-12-26 19:34:35', NULL, NULL, NULL);
+(5, 2, 521869, 1, '2025-12-26 19:29:23', '2025-12-26 20:29:23', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -799,12 +879,39 @@ ALTER TABLE `clubs`
   ADD KEY `idx_featured` (`featured`);
 
 --
+-- Indexes for table `club_cancellation_policy`
+--
+ALTER TABLE `club_cancellation_policy`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_club_cancellation` (`club_id`,`is_active`),
+  ADD KEY `idx_effective_date` (`effective_date`),
+  ADD KEY `idx_club_cancellation_version` (`club_id`,`version`);
+
+--
+-- Indexes for table `club_privacy_policy`
+--
+ALTER TABLE `club_privacy_policy`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_club_privacy` (`club_id`,`is_active`),
+  ADD KEY `idx_effective_date` (`effective_date`),
+  ADD KEY `idx_club_privacy_version` (`club_id`,`version`);
+
+--
 -- Indexes for table `club_schedules`
 --
 ALTER TABLE `club_schedules`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_club_day` (`club_id`,`day_of_week`),
   ADD KEY `idx_club_id` (`club_id`);
+
+--
+-- Indexes for table `club_terms_conditions`
+--
+ALTER TABLE `club_terms_conditions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_club_terms` (`club_id`,`is_active`),
+  ADD KEY `idx_effective_date` (`effective_date`),
+  ADD KEY `idx_club_terms_version` (`club_id`,`version`);
 
 --
 -- Indexes for table `courts`
@@ -1003,7 +1110,7 @@ ALTER TABLE `blocked_slots`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `clubs`
@@ -1012,10 +1119,28 @@ ALTER TABLE `clubs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT for table `club_cancellation_policy`
+--
+ALTER TABLE `club_cancellation_policy`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `club_privacy_policy`
+--
+ALTER TABLE `club_privacy_policy`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT for table `club_schedules`
 --
 ALTER TABLE `club_schedules`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+
+--
+-- AUTO_INCREMENT for table `club_terms_conditions`
+--
+ALTER TABLE `club_terms_conditions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `courts`
@@ -1057,7 +1182,7 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `player_stats`
@@ -1093,7 +1218,7 @@ ALTER TABLE `subscription_plans`
 -- AUTO_INCREMENT for table `time_slots`
 --
 ALTER TABLE `time_slots`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -1105,7 +1230,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `users_sessions`
 --
 ALTER TABLE `users_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `user_subscriptions`
@@ -1135,10 +1260,28 @@ ALTER TABLE `bookings`
   ADD CONSTRAINT `bookings_ibfk_4` FOREIGN KEY (`time_slot_id`) REFERENCES `time_slots` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `club_cancellation_policy`
+--
+ALTER TABLE `club_cancellation_policy`
+  ADD CONSTRAINT `fk_club_cancellation_club` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `club_privacy_policy`
+--
+ALTER TABLE `club_privacy_policy`
+  ADD CONSTRAINT `fk_club_privacy_club` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `club_schedules`
 --
 ALTER TABLE `club_schedules`
   ADD CONSTRAINT `club_schedules_ibfk_1` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `club_terms_conditions`
+--
+ALTER TABLE `club_terms_conditions`
+  ADD CONSTRAINT `fk_club_terms_club` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `courts`

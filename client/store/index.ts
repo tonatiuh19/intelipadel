@@ -4,6 +4,7 @@ import clubsReducer from "./slices/clubsSlice";
 import authReducer from "./slices/authSlice";
 import availabilityReducer from "./slices/availabilitySlice";
 import paymentReducer from "./slices/paymentSlice";
+import clubPoliciesReducer from "./slices/clubPoliciesSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     auth: authReducer,
     availability: availabilityReducer,
     payment: paymentReducer,
+    clubPolicies: clubPoliciesReducer,
   },
 });
 

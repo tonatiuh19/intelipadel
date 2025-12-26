@@ -1209,6 +1209,90 @@ async function sendBookingConfirmationEmail(
   }
 }
 
+// ==================== CLUB POLICIES HANDLERS ====================
+
+/**
+ * GET /api/clubs/:clubId/policies/:policyType
+ * Get active policy for a club (terms, privacy, or cancellation)
+ */
+const handleGetClubPolicy: RequestHandler = async (req, res) => {
+  try {
+    const { clubId, policyType } = req.params;
+
+    // Validate policy type
+    const validTypes = ["terms", "privacy", "cancellation"];
+    if (!validTypes.includes(policyType)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid policy type. Must be 'terms', 'privacy', or 'cancellation'",
+      });
+    }
+
+    // Determine table and fields based on policy type
+    let tableName: string;
+    let selectFields: string;
+    let notFoundMessage: string;
+
+    switch (policyType) {
+      case "terms":
+        tableName = "club_terms_conditions";
+        selectFields =
+          "id, club_id, version, content, effective_date, created_at, updated_at";
+        notFoundMessage = "Terms and conditions not found for this club";
+        break;
+      case "privacy":
+        tableName = "club_privacy_policy";
+        selectFields =
+          "id, club_id, version, content, effective_date, created_at, updated_at";
+        notFoundMessage = "Privacy policy not found for this club";
+        break;
+      case "cancellation":
+        tableName = "club_cancellation_policy";
+        selectFields =
+          "id, club_id, version, content, hours_before_cancellation, refund_percentage, effective_date, created_at, updated_at";
+        notFoundMessage = "Cancellation policy not found for this club";
+        break;
+      default:
+        return res.status(400).json({
+          success: false,
+          message: "Invalid policy type",
+        });
+    }
+
+    const [rows] = await pool.query<any[]>(
+      `SELECT ${selectFields}
+       FROM ${tableName}
+       WHERE club_id = ? AND is_active = 1
+       ORDER BY effective_date DESC, created_at DESC
+       LIMIT 1`,
+      [clubId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: notFoundMessage,
+      });
+    }
+
+    res.json({
+      success: true,
+      data: rows[0],
+    });
+  } catch (error) {
+    console.error(
+      `Error fetching club ${req.params.policyType} policy:`,
+      error,
+    );
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch policy",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 // ==================== BOOKING MANAGEMENT HANDLERS ====================
 
 /**
@@ -1534,6 +1618,10 @@ function createServer() {
   // Clubs routes
   expressApp.get("/api/clubs", handleGetClubs);
   expressApp.get("/api/clubs/:id", handleGetClubById);
+  expressApp.get(
+    "/api/clubs/:clubId/policies/:policyType",
+    handleGetClubPolicy,
+  );
 
   // Bookings routes
   expressApp.get("/api/bookings", handleGetBookings);
