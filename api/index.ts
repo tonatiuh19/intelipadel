@@ -712,6 +712,126 @@ const handleCreateBooking: RequestHandler = async (req, res) => {
   }
 };
 
+/**
+ * Get courts for a club
+ */
+const handleGetCourts: RequestHandler = async (req, res) => {
+  try {
+    const { clubId } = req.params;
+
+    const [courts] = await pool.query(
+      `SELECT * FROM courts WHERE club_id = ? AND is_active = 1 ORDER BY display_order`,
+      [clubId],
+    );
+
+    res.json({
+      success: true,
+      data: courts,
+    });
+  } catch (error) {
+    console.error("Error fetching courts:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch courts",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * Get availability for a specific club and date range
+ * Includes: time slots, existing bookings, blocked slots
+ */
+const handleGetAvailability: RequestHandler = async (req, res) => {
+  try {
+    const { clubId, startDate, endDate, courtId } = req.query;
+
+    if (!clubId || !startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "clubId, startDate, and endDate are required",
+      });
+    }
+
+    // Get club schedule
+    const [schedules]: any = await pool.query(
+      `SELECT * FROM club_schedules WHERE club_id = ?`,
+      [clubId],
+    );
+
+    // Get blocked slots for the date range
+    const [blockedSlots]: any = await pool.query(
+      `SELECT * FROM blocked_slots 
+       WHERE club_id = ? 
+       AND block_date BETWEEN ? AND ?
+       ${courtId ? "AND (court_id = ? OR court_id IS NULL)" : ""}`,
+      courtId
+        ? [clubId, startDate, endDate, courtId]
+        : [clubId, startDate, endDate],
+    );
+
+    // Get existing bookings for the date range
+    const [bookings]: any = await pool.query(
+      `SELECT b.*, c.name as court_name 
+       FROM bookings b
+       LEFT JOIN courts c ON b.court_id = c.id
+       WHERE b.club_id = ? 
+       AND b.booking_date BETWEEN ? AND ?
+       AND b.status IN ('confirmed', 'pending')
+       ${courtId ? "AND b.court_id = ?" : ""}`,
+      courtId
+        ? [clubId, startDate, endDate, courtId]
+        : [clubId, startDate, endDate],
+    );
+
+    // Get all courts for the club
+    const [courts]: any = await pool.query(
+      `SELECT * FROM courts WHERE club_id = ? AND is_active = 1 ${courtId ? "AND id = ?" : ""} ORDER BY display_order`,
+      courtId ? [clubId, courtId] : [clubId],
+    );
+
+    // Get events for the date range (tournaments, clinics, etc.)
+    const [events]: any = await pool.query(
+      `SELECT * FROM events 
+       WHERE club_id = ? 
+       AND event_date BETWEEN ? AND ?
+       AND status IN ('open', 'full', 'in_progress')`,
+      [clubId, startDate, endDate],
+    );
+
+    // Get private classes for the date range
+    const [privateClasses]: any = await pool.query(
+      `SELECT * FROM private_classes 
+       WHERE club_id = ? 
+       AND class_date BETWEEN ? AND ?
+       AND status IN ('confirmed', 'pending')
+       ${courtId ? "AND court_id = ?" : ""}`,
+      courtId
+        ? [clubId, startDate, endDate, courtId]
+        : [clubId, startDate, endDate],
+    );
+
+    res.json({
+      success: true,
+      data: {
+        schedules,
+        blockedSlots,
+        bookings,
+        courts,
+        events,
+        privateClasses,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching availability:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch availability",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 // Create the Express app once (reused across invocations)
 let app: express.Application | null = null;
 
@@ -746,6 +866,8 @@ function createServer() {
   // Bookings routes
   expressApp.get("/api/bookings", handleGetBookings);
   expressApp.post("/api/bookings", handleCreateBooking);
+  expressApp.get("/api/availability", handleGetAvailability);
+  expressApp.get("/api/courts/:clubId", handleGetCourts);
 
   // Auth routes
   expressApp.post("/api/auth/check-user", handleCheckUser);

@@ -1,94 +1,145 @@
 import { useState, useEffect } from "react";
-import { useFormik } from "formik";
-import * as Yup from "yup";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Calendar, Clock, Check, ArrowRight, ArrowLeft } from "lucide-react";
-import { addDays, format } from "date-fns";
+import { Check, ArrowRight, ArrowLeft, MapPin, Star } from "lucide-react";
+import { addDays, format, isSameDay } from "date-fns";
+import { es } from "date-fns/locale";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { createBooking } from "@/store/slices/bookingsSlice";
-import { fetchClubs, selectClub, clearSelectedClub } from "@/store/slices/clubsSlice";
+import { fetchClubs } from "@/store/slices/clubsSlice";
+import {
+  fetchAvailability,
+  clearAvailability,
+} from "@/store/slices/availabilitySlice";
 import { Club } from "@shared/types";
+import { cn } from "@/lib/utils";
+import CalendarSelector from "@/components/booking/CalendarSelector";
+import CourtTimeSlotSelector from "@/components/booking/CourtTimeSlotSelector";
 
-type BookingStep = "club" | "datetime" | "confirm";
+type BookingStep = "club" | "datetime" | "confirm" | "success";
 
-interface BookingWizardProps {
-  onClose?: () => void;
-  autoOpen?: boolean;
+interface Court {
+  id: number;
+  club_id: number;
+  name: string;
+  court_type: string;
+  surface_type: string;
+  has_lighting: boolean;
+  is_active: boolean;
 }
 
-// Validation schema
-const bookingValidationSchema = Yup.object({
-  clubId: Yup.number().required("Por favor selecciona un club"),
-  date: Yup.date().required("Por favor selecciona una fecha"),
-  time: Yup.string().required("Por favor selecciona una hora"),
-  duration: Yup.number().min(60, "Duración mínima 60 minutos").required("Duración requerida"),
-});
-
-export default function BookingWizard({ onClose, autoOpen = false }: BookingWizardProps) {
+export default function BookingWizard() {
   const dispatch = useAppDispatch();
-  const { clubs, selectedClub, loading: clubsLoading } = useAppSelector((state) => state.clubs);
+  const { clubs, loading: clubsLoading } = useAppSelector(
+    (state) => state.clubs,
+  );
   const { loading: bookingLoading } = useAppSelector((state) => state.bookings);
-  
+  const { data: availability, loading: loadingAvailability } = useAppSelector(
+    (state) => state.availability,
+  );
+
   const [step, setStep] = useState<BookingStep>("club");
+  const [selectedClub, setSelectedClub] = useState<Club | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
+  const [duration, setDuration] = useState<number>(60);
 
   useEffect(() => {
     dispatch(fetchClubs());
   }, [dispatch]);
 
-  const formik = useFormik({
-    initialValues: {
-      clubId: 0,
-      clubName: "",
-      date: null as Date | null,
-      time: "",
-      duration: 60,
-    },
-    validationSchema: bookingValidationSchema,
-    onSubmit: async (values) => {
-      if (values.date) {
-        await dispatch(createBooking({
-          clubId: values.clubId,
-          clubName: values.clubName,
-          date: format(values.date, "yyyy-MM-dd"),
-          time: values.time,
-          duration: values.duration,
-        }));
-        
-        alert(
-          `Booking confirmed at ${values.clubName} on ${format(values.date, "MMM dd, yyyy")} at ${values.time}`
-        );
-        
-        // Reset form
-        formik.resetForm();
-        dispatch(clearSelectedClub());
-        setStep("club");
-        onClose?.();
-      }
-    },
-  });
+  // Clear availability when leaving datetime step
+  useEffect(() => {
+    if (step !== "datetime") {
+      dispatch(clearAvailability());
+    }
+  }, [step, dispatch]);
+
+  // Fetch availability for specific date when selected
+  const handleDateSelect = (date: Date) => {
+    if (!selectedClub) {
+      console.warn("No club selected");
+      return;
+    }
+
+    // Check if already selected the same date - no need to refetch
+    if (isSameDay(date, selectedDate) && availability) {
+      console.log("Date already selected with availability data");
+      return;
+    }
+
+    setSelectedDate(date);
+
+    // Clear previously selected time and court
+    setSelectedTime("");
+    setSelectedCourt(null);
+
+    // Fetch availability for the selected date + surrounding context
+    const startDate = format(date, "yyyy-MM-dd");
+    const endDate = format(addDays(date, 7), "yyyy-MM-dd");
+
+    console.log(
+      `Fetching availability for ${selectedClub.name} from ${startDate} to ${endDate}`,
+    );
+
+    dispatch(
+      fetchAvailability({
+        clubId: selectedClub.id,
+        startDate,
+        endDate,
+      }),
+    );
+  };
 
   const handleSelectClub = (club: Club) => {
-    dispatch(selectClub(club));
-    formik.setFieldValue("clubId", club.id);
-    formik.setFieldValue("clubName", club.name);
+    setSelectedClub(club);
     setStep("datetime");
   };
 
-  const handleSelectDateTime = (date: Date, time: string) => {
-    formik.setFieldValue("date", date);
-    formik.setFieldValue("time", time);
+  const handleSelectDateTime = (court: Court, time: string) => {
+    setSelectedCourt(court);
+    setSelectedTime(time);
     setStep("confirm");
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!selectedClub || !selectedDate || !selectedTime || !selectedCourt)
+      return;
+
+    await dispatch(
+      createBooking({
+        user_id: 1, // TODO: Get from auth state
+        club_id: selectedClub.id,
+        court_id: selectedCourt.id,
+        booking_date: format(selectedDate, "yyyy-MM-dd"),
+        start_time: selectedTime,
+        end_time: `${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1]}`,
+        duration_minutes: duration,
+        total_price: selectedClub.price_per_hour * (duration / 60),
+      }),
+    );
+
+    setStep("success");
   };
 
   const goBack = () => {
     if (step === "datetime") {
       setStep("club");
-      formik.setFieldValue("date", null);
-      formik.setFieldValue("time", "");
+      setSelectedClub(null);
     } else if (step === "confirm") {
       setStep("datetime");
+      setSelectedTime("");
+      setSelectedCourt(null);
+    } else if (step === "success") {
+      // Reset everything
+      setStep("club");
+      setSelectedClub(null);
+      setSelectedDate(new Date());
+      setSelectedTime("");
+      setSelectedCourt(null);
+      setDuration(60);
     }
   };
 
@@ -96,260 +147,396 @@ export default function BookingWizard({ onClose, autoOpen = false }: BookingWiza
     if (step === "club") return 1;
     if (step === "datetime") return 2;
     if (step === "confirm") return 3;
+    return 3;
   };
 
-  retu  {formik.errors.clubId && formik.touched.clubId && (
-          <p className="text-red-500 text-sm mt-2">{formik.errors.clubId}</p>
-        )}
-        {formik.errors.date && formik.touched.date && (
-          <p className="text-red-500 text-sm mt-2">{formik.errors.date}</p>
-        )}
-        {formik.errors.time && formik.touched.time && (
-          <p className="text-red-500 text-sm mt-2">{formik.errors.time}</p>
-        )}
-      </div>
+  const goToPreviousMonth = () => {
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1),
+    );
+  };
 
-      {/* Step 1: Select Club */}
-      {step === "club" && (
-        <div className="space-y-4">
-          {clubsLoading ? (
-            <p className="text-center py-8">Cargando clubes...</p>
-          ) : (
-            <h2 className="text-2xl font-bold text-secondary">
-            {step === "club" && "Selecciona Tu Club de Padel"}
-            {step === "datetime" && "Elige Fecha y Hora"}
-            {step === "confirm" && "Confirma Tu Reserva"}
-          </h2>
-          <span className="text-sm font-semibold text-primary">
-            Paso {getStepNumber()} de 3
-          </span>
-        </div>
-        <div className="w-full bg-muted rounded-full h-2">
+  const goToNextMonth = () => {
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1),
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Progress Header */}
+        {step !== "success" && (
           <div
-            className="bg-primary h-2 rounded-full transition-all duration-300"
-            style={{
-              width: step === "club" ? "33%" : step === "datetime" ? "66%" : "100%",
-            }}
-          ></div>
-        </div>
-      </div>
-
-      {/* Step 1: Select Club */}
-      {step === "club" && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {clubs.map((club) => (
-              <Card
-                key={club.id}
-                className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-primary"
-                onClick={() => handleSelectClub(club)}
-              >
-                <div className="aspect-video bg-muted overflow-hidden">
-                  <img
-                    src={club.image}
-          )}
-        </div>
-      )}
-
-      {/* Step 2: Select Date & Time */}
-      {step === "datetime" && selectedC
-                  <h3 className="font-bold text-lg text-secondary mb-1">{club.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-3">{club.location}</p>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="flex items-center">
-                      <span className="text-yellow-400">★</span>
-                      <span className="font-semibold text-sm ml-1">{club.rating}</span>
-                      <span className="text-xs text-muted-foreground ml-1">
-                        ({club.reviews})
-                      </span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Price</p>
-                      <p className="font-bold text-primary">${club.pricePerHour}/hr</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Courts</p>
-                      <p className="font-bold">{club.courtCount}</p>
-                    </div>
-                  </div>
-                  <Button variant="default" className="w-full" size="sm">
-                    Seleccionar Club
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-formik.values.date &&
-                  format(formik.values.date, "yyyy-MM-dd") === format(date, "yyyy-MM-dd");
-                return (
-                  <button
-                    key={dayOffset}
-                    onClick={() => setSelectedDate(date)}
-                    className={`p-3 rounded-lg text-center transition-all ${
-                      isSelected
-                        ? "bg-primary text-primary-foreground font-bold"
-                        : "bg-muted hover:bg-muted text-foreground"
-                    }`}
-                  >
-                    <div className="text-xs font-semibold">
-                      {format(date, "EEE").toUpperCase()}
-                    </div>
-                    <div className="text-sm mt-1">{format(date, "dd")}</div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-secondary mb-4 flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              Selecciona Hora
-            </h3>
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-              {selectedClub.timeSlots.map((slot) => (
-                <button
-                  key={slot.id}
-                  onClick={() => handleSelectDateTime(selectedDate, slot.time)}
-                  disabled={slot.available === 0}
-                  className={`p-3 rounded-lg text-sm font-semibold transition-all ${
-                    slot.available === 0
-                      ? "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
-                      : formik.valuesibold text-secondary mb-4 flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              Selecciona Hora
-            </h3>
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-              {bookingData.club.timeSlots.map((slot) => (
-                <button
-                  key={slot.id}
-                  onClick={() => handleSelectDateTime(selectedDate, slot.time)}
-                  disabled={slot.available === 0}
-                  className={`p-3 rounded-lg text-sm font-semibold transition-all ${
-                    slot.available === 0
-                      ? "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
-                      : bookingData.time === slot.time
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted hover:bg-muted text-foreground hover:border-primary border-2 border-transparent"
-                  }`}
-                >
-                  {slotformik.values.duration}
-                onChange={(e) => formik.setFieldValue("duration", parseInt(e.target.value))}
-                className="bg-background border border-border rounded-lg px-3 py-1 text-sm"
-              >
-                <option value={60}>1 Hora</option>
-                <option value={90}>1.5 Horas</option>
-                <option value={120}>2 Horas</option>
-              </select>
-            </div>
-            <div className="flex justify-between items-center font-bold text-lg">
-              <span>Precio Total</span>
-              <span className="text-primary">
-                ${(selectedClub.pricePerHour * (formik.values.duration / 60)).toFixed(2)}
+            className={cn(
+              "mb-8 transition-all duration-500 transform",
+              "animate-in fade-in slide-in-from-top-4",
+            )}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-3xl font-bold text-foreground">
+                {step === "club" && "Selecciona Tu Club"}
+                {step === "datetime" && "Elige Fecha y Hora"}
+                {step === "confirm" && "Confirma Tu Reserva"}
+              </h2>
+              <span className="text-sm font-semibold text-muted-foreground">
+                Paso {getStepNumber()} de 3
               </span>
             </div>
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width:
+                    step === "club"
+                      ? "33%"
+                      : step === "datetime"
+                        ? "66%"
+                        : "100%",
+                }}
+              />
+            </div>
           </div>
+        )}
 
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={goBack} className="flex-1">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Atrás
-            </Button>
-            <Button
-              variant="default"
-              onClick={() => setStep("confirm")}
-              disabled={!formik.values.date || !formik.values.time}
-              className="flex-1"
-            >
-              Continuar
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Confirm */}
-      {step === "confirm" && selectedClub && formik.values.date && formik.values
-              onClick={handleSelectDateTime}
-              disabled={!bookingData.date || !bookingData.time}
-              className="flex-1"
-            >
-              Continuar
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Confirm */}
-      {step === "confirm" && bookingData.club && bookingData.date && bookingData.time && (
-        <div className="space-y-6">
-          <Card className="p-6 border-2 border-primary bg-gradient-to-br from-primary/5 to-transparent">
-            <h3 className="font-bold text-lg text-secondary mb-4">Resumen de Reserva</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-start">
-                <span className="text-muted-foreground">Club</span>
-                <div className="text-right">selectedClub.name}</p>
-                  <p className="text-sm text-muted-foreground">{selectedClub.location}</p>
-                </div>
+        {/* Step 1: Select Club */}
+        {step === "club" && (
+          <div
+            className={cn(
+              "space-y-4 transition-all duration-500 transform",
+              "animate-in fade-in slide-in-from-right-4",
+            )}
+          >
+            {clubsLoading ? (
+              <div className="text-center py-16">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+                <p className="mt-4 text-muted-foreground">Cargando clubes...</p>
               </div>
-              <div className="border-t border-border pt-3 flex justify-between items-center">
-                <span className="text-muted-foreground">Fecha y Hora</span>
-                <div className="text-right">
-                  <p className="font-semibold text-secondary">
-                    {format(formik.values.date, "dd 'de' MMMM 'de' yyyy")}
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {clubs.map((club, index) => (
+                  <Card
+                    key={club.id}
+                    className={cn(
+                      "overflow-hidden cursor-pointer group",
+                      "hover:shadow-xl hover:scale-[1.02] transition-all duration-300",
+                      "border-2 hover:border-primary",
+                      "animate-in fade-in slide-in-from-bottom-4",
+                    )}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                    onClick={() => handleSelectClub(club)}
+                  >
+                    <div className="aspect-video bg-muted overflow-hidden relative">
+                      <img
+                        src={club.image_url}
+                        alt={club.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <h3 className="font-bold text-xl text-white mb-1">
+                          {club.name}
+                        </h3>
+                        <p className="text-sm text-white/90 flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {club.city}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-semibold text-sm ml-1">
+                            {club.rating}
+                          </span>
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({club.review_count})
+                          </span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div className="bg-muted/50 rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Precio
+                          </p>
+                          <p className="font-bold text-primary text-lg">
+                            €{club.price_per_hour}/hr
+                          </p>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Canchas
+                          </p>
+                          <p className="font-bold text-lg">
+                            {club.court_count || 0}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="default"
+                        className="w-full group-hover:bg-primary group-hover:scale-105 transition-all"
+                        size="sm"
+                      >
+                        Seleccionar Club
+                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Step 2: Select Date & Time */}
+        {step === "datetime" && selectedClub && (
+          <div
+            className={cn(
+              "space-y-6 transition-all duration-500 transform",
+              "animate-in fade-in slide-in-from-right-4",
+            )}
+          >
+            {/* Selected Club Info */}
+            <Card className="p-4 bg-primary/5 border-primary/20">
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 rounded-lg overflow-hidden flex-shrink-0">
+                  <img
+                    src={selectedClub.image_url}
+                    alt={selectedClub.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">{selectedClub.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedClub.city}
                   </p>
-                  <p className="text-sm text-muted-foreground">{formik.values.time}</p>
                 </div>
               </div>
-              <div className="border-t border-border pt-3 flex justify-between items-center">
-                <span className="text-muted-foreground">Duración</span>
-                <p className="font-semibold text-secondary">{formik.values.duration} minutos</p>
-              </div>
-              <div className="border-t border-border pt-3 flex justify-between items-center text-lg font-bold">
-                <span>Precio Total</span>
-                <span className="text-primary">
-                  ${(selectedClub.pricePerHour * (formik.values.duration / 60)).toFixed(2)}
-                </span>
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex gap-3 items-start">
-              <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-green-900">¡Cancha reservada para ti!</p>
-                <p className="text-sm text-green-800 mt-1">
-                  Recibirás un correo de confirmación con todos los detalles.
-                </p>
-              </div>
+            {/* Calendar */}
+            <CalendarSelector
+              currentMonth={currentMonth}
+              selectedDate={selectedDate}
+              availability={availability}
+              onDateSelect={handleDateSelect}
+              onPreviousMonth={goToPreviousMonth}
+              onNextMonth={goToNextMonth}
+            />
+
+            {/* Time Slots */}
+            <CourtTimeSlotSelector
+              selectedDate={selectedDate}
+              selectedTime={selectedTime}
+              selectedCourt={selectedCourt}
+              availability={availability}
+              loading={loadingAvailability}
+              onSelectTimeSlot={handleSelectDateTime}
+            />
+
+            {/* Duration & Price */}
+            {selectedTime && (
+              <Card
+                className={cn(
+                  "p-6 bg-gradient-to-br from-primary/10 to-primary/5",
+                  "animate-in fade-in slide-in-from-bottom-4",
+                )}
+              >
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Duración</span>
+                    <select
+                      value={duration}
+                      onChange={(e) => setDuration(parseInt(e.target.value))}
+                      className="bg-background border border-border rounded-lg px-4 py-2 text-sm font-medium"
+                    >
+                      <option value={60}>1 Hora</option>
+                      <option value={90}>1.5 Horas</option>
+                      <option value={120}>2 Horas</option>
+                    </select>
+                  </div>
+                  <div className="flex justify-between items-center pt-4 border-t">
+                    <span className="font-bold text-lg">Precio Total</span>
+                    <span className="text-2xl font-bold text-primary">
+                      €
+                      {(selectedClub.price_per_hour * (duration / 60)).toFixed(
+                        2,
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Navigation */}
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={goBack}
+                className="flex-1"
+                size="lg"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Atrás
+              </Button>
+              <Button
+                variant="default"
+                onClick={() => setStep("confirm")}
+                disabled={!selectedTime || !selectedCourt}
+                className="flex-1"
+                size="lg"
+              >
+                Continuar
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </div>
           </div>
+        )}
 
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={goBack} className="flex-1">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Atrás
-            </Button>
-            <Button 
-              variant="default" 
-              onClick={() => formik.handleSubmit()} 
-              disabled={bookingLoading}
-              className="flex-1"
+        {/* Step 3: Confirm */}
+        {step === "confirm" &&
+          selectedClub &&
+          selectedDate &&
+          selectedTime &&
+          selectedCourt && (
+            <div
+              className={cn(
+                "space-y-6 transition-all duration-500 transform",
+                "animate-in fade-in slide-in-from-right-4",
+              )}
             >
-              <Check className="mr-2 h-4 w-4" />
-              {bookingLoading ? "Procesando..." : "Confirmar Reserva"}"mr-2 h-4 w-4" />
-              Confirmar Reserva
-            </Button>
+              <Card className="p-6 border-2 border-primary bg-gradient-to-br from-primary/5 to-transparent">
+                <h3 className="font-bold text-xl mb-6">Resumen de Reserva</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start pb-4 border-b">
+                    <span className="text-muted-foreground">Club</span>
+                    <div className="text-right">
+                      <p className="font-semibold text-lg">
+                        {selectedClub.name}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedClub.city}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center pb-4 border-b">
+                    <span className="text-muted-foreground">Cancha</span>
+                    <p className="font-semibold text-lg">
+                      {selectedCourt.name}
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center pb-4 border-b">
+                    <span className="text-muted-foreground">Fecha y Hora</span>
+                    <div className="text-right">
+                      <p className="font-semibold text-lg">
+                        {format(selectedDate, "dd 'de' MMMM 'de' yyyy", {
+                          locale: es,
+                        })}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedTime}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center pb-4 border-b">
+                    <span className="text-muted-foreground">Duración</span>
+                    <p className="font-semibold text-lg">
+                      {duration === 60 ? "1 hora" : `${duration / 60} horas`}
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 text-xl font-bold">
+                    <span>Precio Total</span>
+                    <span className="text-primary">
+                      €
+                      {(selectedClub.price_per_hour * (duration / 60)).toFixed(
+                        2,
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+
+              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                <div className="flex gap-3 items-start">
+                  <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-green-900">
+                      ¡Cancha reservada para ti!
+                    </p>
+                    <p className="text-sm text-green-800 mt-1">
+                      Recibirás un correo de confirmación con todos los
+                      detalles.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={goBack}
+                  className="flex-1"
+                  size="lg"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Atrás
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={handleConfirmBooking}
+                  disabled={bookingLoading}
+                  className="flex-1"
+                  size="lg"
+                >
+                  {bookingLoading ? (
+                    <>
+                      <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-solid border-current border-r-transparent" />
+                      Procesando...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      Confirmar Reserva
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+
+        {/* Step 4: Success */}
+        {step === "success" && (
+          <div
+            className={cn(
+              "text-center py-12 transition-all duration-500 transform",
+              "animate-in fade-in zoom-in-95",
+            )}
+          >
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6 animate-in zoom-in-50 duration-700">
+              <Check className="h-10 w-10 text-green-600" />
+            </div>
+            <h2 className="text-3xl font-bold mb-4">¡Reserva Confirmada!</h2>
+            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+              Tu reserva ha sido confirmada exitosamente. Recibirás un correo
+              con todos los detalles.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Button
+                variant="outline"
+                onClick={() => (window.location.href = "/bookings")}
+                size="lg"
+              >
+                Ver Mis Reservas
+              </Button>
+              <Button variant="default" onClick={goBack} size="lg">
+                Nueva Reserva
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
