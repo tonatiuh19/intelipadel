@@ -10,15 +10,14 @@
 export interface User {
   id: number;
   email: string;
-  first_name: string;
-  last_name: string;
+  name: string;
   phone?: string;
-  role: string;
+  avatar_url?: string;
+  stripe_customer_id?: string;
   is_active: boolean;
-  is_email_verified: boolean;
-  date_of_birth?: string;
   created_at: string;
-  last_login?: string;
+  updated_at?: string;
+  last_login_at?: string;
 }
 
 // ============================================

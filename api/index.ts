@@ -355,7 +355,7 @@ const handleCheckUser: RequestHandler = async (req, res) => {
     }
 
     const [rows] = await pool.query<any[]>(
-      `SELECT id, email, name as first_name, name as last_name, phone, created_at, last_login_at as last_login
+      `SELECT id, email, name, phone, avatar_url, stripe_customer_id, is_active, created_at, updated_at, last_login_at
        FROM users WHERE email = ?`,
       [email],
     );
@@ -456,7 +456,7 @@ const handleSendCode: RequestHandler = async (req, res) => {
     // Get user name from DB
     console.log("📊 Querying user from database...");
     const [userRows] = await pool.query<any[]>(
-      "SELECT name FROM users WHERE id = ?",
+      "SELECT name, email FROM users WHERE id = ?",
       [user_id],
     );
 
@@ -467,7 +467,7 @@ const handleSendCode: RequestHandler = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    const userName = userRows[0].name;
+    const userName = userRows[0].name || userRows[0].email.split("@")[0];
     console.log("✅ User found:", userName);
 
     // Delete old session codes for this user
@@ -610,23 +610,17 @@ const handleVerifyCode: RequestHandler = async (req, res) => {
     }
 
     const user = users[0];
-    const nameParts = user.name.split(" ");
-    const firstName = nameParts[0] || "";
-    const lastName = nameParts.slice(1).join(" ") || "";
 
     res.json({
       success: true,
       patient: {
         id: user.id,
         email: user.email,
-        first_name: firstName,
-        last_name: lastName,
+        name: user.name,
         phone: user.phone,
-        role: "user",
         is_active: user.is_active,
-        is_email_verified: true,
         created_at: user.created_at,
-        last_login: user.last_login_at,
+        last_login_at: user.last_login_at,
       },
     });
   } catch (error) {
@@ -832,6 +826,684 @@ const handleGetAvailability: RequestHandler = async (req, res) => {
   }
 };
 
+// ==================== PAYMENT HANDLERS ====================
+
+/**
+ * Create Stripe Payment Intent
+ * POST /api/payment/create-intent
+ */
+const handleCreatePaymentIntent: RequestHandler = async (req, res) => {
+  try {
+    const {
+      user_id,
+      club_id,
+      court_id,
+      booking_date,
+      start_time,
+      end_time,
+      duration_minutes,
+      total_price,
+    } = req.body;
+
+    if (
+      !user_id ||
+      !club_id ||
+      !court_id ||
+      !booking_date ||
+      !start_time ||
+      !end_time ||
+      !total_price
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    // Create payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(total_price * 100), // Convert to cents
+      currency: "mxn",
+      metadata: {
+        user_id: user_id.toString(),
+        club_id: club_id.toString(),
+        court_id: court_id.toString(),
+        booking_date,
+        start_time,
+        end_time,
+      },
+    });
+
+    // Generate transaction number
+    const transactionNumber = `TXN${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+    // Create pending payment transaction record
+    const [result] = await pool.execute(
+      `INSERT INTO payment_transactions (
+        transaction_number, user_id, club_id, transaction_type,
+        amount, currency, status, payment_provider,
+        stripe_payment_intent_id, metadata, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      [
+        transactionNumber,
+        user_id,
+        club_id,
+        "booking",
+        total_price,
+        "MXN",
+        "pending",
+        "stripe",
+        paymentIntent.id,
+        JSON.stringify({
+          court_id,
+          booking_date,
+          start_time,
+          end_time,
+          duration_minutes,
+        }),
+      ],
+    );
+
+    const transactionId = (result as any).insertId;
+
+    res.json({
+      success: true,
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+      transactionId,
+    });
+  } catch (error) {
+    console.error("Create payment intent error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create payment intent",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * Confirm Payment and Create Booking
+ * POST /api/payment/confirm
+ */
+const handleConfirmPayment: RequestHandler = async (req, res) => {
+  try {
+    const {
+      payment_intent_id,
+      user_id,
+      club_id,
+      court_id,
+      booking_date,
+      start_time,
+      end_time,
+      duration_minutes,
+      total_price,
+    } = req.body;
+
+    if (!payment_intent_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment intent ID is required",
+      });
+    }
+
+    // Initialize Stripe and retrieve payment intent
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    const paymentIntent =
+      await stripe.paymentIntents.retrieve(payment_intent_id);
+
+    if (paymentIntent.status !== "succeeded") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment has not been completed",
+      });
+    }
+
+    // Generate booking number
+    const bookingNumber = `BK${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+    // Start transaction
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // First, create the time_slot entry
+      const [timeSlotResult] = await connection.execute(
+        `INSERT INTO time_slots (
+          court_id, date, start_time, end_time, duration_minutes, 
+          price, is_available, availability_status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 0, 'booked', NOW(), NOW())`,
+        [
+          court_id,
+          booking_date,
+          start_time,
+          end_time,
+          duration_minutes || 60,
+          total_price,
+        ],
+      );
+
+      const timeSlotId = (timeSlotResult as any).insertId;
+
+      // Create booking
+      const [bookingResult] = await connection.execute(
+        `INSERT INTO bookings (
+          booking_number, user_id, club_id, court_id, time_slot_id, booking_date,
+          start_time, end_time, duration_minutes, total_price,
+          status, payment_status, payment_method, stripe_payment_intent_id, confirmed_at, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [
+          bookingNumber,
+          user_id,
+          club_id,
+          court_id,
+          timeSlotId,
+          booking_date,
+          start_time,
+          end_time,
+          duration_minutes || 60,
+          total_price,
+          "confirmed",
+          "paid",
+          "card",
+          payment_intent_id,
+        ],
+      );
+
+      const bookingId = (bookingResult as any).insertId;
+
+      // Update payment transaction
+      await connection.execute(
+        `UPDATE payment_transactions 
+         SET status = 'completed', 
+             booking_id = ?,
+             stripe_charge_id = ?,
+             paid_at = NOW(),
+             updated_at = NOW()
+         WHERE stripe_payment_intent_id = ?`,
+        [bookingId, paymentIntent.latest_charge, payment_intent_id],
+      );
+
+      // Get user details for email
+      const [userRows]: any = await connection.execute(
+        "SELECT email, name FROM users WHERE id = ?",
+        [user_id],
+      );
+      const user = userRows[0];
+
+      // Get club and court details
+      const [clubRows]: any = await connection.execute(
+        "SELECT name, email FROM clubs WHERE id = ?",
+        [club_id],
+      );
+      const club = clubRows[0];
+
+      const [courtRows]: any = await connection.execute(
+        "SELECT name FROM courts WHERE id = ?",
+        [court_id],
+      );
+      const court = courtRows[0];
+
+      // Commit transaction
+      await connection.commit();
+      connection.release();
+
+      // Send confirmation email (async, don't wait)
+      sendBookingConfirmationEmail(
+        user.email,
+        user.name,
+        bookingNumber,
+        club.name,
+        court.name,
+        booking_date,
+        start_time,
+        end_time,
+        total_price,
+      ).catch((error) => {
+        console.error("Failed to send confirmation email:", error);
+      });
+
+      res.json({
+        success: true,
+        data: {
+          bookingId,
+          bookingNumber,
+        },
+      });
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    console.error("Confirm payment error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to confirm payment",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * Send booking confirmation email
+ */
+async function sendBookingConfirmationEmail(
+  email: string,
+  userName: string,
+  bookingNumber: string,
+  clubName: string,
+  courtName: string,
+  bookingDate: string,
+  startTime: string,
+  endTime: string,
+  totalPrice: number,
+): Promise<void> {
+  try {
+    let transportConfig: any;
+
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
+      const testAccount = await nodemailer.createTestAccount();
+      transportConfig = {
+        host: testAccount.smtp.host,
+        port: testAccount.smtp.port,
+        secure: testAccount.smtp.secure,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass,
+        },
+      };
+    } else {
+      transportConfig = {
+        host: process.env.SMTP_HOST || "mail.disruptinglabs.com",
+        port: parseInt(process.env.SMTP_PORT || "465"),
+        secure: process.env.SMTP_SECURE === "true",
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASSWORD,
+        },
+      };
+    }
+
+    const transporter = nodemailer.createTransport(transportConfig);
+
+    const emailBody = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
+          .container { background-color: white; border-radius: 10px; padding: 30px; max-width: 600px; margin: 0 auto; }
+          .header { background-color: #10b981; color: white; padding: 20px; border-radius: 5px; text-align: center; }
+          .booking-details { background-color: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0; }
+          .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0; }
+          .label { font-weight: bold; color: #666; }
+          .value { color: #333; }
+          .total { font-size: 20px; font-weight: bold; color: #10b981; }
+          .footer { color: #666; font-size: 12px; text-align: center; margin-top: 30px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>¡Reserva Confirmada!</h1>
+          </div>
+          <p>Hola ${userName},</p>
+          <p>Tu reserva ha sido confirmada exitosamente. Aquí están los detalles:</p>
+          <div class="booking-details">
+            <div class="detail-row">
+              <span class="label">Número de Reserva:</span>
+              <span class="value">${bookingNumber}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Club:</span>
+              <span class="value">${clubName}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Cancha:</span>
+              <span class="value">${courtName}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Fecha:</span>
+              <span class="value">${bookingDate}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Horario:</span>
+              <span class="value">${startTime} - ${endTime}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Total Pagado:</span>
+              <span class="value total">$${totalPrice.toFixed(2)} MXN</span>
+            </div>
+          </div>
+          <p>Te esperamos en ${clubName}. ¡Disfruta tu partido!</p>
+          <div class="footer">
+            <p>InteliPadel - Tu plataforma de reservas de pádel</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"InteliPadel" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: `Confirmación de Reserva - ${bookingNumber}`,
+      html: emailBody,
+    });
+
+    console.log("Booking confirmation email sent to:", email);
+  } catch (error) {
+    console.error("Failed to send booking confirmation email:", error);
+    throw error;
+  }
+}
+
+// ==================== BOOKING MANAGEMENT HANDLERS ====================
+
+/**
+ * POST /api/bookings/:id/cancel
+ * Cancel a booking
+ */
+const handleCancelBooking: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { cancellation_reason, user_id } = req.body;
+
+    if (!user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    // Get booking to verify ownership and status
+    const [bookings] = await pool.query<any[]>(
+      `SELECT id, user_id, status, booking_date, start_time 
+       FROM bookings WHERE id = ?`,
+      [id],
+    );
+
+    if (bookings.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    const booking = bookings[0];
+
+    // Verify ownership
+    if (booking.user_id !== user_id) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized to cancel this booking",
+      });
+    }
+
+    // Check if already cancelled
+    if (booking.status === "cancelled") {
+      return res.status(400).json({
+        success: false,
+        message: "Booking is already cancelled",
+      });
+    }
+
+    // Check if booking is in the past
+    const bookingDateTime = new Date(
+      `${booking.booking_date} ${booking.start_time}`,
+    );
+    const now = new Date();
+    if (bookingDateTime < now) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot cancel past bookings",
+      });
+    }
+
+    // Update booking status
+    await pool.query(
+      `UPDATE bookings 
+       SET status = 'cancelled',
+           cancellation_reason = ?,
+           cancelled_at = NOW(),
+           updated_at = NOW()
+       WHERE id = ?`,
+      [cancellation_reason || null, id],
+    );
+
+    // Update time slot availability
+    await pool.query(
+      `UPDATE time_slots 
+       SET is_available = 1, 
+           availability_status = 'available',
+           updated_at = NOW()
+       WHERE id = (SELECT time_slot_id FROM bookings WHERE id = ?)`,
+      [id],
+    );
+
+    res.json({
+      success: true,
+      message: "Booking cancelled successfully",
+    });
+  } catch (error) {
+    console.error("Error cancelling booking:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to cancel booking",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/bookings/:id/request-invoice
+ * Request an invoice for a booking
+ */
+const handleRequestInvoice: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user_id } = req.body;
+
+    if (!user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    // Get booking to verify ownership and status
+    const [bookings] = await pool.query<any[]>(
+      `SELECT b.id, b.user_id, b.status, b.payment_status, b.factura_requested,
+              c.name as club_name, c.email as club_email,
+              u.email as user_email, u.name as user_name
+       FROM bookings b
+       JOIN clubs c ON b.club_id = c.id
+       JOIN users u ON b.user_id = u.id
+       WHERE b.id = ?`,
+      [id],
+    );
+
+    if (bookings.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    const booking = bookings[0];
+
+    // Verify ownership
+    if (booking.user_id !== user_id) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized to request invoice for this booking",
+      });
+    }
+
+    // Check if payment is completed
+    if (booking.payment_status !== "paid") {
+      return res.status(400).json({
+        success: false,
+        message: "Invoice can only be requested for paid bookings",
+      });
+    }
+
+    // Check if already requested
+    if (booking.factura_requested) {
+      return res.json({
+        success: true,
+        message: "Invoice has already been requested",
+      });
+    }
+
+    // Update booking to mark invoice requested
+    await pool.query(
+      `UPDATE bookings 
+       SET factura_requested = 1,
+           factura_requested_at = NOW(),
+           updated_at = NOW()
+       WHERE id = ?`,
+      [id],
+    );
+
+    // Send notification email to club
+    try {
+      let transportConfig: any;
+
+      if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
+        const testAccount = await nodemailer.createTestAccount();
+        transportConfig = {
+          host: testAccount.smtp.host,
+          port: testAccount.smtp.port,
+          secure: testAccount.smtp.secure,
+          auth: {
+            user: testAccount.user,
+            pass: testAccount.pass,
+          },
+        };
+      } else {
+        transportConfig = {
+          host: process.env.SMTP_HOST || "mail.disruptinglabs.com",
+          port: parseInt(process.env.SMTP_PORT || "465"),
+          secure: process.env.SMTP_SECURE === "true",
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASSWORD,
+          },
+        };
+      }
+
+      const transporter = nodemailer.createTransport(transportConfig);
+
+      await transporter.sendMail({
+        from:
+          process.env.SMTP_FROM || `"InteliPadel" <${process.env.SMTP_USER}>`,
+        to: booking.club_email,
+        subject: `Solicitud de Factura - Reserva #${id}`,
+        html: `
+          <h2>Solicitud de Factura</h2>
+          <p>El usuario ${booking.user_name} (${booking.user_email}) ha solicitado una factura para la reserva #${id}.</p>
+          <p>Por favor, genera y envía la factura a la brevedad posible.</p>
+        `,
+      });
+
+      console.log("Invoice request notification sent to club");
+    } catch (emailError) {
+      console.error("Failed to send invoice request notification:", emailError);
+      // Don't fail the request if email fails
+    }
+
+    res.json({
+      success: true,
+      message: "Invoice request submitted successfully",
+    });
+  } catch (error) {
+    console.error("Error requesting invoice:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to request invoice",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * PUT /api/users/:id
+ * Update user profile information
+ */
+const handleUpdateUser: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, phone, requesting_user_id } = req.body;
+
+    // Verify the requesting user is updating their own profile
+    if (parseInt(id) !== requesting_user_id) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only update your own profile",
+      });
+    }
+
+    // Validate required fields
+    if (!name || name.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required",
+      });
+    }
+
+    // Update user information
+    await pool.query(
+      `UPDATE users 
+       SET name = ?, phone = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?`,
+      [name.trim(), phone?.trim() || null, id],
+    );
+
+    // Fetch updated user data
+    const [users] = await pool.query<any[]>(
+      `SELECT id, email, name, phone, avatar_url, stripe_customer_id, 
+              is_active, created_at, updated_at, last_login_at
+       FROM users 
+       WHERE id = ?`,
+      [id],
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found after update",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      data: users[0],
+    });
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update profile",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+// ==================== SERVER INITIALIZATION ====================
+
 // Create the Express app once (reused across invocations)
 let app: express.Application | null = null;
 
@@ -866,6 +1538,8 @@ function createServer() {
   // Bookings routes
   expressApp.get("/api/bookings", handleGetBookings);
   expressApp.post("/api/bookings", handleCreateBooking);
+  expressApp.post("/api/bookings/:id/cancel", handleCancelBooking);
+  expressApp.post("/api/bookings/:id/request-invoice", handleRequestInvoice);
   expressApp.get("/api/availability", handleGetAvailability);
   expressApp.get("/api/courts/:clubId", handleGetCourts);
 
@@ -874,6 +1548,13 @@ function createServer() {
   expressApp.post("/api/auth/create-user", handleCreateUser);
   expressApp.post("/api/auth/send-code", handleSendCode);
   expressApp.post("/api/auth/verify-code", handleVerifyCode);
+
+  // User routes
+  expressApp.put("/api/users/:id", handleUpdateUser);
+
+  // Payment routes
+  expressApp.post("/api/payment/create-intent", handleCreatePaymentIntent);
+  expressApp.post("/api/payment/confirm", handleConfirmPayment);
 
   // 404 handler - only for API routes
   expressApp.use("/api", (_req, res, next) => {

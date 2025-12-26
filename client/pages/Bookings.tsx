@@ -1,30 +1,132 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Calendar, Clock, MapPin } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Calendar, Clock, MapPin, FileText, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchBookings } from "@/store/slices/bookingsSlice";
-import { motion } from "framer-motion";
+import {
+  fetchBookings,
+  cancelBooking,
+  requestInvoice,
+} from "@/store/slices/bookingsSlice";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Bookings() {
   const dispatch = useAppDispatch();
   const { bookings, loading, error } = useAppSelector(
     (state) => state.bookings,
   );
+  const { user } = useAppSelector((state) => state.auth);
+  const { toast } = useToast();
+
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
-    dispatch(fetchBookings());
-  }, [dispatch]);
+    if (user?.id) {
+      dispatch(fetchBookings(user.id));
+    }
+  }, [dispatch, user]);
+
+  const handleCancelClick = (bookingId: number) => {
+    setSelectedBookingId(bookingId);
+    setCancelDialogOpen(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (selectedBookingId && user?.id) {
+      await dispatch(
+        cancelBooking({
+          bookingId: selectedBookingId,
+          userId: user.id,
+          cancellationReason: "Cancelled by user",
+        }),
+      );
+      setCancelDialogOpen(false);
+      setSelectedBookingId(null);
+    }
+  };
+
+  const handleRequestInvoice = async (bookingId: number) => {
+    if (user?.id) {
+      const result = await dispatch(
+        requestInvoice({ bookingId, userId: user.id }),
+      );
+
+      if (result.meta.requestStatus === "fulfilled") {
+        toast({
+          title: "Solicitud enviada",
+          description:
+            "El club ha sido notificado y se pondrá en contacto contigo para solicitar los detalles necesarios para tu factura.",
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description:
+            "No se pudo enviar la solicitud. Por favor intenta de nuevo.",
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      confirmed: { label: "Confirmada", className: "bg-green-500" },
+      pending: { label: "Pendiente", className: "bg-yellow-500" },
+      completed: { label: "Completada", className: "bg-blue-500" },
+      cancelled: { label: "Cancelada", className: "bg-red-500" },
+      no_show: { label: "No presentó", className: "bg-gray-500" },
+    };
+
+    const config =
+      statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    return (
+      <Badge className={cn("text-white", config.className)}>
+        {config.label}
+      </Badge>
+    );
+  };
+
+  const canCancel = (booking: any) => {
+    if (booking.status === "cancelled" || booking.status === "completed") {
+      return false;
+    }
+    // Extract date part only from booking_date (which comes as ISO string)
+    const dateStr = booking.booking_date.split("T")[0];
+    const bookingDateTime = new Date(`${dateStr} ${booking.start_time}`);
+    return bookingDateTime > new Date();
+  };
+
+  const canRequestInvoice = (booking: any) => {
+    return booking.payment_status === "paid" && booking.factura_requested !== 1;
+  };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <Header />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-secondary mb-4">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
             Mis Reservas
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -34,88 +136,160 @@ export default function Bookings() {
 
         {loading && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Cargando reservas...</p>
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+            <p className="mt-4 text-muted-foreground">Cargando reservas...</p>
           </div>
         )}
 
         {error && (
-          <div className="text-center py-12">
-            <p className="text-red-500">{error}</p>
-            <Button onClick={() => dispatch(fetchBookings())} className="mt-4">
+          <Card className="p-8 text-center">
+            <p className="text-red-500 mb-4">{error}</p>
+            <Button
+              onClick={() => user?.id && dispatch(fetchBookings(user.id))}
+            >
               Intentar de nuevo
             </Button>
-          </div>
-        )}
-
-        {!loading && !error && bookings.length > 0 && (
-          <div className="space-y-4 max-w-3xl mx-auto">
-            {bookings.map((booking, idx) => (
-              <motion.div
-                key={booking.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-              >
-                <Card className="p-6 hover:shadow-lg transition-all">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="font-bold text-xl text-secondary mb-1">
-                        {booking.clubName}
-                      </h3>
-                      <Badge
-                        variant={
-                          booking.status === "confirmed"
-                            ? "default"
-                            : booking.status === "cancelled"
-                              ? "destructive"
-                              : "secondary"
-                        }
-                      >
-                        {booking.status === "confirmed"
-                          ? "Confirmado"
-                          : booking.status === "cancelled"
-                            ? "Cancelado"
-                            : "Pendiente"}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center text-muted-foreground">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      <span className="text-sm">{booking.date}</span>
-                    </div>
-                    <div className="flex items-center text-muted-foreground">
-                      <Clock className="h-4 w-4 mr-2" />
-                      <span className="text-sm">{booking.time}</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <p className="text-sm text-muted-foreground">
-                      Duración: {booking.duration} minutos
-                    </p>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+          </Card>
         )}
 
         {!loading && !error && bookings.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">
-              No tienes reservas todavía
+          <Card className="p-12 text-center">
+            <Calendar className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No tienes reservas</h3>
+            <p className="text-muted-foreground mb-6">
+              ¡Haz tu primera reserva y comienza a jugar!
             </p>
-            <Button asChild size="lg">
-              <Link to="/booking">
-                Hacer una Reserva
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
+            <Link to="/booking">
+              <Button size="lg">Nueva Reserva</Button>
+            </Link>
+          </Card>
+        )}
+
+        {!loading && !error && bookings.length > 0 && (
+          <div className="grid gap-6">
+            {bookings.map((booking: any, index: number) => (
+              <Card
+                key={booking.id}
+                className={cn(
+                  "overflow-hidden transition-all duration-300 hover:shadow-lg",
+                  "animate-in fade-in slide-in-from-bottom-4",
+                )}
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-bold">
+                          {booking.club_name}
+                        </h3>
+                        {getStatusBadge(booking.status)}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Reserva #{booking.booking_number}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="text-lg">
+                      ${Number(booking.total_price).toFixed(2)} MXN
+                    </Badge>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-4 mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Calendar className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Fecha</p>
+                        <p className="font-semibold">
+                          {format(
+                            new Date(booking.booking_date),
+                            "dd 'de' MMMM",
+                            { locale: es },
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Clock className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Horario</p>
+                        <p className="font-semibold">
+                          {booking.start_time.slice(0, 5)} -{" "}
+                          {booking.end_time.slice(0, 5)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <MapPin className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Cancha</p>
+                        <p className="font-semibold">{booking.court_name}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    {canCancel(booking) && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleCancelClick(booking.id)}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Cancelar Reserva
+                      </Button>
+                    )}
+
+                    {canRequestInvoice(booking) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRequestInvoice(booking.id)}
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Solicitar Factura
+                      </Button>
+                    )}
+
+                    {booking.factura_requested === 1 && (
+                      <Badge variant="secondary" className="px-3 py-1">
+                        <FileText className="h-3 w-3 mr-1" />
+                        Factura solicitada
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
         )}
       </div>
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Cancelar reserva?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. La reserva será cancelada y el
+              horario quedará disponible para otros usuarios.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No, mantener reserva</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmCancel}>
+              Sí, cancelar reserva
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

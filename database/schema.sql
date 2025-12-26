@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 26, 2025 at 12:23 PM
+-- Generation Time: Dec 26, 2025 at 02:15 PM
 -- Server version: 5.7.23-23
 -- PHP Version: 8.1.34
 
@@ -90,9 +90,9 @@ CREATE TABLE `blocked_slots` (
 --
 
 INSERT INTO `blocked_slots` (`id`, `club_id`, `court_id`, `block_type`, `block_date`, `start_time`, `end_time`, `is_all_day`, `reason`, `notes`, `created_by_admin_id`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 'maintenance', '2025-12-25', '09:00:00', '13:00:00', 0, 'Court resurfacing', NULL, NULL, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(2, 1, NULL, 'holiday', '2025-01-01', NULL, NULL, 1, 'New Year - Club Closed', NULL, NULL, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(3, 2, 2, 'maintenance', '2025-12-26', '08:00:00', '12:00:00', 0, 'Glass panel replacement', NULL, NULL, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
+(1, 1, 5, 'maintenance', '2026-02-25', '09:00:00', '13:00:00', 0, 'Court resurfacing', NULL, NULL, '2025-12-22 22:29:49', '2025-12-26 19:09:22'),
+(2, 1, NULL, 'holiday', '2026-01-01', NULL, NULL, 1, 'New Year - Club Closed', NULL, NULL, '2025-12-22 22:29:49', '2025-12-26 18:52:27'),
+(3, 2, 2, 'maintenance', '2026-01-06', '08:00:00', '12:00:00', 0, 'Glass panel replacement', NULL, NULL, '2025-12-22 22:29:49', '2025-12-26 19:06:36');
 
 -- --------------------------------------------------------
 
@@ -115,15 +115,27 @@ CREATE TABLE `bookings` (
   `status` enum('pending','confirmed','completed','cancelled','no_show') COLLATE utf8mb4_unicode_ci DEFAULT 'confirmed',
   `payment_status` enum('pending','paid','refunded','failed') COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
   `payment_method` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `stripe_payment_intent_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Stripe payment intent ID for this booking',
   `booking_type` enum('single','recurring') COLLATE utf8mb4_unicode_ci DEFAULT 'single',
   `is_recurring` tinyint(1) DEFAULT '0',
   `notes` text COLLATE utf8mb4_unicode_ci,
+  `factura_requested` tinyint(1) DEFAULT '0' COMMENT 'Whether user has requested an invoice',
+  `factura_requested_at` timestamp NULL DEFAULT NULL COMMENT 'When the invoice was requested',
+  `factura_sent_at` timestamp NULL DEFAULT NULL COMMENT 'When the invoice was sent to user',
   `cancellation_reason` text COLLATE utf8mb4_unicode_ci,
   `cancelled_at` timestamp NULL DEFAULT NULL,
   `confirmed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `bookings`
+--
+
+INSERT INTO `bookings` (`id`, `booking_number`, `user_id`, `club_id`, `court_id`, `time_slot_id`, `booking_date`, `start_time`, `end_time`, `duration_minutes`, `total_price`, `status`, `payment_status`, `payment_method`, `stripe_payment_intent_id`, `booking_type`, `is_recurring`, `notes`, `factura_requested`, `factura_requested_at`, `factura_sent_at`, `cancellation_reason`, `cancelled_at`, `confirmed_at`, `created_at`, `updated_at`) VALUES
+(3, 'BK1766778360951457', 2, 1, 13, 2, '2025-12-28', '10:00:00', '11:00:00', 60, 45.00, 'confirmed', 'paid', 'card', NULL, 'single', 0, NULL, 1, '2025-12-26 20:07:59', NULL, NULL, NULL, '2025-12-26 19:46:01', '2025-12-26 19:46:01', '2025-12-26 20:07:59'),
+(4, 'BK1766778754513559', 2, 1, 5, 3, '2025-12-28', '09:00:00', '10:00:00', 60, 45.00, 'confirmed', 'paid', 'card', 'pi_3Sih3VCDsJ3n85lg0zGGh6PU', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-26 19:52:34', '2025-12-26 19:52:34', '2025-12-26 19:52:34');
 
 -- --------------------------------------------------------
 
@@ -450,7 +462,13 @@ CREATE TABLE `payment_transactions` (
 --
 
 INSERT INTO `payment_transactions` (`id`, `transaction_number`, `user_id`, `club_id`, `transaction_type`, `booking_id`, `subscription_id`, `event_participant_id`, `private_class_id`, `amount`, `currency`, `status`, `payment_method_id`, `payment_provider`, `stripe_payment_intent_id`, `stripe_charge_id`, `stripe_invoice_id`, `stripe_refund_id`, `provider_transaction_id`, `provider_response`, `refund_amount`, `refund_reason`, `refunded_at`, `paid_at`, `failed_at`, `failure_reason`, `failure_code`, `metadata`, `created_at`, `updated_at`) VALUES
-(1, 'TXN20251201001', 1, 1, 'subscription', NULL, 1, NULL, NULL, 59.99, 'EUR', 'completed', 1, 'stripe', NULL, NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-01 16:05:00', NULL, NULL, NULL, NULL, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
+(1, 'TXN20251201001', 1, 1, 'subscription', NULL, 1, NULL, NULL, 59.99, 'EUR', 'completed', 1, 'stripe', NULL, NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-01 16:05:00', NULL, NULL, NULL, NULL, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
+(2, 'TXN1766777691976659', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'EUR', 'pending', NULL, 'stripe', 'pi_3SigmlCDsJ3n85lg04VtoJYD', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:34:52', '2025-12-26 19:34:52'),
+(3, 'TXN176677773994135', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'EUR', 'pending', NULL, 'stripe', 'pi_3SignXCDsJ3n85lg0cwVGVYs', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:35:40', '2025-12-26 19:35:40'),
+(4, 'TXN1766777884014930', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'EUR', 'pending', NULL, 'stripe', 'pi_3SigprCDsJ3n85lg1SnOd7um', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"12:00\", \"start_time\": \"11:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:38:04', '2025-12-26 19:38:04'),
+(5, 'TXN1766778228543403', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'EUR', 'pending', NULL, 'stripe', 'pi_3SigvQCDsJ3n85lg05dWZp2Q', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:43:48', '2025-12-26 19:43:48'),
+(6, 'TXN1766778345200606', 2, 1, 'booking', 3, NULL, NULL, NULL, 45.00, 'EUR', 'completed', NULL, 'stripe', 'pi_3SigxJCDsJ3n85lg1dWU5kO5', 'ch_3SigxJCDsJ3n85lg1JfleqEN', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 19:46:01', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:45:45', '2025-12-26 19:46:01'),
+(7, 'TXN1766778729944755', 2, 1, 'booking', 4, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sih3VCDsJ3n85lg0zGGh6PU', 'ch_3Sih3VCDsJ3n85lg0BhnRHIS', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 19:52:35', NULL, NULL, NULL, '{\"court_id\": 5, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:52:10', '2025-12-26 19:52:35');
 
 -- --------------------------------------------------------
 
@@ -626,6 +644,14 @@ CREATE TABLE `time_slots` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `time_slots`
+--
+
+INSERT INTO `time_slots` (`id`, `court_id`, `date`, `start_time`, `end_time`, `duration_minutes`, `price`, `is_available`, `availability_status`, `created_at`, `updated_at`) VALUES
+(2, 13, '2025-12-28', '10:00:00', '11:00:00', 60, 45.00, 0, 'booked', '2025-12-26 19:46:01', '2025-12-26 19:46:01'),
+(3, 5, '2025-12-28', '09:00:00', '10:00:00', 60, 45.00, 0, 'booked', '2025-12-26 19:52:34', '2025-12-26 19:52:34');
+
 -- --------------------------------------------------------
 
 --
@@ -651,7 +677,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `email`, `name`, `phone`, `avatar_url`, `stripe_customer_id`, `is_active`, `created_at`, `updated_at`, `last_login_at`) VALUES
 (1, 'user@example.com', 'John Doe', NULL, NULL, NULL, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49', NULL),
-(2, 'axgoomez@gmail.com', 'Felix Gomez', '4741400363', NULL, NULL, 1, '2025-12-23 18:23:11', '2025-12-23 18:33:05', '2025-12-23 18:33:05');
+(2, 'axgoomez@gmail.com', 'Felix Gomez', '4741400363', NULL, NULL, 1, '2025-12-23 18:23:11', '2025-12-26 19:34:51', '2025-12-26 19:34:51');
 
 -- --------------------------------------------------------
 
@@ -676,7 +702,7 @@ CREATE TABLE `users_sessions` (
 --
 
 INSERT INTO `users_sessions` (`id`, `user_id`, `session_code`, `user_session`, `user_session_date_start`, `created_at`, `expires_at`, `ip_address`, `user_agent`) VALUES
-(2, 2, 509900, 1, '2025-12-23 18:32:52', '2025-12-23 18:32:52', NULL, NULL, NULL);
+(3, 2, 667644, 1, '2025-12-26 18:34:35', '2025-12-26 19:34:35', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -757,7 +783,9 @@ ALTER TABLE `bookings`
   ADD KEY `idx_user_id` (`user_id`),
   ADD KEY `idx_club_date` (`club_id`,`booking_date`),
   ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_date_range` (`booking_date`,`start_time`);
+  ADD KEY `idx_date_range` (`booking_date`,`start_time`),
+  ADD KEY `idx_stripe_payment_intent` (`stripe_payment_intent_id`),
+  ADD KEY `idx_factura_requested` (`factura_requested`);
 
 --
 -- Indexes for table `clubs`
@@ -975,7 +1003,7 @@ ALTER TABLE `blocked_slots`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `clubs`
@@ -1029,7 +1057,7 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `player_stats`
@@ -1065,7 +1093,7 @@ ALTER TABLE `subscription_plans`
 -- AUTO_INCREMENT for table `time_slots`
 --
 ALTER TABLE `time_slots`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -1077,7 +1105,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `users_sessions`
 --
 ALTER TABLE `users_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `user_subscriptions`

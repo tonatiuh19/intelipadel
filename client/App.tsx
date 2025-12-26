@@ -8,6 +8,7 @@ import Clubs from "./pages/Clubs";
 import Bookings from "./pages/Bookings";
 import About from "./pages/About";
 import Booking from "./pages/Booking";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,14 +21,15 @@ export default function App() {
         <Sonner />
         <BrowserRouter>
           <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/booking" element={<Booking />} />
-          <Route path="/clubs" element={<Clubs />} />
-          <Route path="/bookings" element={<Bookings />} />
-          <Route path="/about" element={<About />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/booking" element={<Booking />} />
+            <Route path="/clubs" element={<Clubs />} />
+            <Route path="/bookings" element={<Bookings />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/about" element={<About />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

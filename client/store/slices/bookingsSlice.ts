@@ -32,6 +32,40 @@ export const fetchBookings = createAsyncThunk(
   },
 );
 
+// Async thunk for cancelling a booking
+export const cancelBooking = createAsyncThunk(
+  "bookings/cancelBooking",
+  async ({
+    bookingId,
+    userId,
+    cancellationReason,
+  }: {
+    bookingId: number;
+    userId: number;
+    cancellationReason?: string;
+  }) => {
+    const response = await axios.post(`/api/bookings/${bookingId}/cancel`, {
+      user_id: userId,
+      cancellation_reason: cancellationReason,
+    });
+    return { ...response.data, bookingId };
+  },
+);
+
+// Async thunk for requesting an invoice
+export const requestInvoice = createAsyncThunk(
+  "bookings/requestInvoice",
+  async ({ bookingId, userId }: { bookingId: number; userId: number }) => {
+    const response = await axios.post(
+      `/api/bookings/${bookingId}/request-invoice`,
+      {
+        user_id: userId,
+      },
+    );
+    return { ...response.data, bookingId };
+  },
+);
+
 const bookingsSlice = createSlice({
   name: "bookings",
   initialState,
@@ -62,11 +96,49 @@ const bookingsSlice = createSlice({
       })
       .addCase(fetchBookings.fulfilled, (state, action) => {
         state.loading = false;
-        state.bookings = action.payload;
+        state.bookings = action.payload.data || action.payload;
       })
       .addCase(fetchBookings.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch bookings";
+      })
+      // Cancel booking
+      .addCase(cancelBooking.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(cancelBooking.fulfilled, (state, action) => {
+        state.loading = false;
+        // Update the booking status in state
+        const booking = state.bookings.find(
+          (b: any) => b.id === action.payload.bookingId,
+        );
+        if (booking) {
+          (booking as any).status = "cancelled";
+        }
+      })
+      .addCase(cancelBooking.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to cancel booking";
+      })
+      // Request invoice
+      .addCase(requestInvoice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(requestInvoice.fulfilled, (state, action) => {
+        state.loading = false;
+        // Update the factura_requested flag in state
+        const booking = state.bookings.find(
+          (b: any) => b.id === action.payload.bookingId,
+        );
+        if (booking) {
+          (booking as any).factura_requested = 1;
+        }
+      })
+      .addCase(requestInvoice.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to request invoice";
       });
   },
 });

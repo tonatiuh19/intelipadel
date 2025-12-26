@@ -126,6 +126,34 @@ export const verifyCode = createAsyncThunk(
   },
 );
 
+/**
+ * Update user profile
+ */
+export const updateUserProfile = createAsyncThunk(
+  "auth/updateProfile",
+  async (
+    userData: {
+      userId: number;
+      name: string;
+      phone?: string;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await axios.put(`/api/users/${userData.userId}`, {
+        name: userData.name,
+        phone: userData.phone,
+        requesting_user_id: userData.userId,
+      });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update profile",
+      );
+    }
+  },
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -174,7 +202,9 @@ const authSlice = createSlice({
             state.error =
               "Tu cuenta ha sido desactivada. Por favor, contacta a soporte para más información.";
           } else {
-            state.authStep = "verify-code";
+            // Stay on email step, let sendCode be triggered by useEffect
+            // authStep will be updated after sendCode succeeds
+            state.authStep = "email";
           }
         } else {
           state.tempEmail = action.meta.arg;
@@ -238,6 +268,25 @@ const authSlice = createSlice({
         localStorage.setItem("intelipadel_user", JSON.stringify(patient));
       })
       .addCase(verifyCode.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Update Profile
+    builder
+      .addCase(updateUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        const { data } = action.payload;
+        state.user = data;
+
+        // Update localStorage
+        localStorage.setItem("intelipadel_user", JSON.stringify(data));
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

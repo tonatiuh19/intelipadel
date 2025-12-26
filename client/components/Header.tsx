@@ -27,9 +27,11 @@ export default function Header() {
 
   const getUserInitials = () => {
     if (!user) return "U";
-    const firstInitial = user.first_name?.charAt(0) || "";
-    const lastInitial = user.last_name?.charAt(0) || "";
-    return (firstInitial + lastInitial).toUpperCase() || "U";
+    const nameParts = user.name?.split(" ") || [];
+    if (nameParts.length >= 2) {
+      return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+    }
+    return user.name?.charAt(0).toUpperCase() || "U";
   };
 
   return (
@@ -54,7 +56,7 @@ export default function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
-              <Link
+              {/* <Link
                 to="/clubs"
                 className="text-foreground hover:text-primary transition-all duration-300 font-medium relative group"
               >
@@ -76,7 +78,7 @@ export default function Header() {
               >
                 <span>Acerca de</span>
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </Link>
+              </Link> */}
             </nav>
 
             {/* Desktop Auth / User Menu */}
@@ -99,7 +101,7 @@ export default function Header() {
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">
-                          {user.first_name} {user.last_name}
+                          {user.name}
                         </p>
                         <p className="text-xs leading-none text-muted-foreground">
                           {user.email}
@@ -169,7 +171,7 @@ export default function Header() {
           {/* Mobile Navigation */}
           {mobileOpen && (
             <nav className="md:hidden pb-4 space-y-2 backdrop-blur-xl bg-white/50 rounded-lg p-2 mt-2">
-              <Link
+              {/* <Link
                 to="/clubs"
                 className="block px-4 py-2 text-foreground hover:bg-white/70 rounded-lg transition-all duration-300 backdrop-blur-sm"
                 onClick={() => setMobileOpen(false)}
@@ -191,14 +193,14 @@ export default function Header() {
                 onClick={() => setMobileOpen(false)}
               >
                 Acerca de
-              </Link>
+              </Link> */}
 
               <div className="pt-2 space-y-2">
                 {isAuthenticated && user ? (
                   <>
                     <div className="px-4 py-2 border-t border-white/30 mt-2 pt-3">
                       <p className="text-sm font-medium">
-                        {user.first_name} {user.last_name}
+                        {user.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {user.email}

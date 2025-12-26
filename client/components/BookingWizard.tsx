@@ -5,18 +5,28 @@ import { Check, ArrowRight, ArrowLeft, MapPin, Star } from "lucide-react";
 import { addDays, format, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { createBooking } from "@/store/slices/bookingsSlice";
 import { fetchClubs } from "@/store/slices/clubsSlice";
 import {
   fetchAvailability,
   clearAvailability,
 } from "@/store/slices/availabilitySlice";
+import { createPaymentIntent, resetPayment } from "@/store/slices/paymentSlice";
 import { Club } from "@shared/types";
 import { cn } from "@/lib/utils";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
 import CalendarSelector from "@/components/booking/CalendarSelector";
 import CourtTimeSlotSelector from "@/components/booking/CourtTimeSlotSelector";
+import AuthModal from "@/components/auth/AuthModal";
+import BookingSummary from "@/components/booking/BookingSummary";
+import StripePaymentForm from "@/components/booking/StripePaymentForm";
+import PaymentSuccessModal from "@/components/booking/PaymentSuccessModal";
+import PaymentFailedModal from "@/components/booking/PaymentFailedModal";
 
-type BookingStep = "club" | "datetime" | "confirm" | "success";
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
+
+type BookingStep = "club" | "datetime" | "auth" | "payment" | "success";
 
 interface Court {
   id: number;
@@ -33,9 +43,12 @@ export default function BookingWizard() {
   const { clubs, loading: clubsLoading } = useAppSelector(
     (state) => state.clubs,
   );
-  const { loading: bookingLoading } = useAppSelector((state) => state.bookings);
   const { data: availability, loading: loadingAvailability } = useAppSelector(
     (state) => state.availability,
+  );
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { clientSecret, loading: paymentLoading } = useAppSelector(
+    (state) => state.payment,
   );
 
   const [step, setStep] = useState<BookingStep>("club");
@@ -45,6 +58,10 @@ export default function BookingWizard() {
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
   const [duration, setDuration] = useState<number>(60);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFailedModal, setShowFailedModal] = useState(false);
+  const [bookingNumber, setBookingNumber] = useState<string>("");
 
   useEffect(() => {
     dispatch(fetchClubs());
@@ -56,6 +73,14 @@ export default function BookingWizard() {
       dispatch(clearAvailability());
     }
   }, [step, dispatch]);
+
+  // Watch for authentication success to proceed to payment
+  useEffect(() => {
+    if (step === "auth" && isAuthenticated) {
+      setShowAuthModal(false);
+      handleProceedToPayment();
+    }
+  }, [isAuthenticated, step]);
 
   // Fetch availability for specific date when selected
   const handleDateSelect = (date: Date) => {
@@ -101,53 +126,91 @@ export default function BookingWizard() {
   const handleSelectDateTime = (court: Court, time: string) => {
     setSelectedCourt(court);
     setSelectedTime(time);
-    setStep("confirm");
   };
 
-  const handleConfirmBooking = async () => {
-    if (!selectedClub || !selectedDate || !selectedTime || !selectedCourt)
+  const handleContinueToPayment = () => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      setStep("auth");
+      setShowAuthModal(true);
+    } else {
+      handleProceedToPayment();
+    }
+  };
+
+  const handleProceedToPayment = async () => {
+    if (
+      !selectedClub ||
+      !selectedDate ||
+      !selectedTime ||
+      !selectedCourt ||
+      !user
+    ) {
       return;
+    }
 
-    await dispatch(
-      createBooking({
-        user_id: 1, // TODO: Get from auth state
-        club_id: selectedClub.id,
-        court_id: selectedCourt.id,
-        booking_date: format(selectedDate, "yyyy-MM-dd"),
-        start_time: selectedTime,
-        end_time: `${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1]}`,
-        duration_minutes: duration,
-        total_price: selectedClub.price_per_hour * (duration / 60),
-      }),
-    );
+    const bookingData = {
+      user_id: user.id,
+      club_id: selectedClub.id,
+      court_id: selectedCourt.id,
+      booking_date: format(selectedDate, "yyyy-MM-dd"),
+      start_time: selectedTime,
+      end_time: `${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1].padStart(2, "0")}`,
+      duration_minutes: duration,
+      total_price: selectedClub.price_per_hour * (duration / 60),
+    };
 
+    // Create payment intent
+    await dispatch(createPaymentIntent(bookingData));
+    setStep("payment");
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowSuccessModal(true);
     setStep("success");
+  };
+
+  const handlePaymentError = () => {
+    setShowFailedModal(true);
+  };
+
+  const handleRetryPayment = () => {
+    setShowFailedModal(false);
+    // Stay on payment step to retry
   };
 
   const goBack = () => {
     if (step === "datetime") {
       setStep("club");
       setSelectedClub(null);
-    } else if (step === "confirm") {
+    } else if (step === "auth") {
       setStep("datetime");
-      setSelectedTime("");
-      setSelectedCourt(null);
+      setShowAuthModal(false);
+    } else if (step === "payment") {
+      setStep("datetime");
+      dispatch(resetPayment());
     } else if (step === "success") {
       // Reset everything
       setStep("club");
       setSelectedClub(null);
       setSelectedDate(new Date());
+      setCurrentMonth(new Date());
       setSelectedTime("");
       setSelectedCourt(null);
       setDuration(60);
+      setShowSuccessModal(false);
+      setShowFailedModal(false);
+      setBookingNumber("");
+      dispatch(resetPayment());
     }
   };
 
   const getStepNumber = () => {
     if (step === "club") return 1;
     if (step === "datetime") return 2;
-    if (step === "confirm") return 3;
-    return 3;
+    if (step === "auth") return 3;
+    if (step === "payment") return 4;
+    return 4;
   };
 
   const goToPreviousMonth = () => {
@@ -177,10 +240,11 @@ export default function BookingWizard() {
               <h2 className="text-3xl font-bold text-foreground">
                 {step === "club" && "Selecciona Tu Club"}
                 {step === "datetime" && "Elige Fecha y Hora"}
-                {step === "confirm" && "Confirma Tu Reserva"}
+                {step === "auth" && "Inicia Sesión"}
+                {step === "payment" && "Completa el Pago"}
               </h2>
               <span className="text-sm font-semibold text-muted-foreground">
-                Paso {getStepNumber()} de 3
+                Paso {getStepNumber()} de 4
               </span>
             </div>
             <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
@@ -189,10 +253,12 @@ export default function BookingWizard() {
                 style={{
                   width:
                     step === "club"
-                      ? "33%"
+                      ? "25%"
                       : step === "datetime"
-                        ? "66%"
-                        : "100%",
+                        ? "50%"
+                        : step === "auth"
+                          ? "75%"
+                          : "100%",
                 }}
               />
             </div>
@@ -261,7 +327,7 @@ export default function BookingWizard() {
                             Precio
                           </p>
                           <p className="font-bold text-primary text-lg">
-                            €{club.price_per_hour}/hr
+                            ${club.price_per_hour}/hr
                           </p>
                         </div>
                         <div className="bg-muted/50 rounded-lg p-3">
@@ -360,7 +426,7 @@ export default function BookingWizard() {
                   <div className="flex justify-between items-center pt-4 border-t">
                     <span className="font-bold text-lg">Precio Total</span>
                     <span className="text-2xl font-bold text-primary">
-                      €
+                      $
                       {(selectedClub.price_per_hour * (duration / 60)).toFixed(
                         2,
                       )}
@@ -381,161 +447,132 @@ export default function BookingWizard() {
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Atrás
               </Button>
-              <Button
-                variant="default"
-                onClick={() => setStep("confirm")}
-                disabled={!selectedTime || !selectedCourt}
-                className="flex-1"
-                size="lg"
-              >
-                Continuar
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              {selectedTime && selectedCourt && (
+                <Button
+                  onClick={handleContinueToPayment}
+                  className="flex-1"
+                  size="lg"
+                >
+                  Continuar
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
         )}
 
-        {/* Step 3: Confirm */}
-        {step === "confirm" &&
+        {/* Step 3: Auth Modal */}
+        {step === "auth" && (
+          <AuthModal
+            open={showAuthModal}
+            onOpenChange={(open) => {
+              setShowAuthModal(open);
+              if (!open) {
+                setStep("datetime");
+              }
+            }}
+          />
+        )}
+
+        {/* Step 4: Payment */}
+        {step === "payment" &&
           selectedClub &&
           selectedDate &&
           selectedTime &&
-          selectedCourt && (
+          selectedCourt &&
+          user && (
             <div
               className={cn(
-                "space-y-6 transition-all duration-500 transform",
+                "grid lg:grid-cols-2 gap-8 transition-all duration-500 transform",
                 "animate-in fade-in slide-in-from-right-4",
               )}
             >
-              <Card className="p-6 border-2 border-primary bg-gradient-to-br from-primary/5 to-transparent">
-                <h3 className="font-bold text-xl mb-6">Resumen de Reserva</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start pb-4 border-b">
-                    <span className="text-muted-foreground">Club</span>
-                    <div className="text-right">
-                      <p className="font-semibold text-lg">
-                        {selectedClub.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedClub.city}
+              {/* Left: Payment Form */}
+              <div className="space-y-6">
+                {clientSecret && (
+                  <Elements
+                    stripe={stripePromise}
+                    options={{
+                      clientSecret,
+                      locale: "es",
+                      appearance: {
+                        theme: "stripe",
+                      },
+                    }}
+                  >
+                    <StripePaymentForm
+                      bookingData={{
+                        user_id: user.id,
+                        club_id: selectedClub.id,
+                        court_id: selectedCourt.id,
+                        booking_date: format(selectedDate, "yyyy-MM-dd"),
+                        start_time: selectedTime,
+                        end_time: `${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1].padStart(2, "0")}`,
+                        duration_minutes: duration,
+                        total_price:
+                          selectedClub.price_per_hour * (duration / 60),
+                      }}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                    />
+                  </Elements>
+                )}
+
+                {!clientSecret && paymentLoading && (
+                  <Card className="p-8">
+                    <div className="text-center">
+                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+                      <p className="mt-4 text-muted-foreground">
+                        Preparando pago...
                       </p>
                     </div>
-                  </div>
-                  <div className="flex justify-between items-center pb-4 border-b">
-                    <span className="text-muted-foreground">Cancha</span>
-                    <p className="font-semibold text-lg">
-                      {selectedCourt.name}
-                    </p>
-                  </div>
-                  <div className="flex justify-between items-center pb-4 border-b">
-                    <span className="text-muted-foreground">Fecha y Hora</span>
-                    <div className="text-right">
-                      <p className="font-semibold text-lg">
-                        {format(selectedDate, "dd 'de' MMMM 'de' yyyy", {
-                          locale: es,
-                        })}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedTime}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center pb-4 border-b">
-                    <span className="text-muted-foreground">Duración</span>
-                    <p className="font-semibold text-lg">
-                      {duration === 60 ? "1 hora" : `${duration / 60} horas`}
-                    </p>
-                  </div>
-                  <div className="flex justify-between items-center pt-2 text-xl font-bold">
-                    <span>Precio Total</span>
-                    <span className="text-primary">
-                      €
-                      {(selectedClub.price_per_hour * (duration / 60)).toFixed(
-                        2,
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </Card>
+                  </Card>
+                )}
 
-              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
-                <div className="flex gap-3 items-start">
-                  <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-green-900">
-                      ¡Cancha reservada para ti!
-                    </p>
-                    <p className="text-sm text-green-800 mt-1">
-                      Recibirás un correo de confirmación con todos los
-                      detalles.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
                 <Button
                   variant="outline"
                   onClick={goBack}
-                  className="flex-1"
+                  className="w-full"
                   size="lg"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Atrás
+                  Volver a Selección
                 </Button>
-                <Button
-                  variant="default"
-                  onClick={handleConfirmBooking}
-                  disabled={bookingLoading}
-                  className="flex-1"
-                  size="lg"
-                >
-                  {bookingLoading ? (
-                    <>
-                      <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-solid border-current border-r-transparent" />
-                      Procesando...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="mr-2 h-4 w-4" />
-                      Confirmar Reserva
-                    </>
-                  )}
-                </Button>
+              </div>
+
+              {/* Right: Booking Summary */}
+              <div>
+                <BookingSummary
+                  club={selectedClub}
+                  court={selectedCourt}
+                  date={selectedDate}
+                  startTime={selectedTime}
+                  endTime={`${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1].padStart(2, "0")}`}
+                  duration={duration}
+                  totalPrice={selectedClub.price_per_hour * (duration / 60)}
+                  onBack={goBack}
+                />
               </div>
             </div>
           )}
 
-        {/* Step 4: Success */}
-        {step === "success" && (
-          <div
-            className={cn(
-              "text-center py-12 transition-all duration-500 transform",
-              "animate-in fade-in zoom-in-95",
-            )}
-          >
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6 animate-in zoom-in-50 duration-700">
-              <Check className="h-10 w-10 text-green-600" />
-            </div>
-            <h2 className="text-3xl font-bold mb-4">¡Reserva Confirmada!</h2>
-            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Tu reserva ha sido confirmada exitosamente. Recibirás un correo
-              con todos los detalles.
-            </p>
-            <div className="flex gap-4 justify-center">
-              <Button
-                variant="outline"
-                onClick={() => (window.location.href = "/bookings")}
-                size="lg"
-              >
-                Ver Mis Reservas
-              </Button>
-              <Button variant="default" onClick={goBack} size="lg">
-                Nueva Reserva
-              </Button>
-            </div>
-          </div>
-        )}
+        {/* Payment Success Modal */}
+        <PaymentSuccessModal
+          open={showSuccessModal}
+          onClose={goBack}
+          bookingNumber={bookingNumber}
+        />
+
+        {/* Payment Failed Modal */}
+        <PaymentFailedModal
+          open={showFailedModal}
+          onClose={() => {
+            setShowFailedModal(false);
+            setStep("datetime");
+            dispatch(resetPayment());
+          }}
+          onRetry={handleRetryPayment}
+        />
       </div>
     </div>
   );
