@@ -14,10 +14,8 @@ dist-ssr
 
 # Environment files
 .env
-.env.local
-.env.*.local
-.env.production
-.env.vercel
+.env.*
+.env.example
 service-account-key.json
 *.key.json
 
