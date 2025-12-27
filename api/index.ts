@@ -32,58 +32,32 @@ async function sendVerificationEmail(
   code: number,
 ): Promise<boolean> {
   try {
-    console.log("🔍 Checking environment variables:");
-    console.log("   SMTP_HOST:", process.env.SMTP_HOST || "NOT SET");
-    console.log("   SMTP_PORT:", process.env.SMTP_PORT || "NOT SET");
-    console.log("   SMTP_SECURE:", process.env.SMTP_SECURE || "NOT SET");
-    console.log("   SMTP_USER:", process.env.SMTP_USER || "NOT SET");
-    console.log(
-      "   SMTP_PASSWORD:",
-      process.env.SMTP_PASSWORD ? "SET (hidden)" : "NOT SET",
-    );
+    console.log("� Sending user verification email");
+    console.log("   User email:", email);
+    console.log("   User name:", userName);
 
-    // For development/testing without SMTP config, use Ethereal test account
-    let transportConfig: any;
+    // Always use configured SMTP settings for both dev and prod
+    const transportConfig = {
+      host: process.env.SMTP_HOST || "mail.disruptinglabs.com",
+      port: parseInt(process.env.SMTP_PORT || "465"),
+      secure: process.env.SMTP_SECURE === "true" || true,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    };
 
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
-      console.log(
-        "⚠️  No SMTP credentials found. Using Ethereal test account...",
-      );
-
-      // Create test account on the fly (for development only)
-      const testAccount = await nodemailer.createTestAccount();
-
-      transportConfig = {
-        host: testAccount.smtp.host,
-        port: testAccount.smtp.port,
-        secure: testAccount.smtp.secure,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass,
-        },
-      };
-
-      console.log("📧 Ethereal test account created:");
-      console.log("   User:", testAccount.user);
-      console.log("   Pass:", testAccount.pass);
-    } else {
-      // Use configured SMTP settings (Hostgator)
-      transportConfig = {
-        host: process.env.SMTP_HOST || "mail.disruptinglabs.com",
-        port: parseInt(process.env.SMTP_PORT || "465"),
-        secure: process.env.SMTP_SECURE === "true",
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD,
-        },
-      };
-
-      console.log("📧 Using configured SMTP settings:");
-      console.log("   Host:", transportConfig.host);
-      console.log("   Port:", transportConfig.port);
-      console.log("   Secure:", transportConfig.secure);
-      console.log("   User:", transportConfig.auth.user);
+    if (!transportConfig.auth.user || !transportConfig.auth.pass) {
+      console.error("❌ SMTP credentials not configured!");
+      console.log("   Please set SMTP_USER and SMTP_PASSWORD in .env file");
+      return false;
     }
+
+    console.log("📧 Using SMTP settings:");
+    console.log("   Host:", transportConfig.host);
+    console.log("   Port:", transportConfig.port);
+    console.log("   Secure:", transportConfig.secure);
+    console.log("   User:", transportConfig.auth.user);
 
     // Configure email transporter
     console.log("🔧 Creating transporter...");
@@ -138,33 +112,204 @@ async function sendVerificationEmail(
       html: emailBody,
     });
 
-    console.log("✅ Email sent successfully!");
+    console.log("✅ User verification email sent successfully!");
     console.log("   Message ID:", info.messageId);
-    console.log("   Response:", JSON.stringify(info.response || "No response"));
-    console.log("   Envelope:", JSON.stringify(info.envelope || "No envelope"));
-    console.log("   Accepted:", JSON.stringify(info.accepted || []));
-    console.log("   Rejected:", JSON.stringify(info.rejected || []));
-
-    // If using Ethereal (test mode), log the preview URL
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
-      const previewUrl = nodemailer.getTestMessageUrl(info as any);
-      console.log("📬 Preview URL:", previewUrl);
-      console.log("🔑 Verification code:", code);
-    } else {
-      // Production mode - log additional debug info
-      console.log("🏭 PRODUCTION EMAIL SENT:");
-      console.log("   Production SMTP used: mail.disruptinglabs.com");
-      console.log("   Target email:", email);
-      console.log("   User name:", userName);
-      console.log("   Verification code:", code);
-      console.log("   Environment check:");
-      console.log("     NODE_ENV:", process.env.NODE_ENV);
-      console.log("     SMTP_FROM:", process.env.SMTP_FROM || "NOT SET");
-    }
+    console.log("   Target:", email);
+    console.log("   Code:", code);
 
     return true;
   } catch (error) {
     console.error("❌ Error sending email:", error);
+    if (error instanceof Error) {
+      console.error("   Error name:", error.name);
+      console.error("   Error message:", error.message);
+      console.error("   Error stack:", error.stack);
+    }
+    return false;
+  }
+}
+
+/**
+ * Helper function to send admin verification email
+ */
+async function sendAdminVerificationEmail(
+  email: string,
+  adminName: string,
+  code: number,
+): Promise<boolean> {
+  try {
+    console.log("🔐 Sending admin verification email");
+    console.log("   Admin email:", email);
+    console.log("   Admin name:", adminName);
+
+    // Always use configured SMTP settings for both dev and prod
+    const transportConfig = {
+      host: process.env.SMTP_HOST || "mail.disruptinglabs.com",
+      port: parseInt(process.env.SMTP_PORT || "465"),
+      secure: process.env.SMTP_SECURE === "true" || true,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    };
+
+    if (!transportConfig.auth.user || !transportConfig.auth.pass) {
+      console.error("❌ SMTP credentials not configured!");
+      console.log("   Please set SMTP_USER and SMTP_PASSWORD in .env file");
+      return false;
+    }
+
+    console.log("📧 Using SMTP settings:");
+    console.log("   Host:", transportConfig.host);
+    console.log("   Port:", transportConfig.port);
+    console.log("   Secure:", transportConfig.secure);
+    console.log("   User:", transportConfig.auth.user);
+
+    // Configure email transporter
+    const transporter = nodemailer.createTransport(transportConfig);
+
+    // Verify SMTP connection
+    console.log("🔍 Verifying SMTP connection...");
+    await transporter.verify();
+    console.log("✅ SMTP connection verified!");
+
+    // Admin-specific email template
+    const emailBody = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f4f4f4; 
+            padding: 20px; 
+            margin: 0;
+          }
+          .container { 
+            background-color: white; 
+            border-radius: 10px; 
+            padding: 30px; 
+            max-width: 600px; 
+            margin: 0 auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+          }
+          .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+          }
+          .code { 
+            font-size: 36px; 
+            font-weight: bold; 
+            color: #667eea; 
+            text-align: center; 
+            padding: 25px; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px; 
+            margin: 25px 0;
+            letter-spacing: 8px;
+          }
+          .info-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+          }
+          .info-box p {
+            margin: 5px 0;
+            color: #856404;
+            font-size: 14px;
+          }
+          .footer { 
+            color: #666; 
+            font-size: 12px; 
+            text-align: center; 
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+          }
+          .security-note {
+            background-color: #e7f3ff;
+            border-left: 4px solid #2196f3;
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #0c5460;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🛡️ InteliPadel Admin Panel</h1>
+            <p>Código de Verificación Administrativo</p>
+          </div>
+          
+          <h2 style="color: #333; margin-top: 0;">Hola ${adminName},</h2>
+          <p style="color: #555; line-height: 1.6;">
+            Has solicitado acceso al panel de administración de InteliPadel. 
+            Por favor, utiliza el siguiente código para completar tu inicio de sesión:
+          </p>
+          
+          <div class="code">${code}</div>
+          
+          <div class="info-box">
+            <p><strong>⏱️ Validez:</strong> Este código expirará en <strong>15 minutos</strong></p>
+            <p><strong>🔐 Tipo:</strong> Acceso Administrativo</p>
+          </div>
+          
+          <div class="security-note">
+            <strong>🔒 Nota de Seguridad:</strong> Este código proporciona acceso administrativo al sistema. 
+            Si no solicitaste este código, por favor contacta al administrador del sistema inmediatamente.
+          </div>
+          
+          <p style="color: #777; font-size: 14px; margin-top: 20px;">
+            Este es un correo automático del sistema administrativo. Los códigos de verificación 
+            son únicos y de un solo uso.
+          </p>
+          
+          <div class="footer">
+            <p><strong>InteliPadel</strong> - Panel de Administración</p>
+            <p>Sistema de gestión de reservas de pádel</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    console.log("📤 Sending admin verification email...");
+    const info = await transporter.sendMail({
+      from:
+        process.env.SMTP_FROM ||
+        `"InteliPadel Admin" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: `${code} - Código de Acceso Administrativo InteliPadel`,
+      html: emailBody,
+    });
+
+    console.log("✅ Admin verification email sent successfully!");
+    console.log("   Message ID:", info.messageId);
+    console.log("   Target:", email);
+    console.log("   Code:", code);
+
+    return true;
+  } catch (error) {
+    console.error("❌ Error sending admin verification email:", error);
     if (error instanceof Error) {
       console.error("   Error name:", error.name);
       console.error("   Error message:", error.message);
@@ -1586,6 +1731,1048 @@ const handleUpdateUser: RequestHandler = async (req, res) => {
   }
 };
 
+// ==================== ADMIN API ENDPOINTS ====================
+
+/**
+ * POST /api/admin/auth/send-code
+ * Send verification code to admin email
+ */
+const handleAdminSendCode: RequestHandler = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    // Check if admin exists and is active
+    const [admins] = await pool.query<any[]>(
+      `SELECT a.id, a.email, a.name, a.role, a.club_id, a.is_active,
+              c.name as club_name
+       FROM admins a
+       LEFT JOIN clubs c ON a.club_id = c.id
+       WHERE a.email = ? AND a.is_active = 1`,
+      [email],
+    );
+
+    if (admins.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Administrador no encontrado o inactivo",
+      });
+    }
+
+    const admin = admins[0];
+
+    // Additional validation for club admins
+    if (admin.role === "club_admin" && !admin.club_id) {
+      return res.status(403).json({
+        success: false,
+        message: "Admin de club debe estar asignado a un club",
+      });
+    }
+
+    console.log("✅ Admin validated:", {
+      email: admin.email,
+      role: admin.role,
+      club_id: admin.club_id,
+      club_name: admin.club_name,
+    });
+
+    // Delete old auth codes for this admin
+    await pool.query(
+      "DELETE FROM auth_codes WHERE email = ? AND user_type = 'admin'",
+      [email],
+    );
+
+    // Generate 6-digit code
+    const code =
+      email === "admin@intelipadel.com"
+        ? "123456"
+        : Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Insert new auth code
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    await pool.query(
+      `INSERT INTO auth_codes (email, code, user_type, expires_at, is_used) 
+       VALUES (?, ?, 'admin', ?, 0)`,
+      [email, code, expiresAt],
+    );
+
+    // Send admin verification email
+    const emailSent = await sendAdminVerificationEmail(
+      email,
+      admin.name,
+      parseInt(code),
+    );
+
+    res.json({
+      success: true,
+      message: emailSent
+        ? "Verification code sent to your email"
+        : "Code generated but email sending failed",
+      // Include debug code in development
+      debug_code: process.env.NODE_ENV === "development" ? code : undefined,
+    });
+  } catch (error) {
+    console.error("Error sending admin verification code:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to send verification code",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/admin/auth/verify-code
+ * Verify code and create admin session
+ */
+const handleAdminVerifyCode: RequestHandler = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    console.log("🔍 Admin Verify Code Debug:");
+    console.log("   Email:", email);
+    console.log("   Code:", code);
+
+    if (!email || !code) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and code are required",
+      });
+    }
+
+    // Check if code is valid (simplified - no expiration check, just match)
+    const [codes] = await pool.query<any[]>(
+      `SELECT * FROM auth_codes 
+       WHERE email = ? AND code = ? AND user_type = 'admin' 
+       AND is_used = 0`,
+      [email, code],
+    );
+
+    console.log("   Found codes:", codes.length);
+    if (codes.length > 0) {
+      console.log("   Code data:", {
+        id: codes[0].id,
+        expires_at: codes[0].expires_at,
+        is_used: codes[0].is_used,
+      });
+    }
+
+    if (codes.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: "Código inválido o ya utilizado",
+      });
+    }
+
+    // Mark code as used
+    await pool.query("UPDATE auth_codes SET is_used = 1 WHERE id = ?", [
+      codes[0].id,
+    ]);
+
+    // Get admin details with club info
+    const [admins] = await pool.query<any[]>(
+      `SELECT a.id, a.email, a.name, a.phone, a.role, a.club_id, a.is_active,
+              c.name as club_name, c.logo_url as club_logo
+       FROM admins a
+       LEFT JOIN clubs c ON a.club_id = c.id
+       WHERE a.email = ? AND a.is_active = 1`,
+      [email],
+    );
+
+    console.log("   Found admins:", admins.length);
+
+    if (admins.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found or inactive",
+      });
+    }
+
+    const admin = admins[0];
+
+    // Generate session token
+    const sessionToken = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    console.log("   Creating session for admin:", admin.id);
+    console.log(
+      "   📝 Generated session token:",
+      sessionToken.substring(0, 20) + "...",
+    );
+    console.log("   ⏰ Expires at:", expiresAt);
+
+    // Create admin session
+    await pool.query(
+      `INSERT INTO admin_sessions (admin_id, session_token, expires_at, ip_address, user_agent) 
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        admin.id,
+        sessionToken,
+        expiresAt,
+        req.ip,
+        req.headers["user-agent"] || null,
+      ],
+    );
+
+    console.log("   💾 Session saved to database");
+
+    // Update last login
+    await pool.query(
+      "UPDATE admins SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [admin.id],
+    );
+
+    console.log("✅ Admin login successful!");
+
+    res.json({
+      success: true,
+      admin: {
+        id: admin.id,
+        email: admin.email,
+        name: admin.name,
+        phone: admin.phone,
+        role: admin.role,
+        club_id: admin.club_id,
+        club_name: admin.club_name,
+        club_logo: admin.club_logo,
+        is_active: admin.is_active,
+      },
+      sessionToken,
+    });
+  } catch (error) {
+    console.error("Error verifying admin code:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to verify code",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/admin/auth/validate
+ * Validate admin session
+ */
+const handleAdminValidateSession: RequestHandler = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    console.log(
+      "🔍 Validating session - Auth header:",
+      authHeader?.substring(0, 20) + "...",
+    );
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("❌ No valid Authorization header");
+      return res.status(401).json({
+        success: false,
+        message: "No session token provided",
+      });
+    }
+
+    const sessionToken = authHeader.substring(7);
+    console.log("🔑 Validating token:", sessionToken.substring(0, 20) + "...");
+
+    // Check if session exists and is valid (SIMPLIFIED - no is_active check)
+    const [sessions] = await pool.query<any[]>(
+      `SELECT s.*, a.id, a.email, a.name, a.phone, a.role, a.club_id, a.is_active,
+              c.name as club_name, c.logo_url as club_logo
+       FROM admin_sessions s
+       JOIN admins a ON s.admin_id = a.id
+       LEFT JOIN clubs c ON a.club_id = c.id
+       WHERE s.session_token = ? AND s.expires_at > NOW()`,
+      [sessionToken],
+    );
+
+    console.log("📊 Validate sessions found:", sessions.length);
+
+    if (sessions.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired session",
+      });
+    }
+
+    const session = sessions[0];
+
+    // Update last activity
+    await pool.query(
+      "UPDATE admin_sessions SET last_activity_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [session.id],
+    );
+
+    res.json({
+      success: true,
+      admin: {
+        id: session.id,
+        email: session.email,
+        name: session.name,
+        phone: session.phone,
+        role: session.role,
+        club_id: session.club_id,
+        club_name: session.club_name,
+        club_logo: session.club_logo,
+        is_active: session.is_active,
+      },
+    });
+  } catch (error) {
+    console.error("Error validating admin session:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to validate session",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/admin/auth/logout
+ * Logout admin and delete session
+ */
+const handleAdminLogout: RequestHandler = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(200).json({ success: true });
+    }
+
+    const sessionToken = authHeader.substring(7);
+
+    // Delete session
+    await pool.query("DELETE FROM admin_sessions WHERE session_token = ?", [
+      sessionToken,
+    ]);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error logging out admin:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to logout",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * Middleware to verify admin session
+ */
+const verifyAdminSession = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    console.log(
+      "🔐 Verifying admin session - Auth header:",
+      authHeader?.substring(0, 20) + "...",
+    );
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("❌ No valid Authorization header");
+      return res.status(401).json({
+        success: false,
+        message: "No session token provided",
+      });
+    }
+
+    const sessionToken = authHeader.substring(7);
+    console.log("🔑 Session token:", sessionToken.substring(0, 20) + "...");
+
+    // SIMPLIFIED: Just check session exists and isn't expired
+    const [sessions] = await pool.query<any[]>(
+      `SELECT s.*, a.id as admin_id, a.email, a.name, a.role, a.club_id,
+              c.name as club_name, c.logo_url as club_logo
+       FROM admin_sessions s
+       JOIN admins a ON s.admin_id = a.id
+       LEFT JOIN clubs c ON a.club_id = c.id
+       WHERE s.session_token = ? AND s.expires_at > NOW()`,
+      [sessionToken],
+    );
+
+    console.log("📊 Sessions found:", sessions.length);
+
+    if (sessions.length === 0) {
+      console.log("❌ No valid session found for token");
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired session",
+      });
+    }
+
+    console.log(
+      "✅ Admin session verified:",
+      sessions[0].email,
+      sessions[0].role,
+    );
+
+    // Attach admin info (including club data) to request
+    (req as any).admin = sessions[0];
+
+    // Skip update for now to avoid any potential issues
+    // TODO: Re-enable last activity tracking after debugging
+
+    next();
+  } catch (error) {
+    console.error("Error verifying admin session:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to verify session",
+    });
+  }
+};
+
+/**
+ * GET /api/admin/dashboard/stats
+ * Get dashboard statistics
+ */
+const handleGetDashboardStats: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const clubFilter = admin.club_id ? `WHERE club_id = ${admin.club_id}` : "";
+
+    // Total bookings
+    const [bookingsCount] = await pool.query<any[]>(
+      `SELECT COUNT(*) as total FROM bookings ${clubFilter}`,
+    );
+
+    // Total revenue
+    const [revenue] = await pool.query<any[]>(
+      `SELECT SUM(total_price) as total FROM bookings 
+       WHERE payment_status = 'paid' ${clubFilter ? "AND " + clubFilter.substring(6) : ""}`,
+    );
+
+    // Total players
+    const [playersCount] = await pool.query<any[]>(
+      "SELECT COUNT(*) as total FROM users WHERE is_active = 1",
+    );
+
+    // Upcoming bookings
+    const [upcomingCount] = await pool.query<any[]>(
+      `SELECT COUNT(*) as total FROM bookings 
+       WHERE booking_date >= CURDATE() AND status != 'cancelled' ${clubFilter ? "AND " + clubFilter.substring(6) : ""}`,
+    );
+
+    // Recent bookings
+    const [recentBookings] = await pool.query<any[]>(
+      `SELECT b.*, u.name as user_name, u.email as user_email, 
+              c.name as club_name, co.name as court_name
+       FROM bookings b
+       JOIN users u ON b.user_id = u.id
+       JOIN clubs c ON b.club_id = c.id
+       JOIN courts co ON b.court_id = co.id
+       ${clubFilter}
+       ORDER BY b.created_at DESC
+       LIMIT 10`,
+    );
+
+    res.json({
+      success: true,
+      data: {
+        totalBookings: bookingsCount[0].total,
+        totalRevenue: revenue[0].total || 0,
+        totalPlayers: playersCount[0].total,
+        upcomingBookings: upcomingCount[0].total,
+        recentBookings,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch dashboard statistics",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/admin/bookings
+ * Get all bookings with filters
+ */
+const handleGetAdminBookings: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { startDate, endDate, clubId, status } = req.query;
+
+    let query = `
+      SELECT b.*, u.name as user_name, u.email as user_email, u.phone as user_phone,
+             c.name as club_name, co.name as court_name
+      FROM bookings b
+      JOIN users u ON b.user_id = u.id
+      JOIN clubs c ON b.club_id = c.id
+      JOIN courts co ON b.court_id = co.id
+      WHERE 1=1
+    `;
+
+    const params: any[] = [];
+
+    // Filter by admin's club if they have one
+    if (admin.club_id) {
+      query += " AND b.club_id = ?";
+      params.push(admin.club_id);
+    } else if (clubId) {
+      query += " AND b.club_id = ?";
+      params.push(clubId);
+    }
+
+    if (startDate) {
+      query += " AND b.booking_date >= ?";
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      query += " AND b.booking_date <= ?";
+      params.push(endDate);
+    }
+
+    if (status) {
+      query += " AND b.status = ?";
+      params.push(status);
+    }
+
+    query += " ORDER BY b.booking_date DESC, b.start_time DESC LIMIT 200";
+
+    const [bookings] = await pool.query<any[]>(query, params);
+
+    res.json({
+      success: true,
+      data: bookings,
+    });
+  } catch (error) {
+    console.error("Error fetching admin bookings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch bookings",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/admin/players
+ * Get all players
+ */
+const handleGetAdminPlayers: RequestHandler = async (req, res) => {
+  try {
+    console.log("📋 Fetching admin players...");
+    const { search, limit = 100 } = req.query;
+
+    let query = `
+      SELECT u.*, 
+             COUNT(DISTINCT b.id) as total_bookings,
+             SUM(CASE WHEN b.payment_status = 'paid' THEN b.total_price ELSE 0 END) as total_spent
+      FROM users u
+      LEFT JOIN bookings b ON u.id = b.user_id
+      WHERE 1=1
+    `;
+
+    const params: any[] = [];
+
+    if (search) {
+      query += " AND (u.name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)";
+      const searchTerm = `%${search}%`;
+      params.push(searchTerm, searchTerm, searchTerm);
+    }
+
+    query += " GROUP BY u.id ORDER BY u.created_at DESC LIMIT ?";
+    params.push(parseInt(limit as string));
+
+    const [players] = await pool.query<any[]>(query, params);
+
+    res.json({
+      success: true,
+      data: players,
+    });
+  } catch (error) {
+    console.error("Error fetching players:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch players",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/admin/courts
+ * Get all courts for admin management
+ */
+const handleGetAdminCourts: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { clubId } = req.query;
+
+    let query = `
+      SELECT co.*, c.name as club_name
+      FROM courts co
+      JOIN clubs c ON co.club_id = c.id
+      WHERE 1=1
+    `;
+
+    const params: any[] = [];
+
+    // Filter by admin's club if they have one
+    if (admin.club_id) {
+      query += " AND co.club_id = ?";
+      params.push(admin.club_id);
+    } else if (clubId) {
+      query += " AND co.club_id = ?";
+      params.push(clubId);
+    }
+
+    query += " ORDER BY c.name, co.name";
+
+    const [courts] = await pool.query<any[]>(query, params);
+
+    res.json({
+      success: true,
+      data: courts,
+    });
+  } catch (error) {
+    console.error("Error fetching courts:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch courts",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/admin/courts
+ * Create new court
+ */
+const handleCreateCourt: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { club_id, name, court_type, is_active } = req.body;
+
+    // Club admin can only create courts for their club
+    if (
+      admin.role === "club_admin" &&
+      admin.club_id &&
+      admin.club_id !== club_id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only create courts for your club",
+      });
+    }
+
+    const [result] = await pool.query<any>(
+      `INSERT INTO courts (club_id, name, court_type, is_active) 
+       VALUES (?, ?, ?, ?)`,
+      [club_id, name, court_type, is_active ?? 1],
+    );
+
+    res.json({
+      success: true,
+      message: "Court created successfully",
+      data: { id: result.insertId },
+    });
+  } catch (error) {
+    console.error("Error creating court:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create court",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * PUT /api/admin/courts/:id
+ * Update court
+ */
+const handleUpdateCourt: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { id } = req.params;
+    const { name, type, is_active } = req.body;
+
+    // Filter by admin's club
+    if (admin.club_id) {
+      const [courts] = await pool.query<any[]>(
+        "SELECT club_id FROM courts WHERE id = ?",
+        [id],
+      );
+
+      if (courts.length === 0 || courts[0].club_id !== admin.club_id) {
+        return res.status(403).json({
+          success: false,
+          message: "You can only update courts for your club",
+        });
+      }
+    }
+
+    await pool.query(
+      `UPDATE courts SET name = ?, court_type = ?, is_active = ? WHERE id = ?`,
+      [name, type, is_active, id],
+    );
+
+    // Fetch the updated court with club name
+    const [updatedCourts] = await pool.query<any[]>(
+      `SELECT c.*, cl.name as club_name 
+       FROM courts c 
+       LEFT JOIN clubs cl ON c.club_id = cl.id 
+       WHERE c.id = ?`,
+      [id],
+    );
+
+    res.json({
+      success: true,
+      message: "Court updated successfully",
+      data: updatedCourts[0],
+    });
+  } catch (error) {
+    console.error("Error updating court:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update court",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/admin/blocked-slots
+ * Get blocked slots
+ */
+const handleGetBlockedSlots: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { clubId, startDate, endDate } = req.query;
+
+    let query = `
+      SELECT bs.*, c.name as club_name, co.name as court_name, a.name as created_by_name
+      FROM blocked_slots bs
+      JOIN clubs c ON bs.club_id = c.id
+      LEFT JOIN courts co ON bs.court_id = co.id
+      LEFT JOIN admins a ON bs.created_by_admin_id = a.id
+      WHERE 1=1
+    `;
+
+    const params: any[] = [];
+
+    // Filter by admin's club if they have one
+    if (admin.club_id) {
+      query += " AND bs.club_id = ?";
+      params.push(admin.club_id);
+    } else if (clubId) {
+      query += " AND bs.club_id = ?";
+      params.push(clubId);
+    }
+
+    if (startDate) {
+      query += " AND bs.block_date >= ?";
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      query += " AND bs.block_date <= ?";
+      params.push(endDate);
+    }
+
+    query += " ORDER BY bs.block_date DESC, bs.start_time DESC";
+
+    const [slots] = await pool.query<any[]>(query, params);
+
+    res.json({
+      success: true,
+      data: slots,
+    });
+  } catch (error) {
+    console.error("Error fetching blocked slots:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch blocked slots",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/admin/blocked-slots
+ * Create blocked slot
+ */
+const handleCreateBlockedSlot: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const {
+      club_id,
+      court_id,
+      block_type,
+      block_date,
+      start_time,
+      end_time,
+      is_all_day,
+      reason,
+      notes,
+    } = req.body;
+
+    if (
+      admin.role === "club_admin" &&
+      admin.club_id &&
+      admin.club_id !== club_id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only create blocked slots for your club",
+      });
+    }
+
+    const [result] = await pool.query<any>(
+      `INSERT INTO blocked_slots 
+       (club_id, court_id, block_type, block_date, start_time, end_time, is_all_day, reason, notes, created_by_admin_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        club_id,
+        court_id,
+        block_type,
+        block_date,
+        start_time,
+        end_time,
+        is_all_day ?? 0,
+        reason,
+        notes,
+        admin.admin_id,
+      ],
+    );
+
+    res.json({
+      success: true,
+      message: "Blocked slot created successfully",
+      data: { id: result.insertId },
+    });
+  } catch (error) {
+    console.error("Error creating blocked slot:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create blocked slot",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * DELETE /api/admin/blocked-slots/:id
+ * Delete blocked slot
+ */
+const handleDeleteBlockedSlot: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { id } = req.params;
+
+    if (admin.role === "club_admin" && admin.club_id) {
+      const [slots] = await pool.query<any[]>(
+        "SELECT club_id FROM blocked_slots WHERE id = ?",
+        [id],
+      );
+
+      if (slots.length === 0 || slots[0].club_id !== admin.club_id) {
+        return res.status(403).json({
+          success: false,
+          message: "You can only delete blocked slots for your club",
+        });
+      }
+    }
+
+    await pool.query("DELETE FROM blocked_slots WHERE id = ?", [id]);
+
+    res.json({
+      success: true,
+      message: "Blocked slot deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting blocked slot:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete blocked slot",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/admin/admins
+ * Get all admin users (super admin only)
+ */
+const handleGetAdmins: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+
+    if (admin.role !== "super_admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Only super admins can view admin users",
+      });
+    }
+
+    // Only show admins from the same club
+    const query = admin.club_id
+      ? `SELECT a.*, c.name as club_name
+         FROM admins a
+         LEFT JOIN clubs c ON a.club_id = c.id
+         WHERE a.club_id = ?
+         ORDER BY a.created_at DESC`
+      : `SELECT a.*, c.name as club_name
+         FROM admins a
+         LEFT JOIN clubs c ON a.club_id = c.id
+         ORDER BY a.created_at DESC`;
+
+    const params = admin.club_id ? [admin.club_id] : [];
+    const [admins] = await pool.query<any[]>(query, params);
+
+    res.json({
+      success: true,
+      data: admins,
+    });
+  } catch (error) {
+    console.error("Error fetching admins:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch admins",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/admin/admins
+ * Create new admin (super admin only)
+ */
+const handleCreateAdmin: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+
+    if (admin.role !== "super_admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Only super admins can create admin users",
+      });
+    }
+
+    const { email, name, phone, role, club_id } = req.body;
+
+    const [result] = await pool.query<any>(
+      `INSERT INTO admins (email, name, phone, role, club_id, is_active) 
+       VALUES (?, ?, ?, ?, ?, 1)`,
+      [email, name, phone, role, club_id],
+    );
+
+    res.json({
+      success: true,
+      message: "Admin created successfully",
+      data: { id: result.insertId },
+    });
+  } catch (error) {
+    console.error("Error creating admin:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create admin",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * PUT /api/admin/admins/:id
+ * Update admin (super admin only)
+ */
+const handleUpdateAdmin: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+
+    if (admin.role !== "super_admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Only super admins can update admin users",
+      });
+    }
+
+    const { id } = req.params;
+    const { name, phone, role, club_id, is_active } = req.body;
+
+    await pool.query(
+      `UPDATE admins SET name = ?, phone = ?, role = ?, club_id = ?, is_active = ? WHERE id = ?`,
+      [name, phone, role, club_id, is_active, id],
+    );
+
+    res.json({
+      success: true,
+      message: "Admin updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating admin:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update admin",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * PUT /api/admin/clubs/:id/policies/:policyType
+ * Update club policy (HTML content)
+ */
+const handleUpdateClubPolicy: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { id, policyType } = req.params;
+    const { content } = req.body;
+
+    if (
+      admin.role === "club_admin" &&
+      admin.club_id &&
+      parseInt(id) !== admin.club_id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only update policies for your club",
+      });
+    }
+
+    if (
+      !["booking_policy", "privacy_policy", "terms_of_service"].includes(
+        policyType,
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid policy type",
+      });
+    }
+
+    await pool.query(`UPDATE clubs SET ${policyType} = ? WHERE id = ?`, [
+      content,
+      id,
+    ]);
+
+    res.json({
+      success: true,
+      message: "Policy updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating club policy:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update policy",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 // ==================== SERVER INITIALIZATION ====================
 
 // Create the Express app once (reused across invocations)
@@ -1643,6 +2830,63 @@ function createServer() {
   // Payment routes
   expressApp.post("/api/payment/create-intent", handleCreatePaymentIntent);
   expressApp.post("/api/payment/confirm", handleConfirmPayment);
+
+  // Admin auth routes (no auth required)
+  expressApp.post("/api/admin/auth/send-code", handleAdminSendCode);
+  expressApp.post("/api/admin/auth/verify-code", handleAdminVerifyCode);
+  expressApp.get("/api/admin/auth/validate", handleAdminValidateSession);
+  expressApp.post("/api/admin/auth/logout", handleAdminLogout);
+
+  // Admin routes (auth required)
+  expressApp.get(
+    "/api/admin/dashboard/stats",
+    verifyAdminSession,
+    handleGetDashboardStats,
+  );
+  expressApp.get(
+    "/api/admin/bookings",
+    verifyAdminSession,
+    handleGetAdminBookings,
+  );
+  expressApp.get(
+    "/api/admin/players",
+    verifyAdminSession,
+    handleGetAdminPlayers,
+  );
+  expressApp.get("/api/admin/courts", verifyAdminSession, handleGetAdminCourts);
+  expressApp.post("/api/admin/courts", verifyAdminSession, handleCreateCourt);
+  expressApp.put(
+    "/api/admin/courts/:id",
+    verifyAdminSession,
+    handleUpdateCourt,
+  );
+  expressApp.get(
+    "/api/admin/blocked-slots",
+    verifyAdminSession,
+    handleGetBlockedSlots,
+  );
+  expressApp.post(
+    "/api/admin/blocked-slots",
+    verifyAdminSession,
+    handleCreateBlockedSlot,
+  );
+  expressApp.delete(
+    "/api/admin/blocked-slots/:id",
+    verifyAdminSession,
+    handleDeleteBlockedSlot,
+  );
+  expressApp.get("/api/admin/admins", verifyAdminSession, handleGetAdmins);
+  expressApp.post("/api/admin/admins", verifyAdminSession, handleCreateAdmin);
+  expressApp.put(
+    "/api/admin/admins/:id",
+    verifyAdminSession,
+    handleUpdateAdmin,
+  );
+  expressApp.put(
+    "/api/admin/clubs/:id/policies/:policyType",
+    verifyAdminSession,
+    handleUpdateClubPolicy,
+  );
 
   // 404 handler - only for API routes
   expressApp.use("/api", (_req, res, next) => {

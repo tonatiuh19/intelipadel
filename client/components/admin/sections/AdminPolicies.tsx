@@ -1,0 +1,205 @@
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Save } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { updateClubPolicy } from "@/store/slices/adminPoliciesSlice";
+
+export default function AdminPolicies() {
+  const dispatch = useAppDispatch();
+  const { isSubmitting } = useAppSelector((state) => state.adminPolicies);
+  const [clubId, setClubId] = useState<number>(1);
+  const [bookingPolicy, setBookingPolicy] = useState("");
+  const [privacyPolicy, setPrivacyPolicy] = useState("");
+  const [termsOfService, setTermsOfService] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (clubId) {
+      fetchPolicies();
+    }
+  }, [clubId]);
+
+  const fetchPolicies = async () => {
+    try {
+      setIsLoading(true);
+
+      const [booking, privacy, terms] = await Promise.all([
+        axios.get(`/api/clubs/${clubId}/policies/booking_policy`),
+        axios.get(`/api/clubs/${clubId}/policies/privacy_policy`),
+        axios.get(`/api/clubs/${clubId}/policies/terms_of_service`),
+      ]);
+
+      setBookingPolicy(booking.data.data?.content || "");
+      setPrivacyPolicy(privacy.data.data?.content || "");
+      setTermsOfService(terms.data.data?.content || "");
+    } catch (err) {
+      console.error("Failed to fetch policies:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSave = async (policyType: string, content: string) => {
+    try {
+      await dispatch(
+        updateClubPolicy({
+          club_id: clubId,
+          policy_type: policyType,
+          content,
+        }),
+      ).unwrap();
+
+      toast({ title: "Policy saved successfully" });
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err || "Failed to save policy",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ indent: "-1" }, { indent: "+1" }],
+      [{ align: [] }],
+      ["link", "image"],
+      ["clean"],
+    ],
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Términos y Políticas
+        </h1>
+        <p className="text-gray-600 mt-1">
+          Administra documentos legales y políticas del club
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Editar Políticas</CardTitle>
+            <div className="w-64">
+              <Label htmlFor="club">Club</Label>
+              <Select
+                value={clubId.toString()}
+                onValueChange={(value) => setClubId(parseInt(value))}
+              >
+                <SelectTrigger id="club">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Club 1</SelectItem>
+                  <SelectItem value="2">Club 2</SelectItem>
+                  <SelectItem value="3">Club 3</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="text-center py-8 text-gray-500">
+              Cargando políticas...
+            </div>
+          ) : (
+            <Tabs defaultValue="booking" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="booking">Política de Reservas</TabsTrigger>
+                <TabsTrigger value="privacy">
+                  Política de Privacidad
+                </TabsTrigger>
+                <TabsTrigger value="terms">Términos de Servicio</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="booking" className="space-y-4">
+                <div className="border rounded-lg overflow-hidden">
+                  <ReactQuill
+                    theme="snow"
+                    value={bookingPolicy}
+                    onChange={setBookingPolicy}
+                    modules={modules}
+                    style={{ minHeight: "400px" }}
+                  />
+                </div>
+                <Button
+                  onClick={() => handleSave("booking_policy", bookingPolicy)}
+                  disabled={isSubmitting}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSubmitting
+                    ? "Guardando..."
+                    : "Guardar Política de Reservas"}
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="privacy" className="space-y-4">
+                <div className="border rounded-lg overflow-hidden">
+                  <ReactQuill
+                    theme="snow"
+                    value={privacyPolicy}
+                    onChange={setPrivacyPolicy}
+                    modules={modules}
+                    style={{ minHeight: "400px" }}
+                  />
+                </div>
+                <Button
+                  onClick={() => handleSave("privacy_policy", privacyPolicy)}
+                  disabled={isSubmitting}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSubmitting
+                    ? "Guardando..."
+                    : "Guardar Política de Privacidad"}
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="terms" className="space-y-4">
+                <div className="border rounded-lg overflow-hidden">
+                  <ReactQuill
+                    theme="snow"
+                    value={termsOfService}
+                    onChange={setTermsOfService}
+                    modules={modules}
+                    style={{ minHeight: "400px" }}
+                  />
+                </div>
+                <Button
+                  onClick={() => handleSave("terms_of_service", termsOfService)}
+                  disabled={isSubmitting}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSubmitting
+                    ? "Guardando..."
+                    : "Guardar Términos de Servicio"}
+                </Button>
+              </TabsContent>
+            </Tabs>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

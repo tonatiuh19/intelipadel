@@ -549,6 +549,11 @@ export default function Index() {
                     Términos de Servicio
                   </a>
                 </li>
+                <li>
+                  <a href="/admin" className="hover:text-white transition">
+                    Admin
+                  </a>
+                </li>
               </ul>
             </div>
           </div>

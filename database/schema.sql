@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 26, 2025 at 02:49 PM
+-- Generation Time: Dec 26, 2025 at 03:27 PM
 -- Server version: 5.7.23-23
 -- PHP Version: 8.1.34
 
@@ -547,7 +547,8 @@ INSERT INTO `payment_transactions` (`id`, `transaction_number`, `user_id`, `club
 (5, 'TXN1766778228543403', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'EUR', 'pending', NULL, 'stripe', 'pi_3SigvQCDsJ3n85lg05dWZp2Q', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:43:48', '2025-12-26 19:43:48'),
 (6, 'TXN1766778345200606', 2, 1, 'booking', 3, NULL, NULL, NULL, 45.00, 'EUR', 'completed', NULL, 'stripe', 'pi_3SigxJCDsJ3n85lg1dWU5kO5', 'ch_3SigxJCDsJ3n85lg1JfleqEN', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 19:46:01', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:45:45', '2025-12-26 19:46:01'),
 (7, 'TXN1766778729944755', 2, 1, 'booking', 4, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sih3VCDsJ3n85lg0zGGh6PU', 'ch_3Sih3VCDsJ3n85lg0BhnRHIS', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 19:52:35', NULL, NULL, NULL, '{\"court_id\": 5, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:52:10', '2025-12-26 19:52:35'),
-(8, 'TXN1766781390788962', 2, 1, 'booking', 5, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SihkQCDsJ3n85lg0c7KlutU', 'ch_3SihkQCDsJ3n85lg0p2mxQOB', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 20:36:46', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"23:00\", \"start_time\": \"22:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 20:36:30', '2025-12-26 20:36:46');
+(8, 'TXN1766781390788962', 2, 1, 'booking', 5, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SihkQCDsJ3n85lg0c7KlutU', 'ch_3SihkQCDsJ3n85lg0p2mxQOB', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 20:36:46', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"23:00\", \"start_time\": \"22:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 20:36:30', '2025-12-26 20:36:46'),
+(9, 'TXN1766782271707626', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SihydCDsJ3n85lg13n4XNNm', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"13:00\", \"start_time\": \"12:00\", \"booking_date\": \"2025-12-31\", \"duration_minutes\": 60}', '2025-12-26 20:51:11', '2025-12-26 20:51:11');
 
 -- --------------------------------------------------------
 
@@ -1182,7 +1183,7 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `player_stats`
