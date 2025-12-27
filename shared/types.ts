@@ -88,3 +88,71 @@ export interface CreateBookingData {
   duration_minutes?: number;
   total_price: number;
 }
+
+// ============================================
+// EVENTS
+// ============================================
+
+export interface EventCourtSchedule {
+  id?: number;
+  event_id?: number;
+  court_id: number;
+  start_time: string;
+  end_time: string;
+  notes?: string | null;
+  created_at?: string;
+}
+
+export interface Event {
+  id: number;
+  club_id: number;
+  club_name?: string;
+  event_type: "tournament" | "league" | "clinic" | "social" | "championship";
+  title: string;
+  description: string | null;
+  event_date: string;
+  start_time: string;
+  end_time: string;
+  max_participants: number | null;
+  current_participants: number;
+  registration_fee: number;
+  prize_pool: number;
+  skill_level: "all" | "beginner" | "intermediate" | "advanced" | "expert";
+  status: "draft" | "open" | "full" | "in_progress" | "completed" | "cancelled";
+  courts_used: number[] | null;
+  court_schedules?: EventCourtSchedule[];
+  image_url: string | null;
+  rules: string | null;
+  organizer_name: string | null;
+  organizer_email: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateEventData {
+  club_id: number;
+  event_type: Event["event_type"];
+  title: string;
+  description?: string;
+  event_date: string;
+  start_time: string;
+  end_time: string;
+  max_participants?: number;
+  registration_fee?: number;
+  prize_pool?: number;
+  skill_level?: Event["skill_level"];
+  status?: Event["status"];
+  courts_used?: number[];
+  court_schedules?: Omit<
+    EventCourtSchedule,
+    "id" | "event_id" | "created_at"
+  >[];
+  image_url?: string;
+  rules?: string;
+  organizer_name?: string;
+  organizer_email?: string;
+}
+
+export interface UpdateEventData extends Partial<CreateEventData> {
+  id: number;
+}

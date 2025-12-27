@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
+import type { Event, EventCourtSchedule } from "@shared/types";
 
 interface Court {
   id: number;
@@ -32,18 +33,6 @@ interface Booking {
   status: string;
 }
 
-interface Event {
-  id: number;
-  club_id: number;
-  event_type: string;
-  title: string;
-  event_date: string;
-  start_time: string;
-  end_time: string;
-  courts_used: number[];
-  status: string;
-}
-
 interface PrivateClass {
   id: number;
   user_id: number;
@@ -64,6 +53,7 @@ export interface AvailabilityData {
   bookings: Booking[];
   courts: Court[];
   events: Event[];
+  eventCourtSchedules?: (EventCourtSchedule & { event_date: string })[];
   privateClasses: PrivateClass[];
 }
 

@@ -10,10 +10,11 @@ import {
 } from "@stripe/react-stripe-js";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { confirmPayment, setPaymentStatus } from "@/store/slices/paymentSlice";
+import { confirmEventPayment } from "@/store/slices/eventPaymentSlice";
 import ClubPolicyModal from "./ClubPolicyModal";
 
 interface StripePaymentFormProps {
-  bookingData: {
+  bookingData?: {
     user_id: number;
     club_id: number;
     court_id: number;
@@ -23,20 +24,30 @@ interface StripePaymentFormProps {
     duration_minutes: number;
     total_price: number;
   };
+  eventData?: {
+    user_id: number;
+    event_id: number;
+    registration_fee: number;
+  };
+  clubId?: number;
   onSuccess: () => void;
   onError: () => void;
+  isEventPayment?: boolean;
 }
 
 export default function StripePaymentForm({
   bookingData,
+  eventData,
+  clubId,
   onSuccess,
   onError,
+  isEventPayment = false,
 }: StripePaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const dispatch = useAppDispatch();
-  const { paymentIntentId, loading, error } = useAppSelector(
-    (state) => state.payment,
+  const { paymentIntentId, loading, error } = useAppSelector((state) =>
+    isEventPayment ? state.eventPayment : state.payment,
   );
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -85,13 +96,26 @@ export default function StripePaymentForm({
         return;
       }
 
-      // Confirm payment on backend and create booking
-      const result = await dispatch(
-        confirmPayment({
-          paymentIntentId,
-          bookingData,
-        }),
-      ).unwrap();
+      // Confirm payment on backend
+      if (isEventPayment && eventData) {
+        // Event registration flow
+        const result = await dispatch(
+          confirmEventPayment({
+            payment_intent_id: paymentIntentId,
+            user_id: eventData.user_id,
+            event_id: eventData.event_id,
+            registration_fee: eventData.registration_fee,
+          }),
+        ).unwrap();
+      } else if (bookingData) {
+        // Court booking flow
+        const result = await dispatch(
+          confirmPayment({
+            paymentIntentId,
+            bookingData,
+          }),
+        ).unwrap();
+      }
 
       dispatch(setPaymentStatus("succeeded"));
       setIsProcessing(false);
@@ -167,7 +191,10 @@ export default function StripePaymentForm({
         ) : (
           <>
             <CreditCard className="mr-2 h-4 w-4" />
-            Pagar ${bookingData.total_price.toFixed(2)}
+            Pagar $
+            {isEventPayment && eventData
+              ? eventData.registration_fee.toFixed(2)
+              : bookingData!.total_price.toFixed(2)}
           </>
         )}
       </Button>
@@ -204,7 +231,7 @@ export default function StripePaymentForm({
       <ClubPolicyModal
         open={showPolicyModal}
         onOpenChange={setShowPolicyModal}
-        clubId={bookingData.club_id}
+        clubId={clubId || bookingData?.club_id || 0}
         policyType={selectedPolicyType}
       />
     </form>

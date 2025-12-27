@@ -4,6 +4,7 @@ import clubsReducer from "./slices/clubsSlice";
 import authReducer from "./slices/authSlice";
 import availabilityReducer from "./slices/availabilitySlice";
 import paymentReducer from "./slices/paymentSlice";
+import eventPaymentReducer from "./slices/eventPaymentSlice";
 import clubPoliciesReducer from "./slices/clubPoliciesSlice";
 import adminAuthReducer from "./slices/adminAuthSlice";
 import adminDashboardReducer from "./slices/adminDashboardSlice";
@@ -13,6 +14,7 @@ import adminCourtsReducer from "./slices/adminCourtsSlice";
 import adminBlockedDatesReducer from "./slices/adminBlockedDatesSlice";
 import adminUsersReducer from "./slices/adminUsersSlice";
 import adminPoliciesReducer from "./slices/adminPoliciesSlice";
+import adminEventsReducer from "./slices/adminEventsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -21,6 +23,7 @@ export const store = configureStore({
     auth: authReducer,
     availability: availabilityReducer,
     payment: paymentReducer,
+    eventPayment: eventPaymentReducer,
     clubPolicies: clubPoliciesReducer,
     adminAuth: adminAuthReducer,
     adminDashboard: adminDashboardReducer,
@@ -30,6 +33,7 @@ export const store = configureStore({
     adminBlockedDates: adminBlockedDatesReducer,
     adminUsers: adminUsersReducer,
     adminPolicies: adminPoliciesReducer,
+    adminEvents: adminEventsReducer,
   },
 });
 

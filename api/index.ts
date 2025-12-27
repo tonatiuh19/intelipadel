@@ -6,6 +6,7 @@ import mysql from "mysql2/promise";
 import type { RequestHandler } from "express";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import type { Event, EventCourtSchedule, CreateEventData } from "@shared/types";
 
 // Database connection pool
 const pool = mysql.createPool({
@@ -929,13 +930,36 @@ const handleGetAvailability: RequestHandler = async (req, res) => {
       courtId ? [clubId, courtId] : [clubId],
     );
 
-    // Get events for the date range (tournaments, clinics, etc.)
-    const [events]: any = await pool.query(
+    // Get events for the date range (tournaments, clinics, etc.) - parse courts_used JSON
+    const [rawEvents]: any = await pool.query(
       `SELECT * FROM events 
        WHERE club_id = ? 
        AND event_date BETWEEN ? AND ?
        AND status IN ('open', 'full', 'in_progress')`,
       [clubId, startDate, endDate],
+    );
+
+    // Parse courts_used JSON field (handle both string and already-parsed object)
+    const events = rawEvents.map((event: any) => ({
+      ...event,
+      courts_used:
+        typeof event.courts_used === "string"
+          ? JSON.parse(event.courts_used)
+          : event.courts_used || [],
+    }));
+
+    // Get granular event court schedules (for events with specific court-time assignments)
+    const [eventCourtSchedules]: any = await pool.query(
+      `SELECT ecs.*, e.event_date 
+       FROM event_court_schedules ecs
+       JOIN events e ON ecs.event_id = e.id
+       WHERE e.club_id = ? 
+       AND e.event_date BETWEEN ? AND ?
+       AND e.status IN ('open', 'full', 'in_progress')
+       ${courtId ? "AND ecs.court_id = ?" : ""}`,
+      courtId
+        ? [clubId, startDate, endDate, courtId]
+        : [clubId, startDate, endDate],
     );
 
     // Get private classes for the date range
@@ -958,6 +982,7 @@ const handleGetAvailability: RequestHandler = async (req, res) => {
         bookings,
         courts,
         events,
+        eventCourtSchedules,
         privateClasses,
       },
     });
@@ -1353,6 +1378,528 @@ async function sendBookingConfirmationEmail(
     throw error;
   }
 }
+
+/**
+ * Send event registration confirmation email
+ */
+async function sendEventRegistrationEmail(
+  email: string,
+  userName: string,
+  registrationNumber: string,
+  eventTitle: string,
+  eventType: string,
+  eventDate: string,
+  startTime: string,
+  endTime: string,
+  clubName: string,
+  registrationFee: number,
+): Promise<void> {
+  try {
+    let transportConfig: any;
+
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
+      const testAccount = await nodemailer.createTestAccount();
+      transportConfig = {
+        host: testAccount.smtp.host,
+        port: testAccount.smtp.port,
+        secure: testAccount.smtp.secure,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass,
+        },
+      };
+    } else {
+      transportConfig = {
+        host: process.env.SMTP_HOST || "mail.disruptinglabs.com",
+        port: parseInt(process.env.SMTP_PORT || "465"),
+        secure: process.env.SMTP_SECURE === "true",
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASSWORD,
+        },
+      };
+    }
+
+    const transporter = nodemailer.createTransport(transportConfig);
+
+    const eventTypeLabels: Record<string, string> = {
+      tournament: "Torneo",
+      league: "Liga",
+      clinic: "Clínica",
+      social: "Social",
+      championship: "Campeonato",
+    };
+
+    const emailBody = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
+          .container { background-color: white; border-radius: 10px; padding: 30px; max-width: 600px; margin: 0 auto; }
+          .header { background-color: #ea580c; color: white; padding: 20px; border-radius: 5px; text-align: center; }
+          .event-badge { background-color: #fed7aa; color: #9a3412; padding: 5px 15px; border-radius: 20px; display: inline-block; margin: 10px 0; font-weight: bold; }
+          .event-details { background-color: #fff7ed; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ea580c; }
+          .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #fed7aa; }
+          .label { font-weight: bold; color: #9a3412; }
+          .value { color: #333; }
+          .total { font-size: 20px; font-weight: bold; color: #ea580c; }
+          .footer { color: #666; font-size: 12px; text-align: center; margin-top: 30px; }
+          .highlight { background-color: #fed7aa; padding: 15px; border-radius: 5px; margin: 15px 0; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>¡Inscripción Confirmada! 🏆</h1>
+          </div>
+          <p>Hola ${userName},</p>
+          <p>Tu inscripción al evento ha sido confirmada exitosamente.</p>
+          <div class="highlight">
+            <span class="event-badge">${eventTypeLabels[eventType] || eventType}</span>
+            <h2 style="margin: 10px 0; color: #9a3412;">${eventTitle}</h2>
+          </div>
+          <div class="event-details">
+            <div class="detail-row">
+              <span class="label">Número de Inscripción:</span>
+              <span class="value">${registrationNumber}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Club:</span>
+              <span class="value">${clubName}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Fecha del Evento:</span>
+              <span class="value">${eventDate}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Horario:</span>
+              <span class="value">${startTime} - ${endTime}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Cuota de Inscripción:</span>
+              <span class="value total">$${registrationFee.toFixed(2)} MXN</span>
+            </div>
+          </div>
+          <p><strong>Importante:</strong> Llega al menos 15 minutos antes del inicio del evento para el registro.</p>
+          <p>¡Nos vemos en ${clubName}. Mucha suerte!</p>
+          <div class="footer">
+            <p>InteliPadel - Tu plataforma de reservas y eventos de pádel</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"InteliPadel" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: `Confirmación de Inscripción - ${eventTitle}`,
+      html: emailBody,
+    });
+
+    console.log("Event registration email sent to:", email);
+  } catch (error) {
+    console.error("Failed to send event registration email:", error);
+    throw error;
+  }
+}
+
+// ==================== EVENT REGISTRATION HANDLERS ====================
+
+/**
+ * Create Payment Intent for Event Registration
+ * POST /api/events/payment/create-intent
+ */
+const handleCreateEventPaymentIntent: RequestHandler = async (req, res) => {
+  try {
+    const { user_id, event_id, registration_fee } = req.body;
+
+    if (!user_id || !event_id || registration_fee === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    // Get event details
+    const [events]: any = await pool.query(
+      `SELECT e.*, c.name as club_name 
+       FROM events e 
+       JOIN clubs c ON e.club_id = c.id 
+       WHERE e.id = ?`,
+      [event_id],
+    );
+
+    if (events.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found",
+      });
+    }
+
+    const event = events[0];
+
+    // Check if event is open for registration
+    if (event.status !== "open") {
+      return res.status(400).json({
+        success: false,
+        message: "Event is not open for registration",
+      });
+    }
+
+    // Check if user is already registered
+    const [participants]: any = await pool.query(
+      "SELECT id FROM event_participants WHERE event_id = ? AND user_id = ?",
+      [event_id, user_id],
+    );
+
+    if (participants.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "You are already registered for this event",
+      });
+    }
+
+    // Check if event is full
+    if (
+      event.max_participants &&
+      event.current_participants >= event.max_participants
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Event is full",
+      });
+    }
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    // Create payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(registration_fee * 100), // Convert to cents
+      currency: "mxn",
+      metadata: {
+        user_id: user_id.toString(),
+        event_id: event_id.toString(),
+        event_title: event.title,
+        transaction_type: "event_registration",
+      },
+    });
+
+    // Generate transaction number
+    const transactionNumber = `EVT${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+    // Create pending payment transaction record
+    const [result] = await pool.execute(
+      `INSERT INTO payment_transactions (
+        transaction_number, user_id, club_id, transaction_type,
+        amount, currency, status, payment_provider,
+        stripe_payment_intent_id, metadata, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      [
+        transactionNumber,
+        user_id,
+        event.club_id,
+        "event_registration",
+        registration_fee,
+        "MXN",
+        "pending",
+        "stripe",
+        paymentIntent.id,
+        JSON.stringify({
+          event_id,
+          event_title: event.title,
+          event_date: event.event_date,
+        }),
+      ],
+    );
+
+    const transactionId = (result as any).insertId;
+
+    res.json({
+      success: true,
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+      transactionId,
+    });
+  } catch (error) {
+    console.error("Create event payment intent error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create payment intent",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * Confirm Event Registration Payment
+ * POST /api/events/payment/confirm
+ */
+const handleConfirmEventPayment: RequestHandler = async (req, res) => {
+  try {
+    const { payment_intent_id, user_id, event_id, registration_fee } = req.body;
+
+    if (!payment_intent_id || !user_id || !event_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    // Initialize Stripe and retrieve payment intent
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    const paymentIntent =
+      await stripe.paymentIntents.retrieve(payment_intent_id);
+
+    if (paymentIntent.status !== "succeeded") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment has not been completed",
+      });
+    }
+
+    // Start transaction
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // Check again if user is already registered (race condition protection)
+      const [existingParticipants]: any = await connection.query(
+        "SELECT id FROM event_participants WHERE event_id = ? AND user_id = ?",
+        [event_id, user_id],
+      );
+
+      if (existingParticipants.length > 0) {
+        await connection.rollback();
+        connection.release();
+        return res.status(400).json({
+          success: false,
+          message: "You are already registered for this event",
+        });
+      }
+
+      // Generate registration number
+      const registrationNumber = `REG${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+      // Register participant
+      const [participantResult] = await connection.execute(
+        `INSERT INTO event_participants (
+          event_id, user_id, registration_date, payment_status, status
+        ) VALUES (?, ?, NOW(), 'paid', 'confirmed')`,
+        [event_id, user_id],
+      );
+
+      const participantId = (participantResult as any).insertId;
+
+      // Update event participant count
+      await connection.execute(
+        `UPDATE events 
+         SET current_participants = current_participants + 1 
+         WHERE id = ?`,
+        [event_id],
+      );
+
+      // Update payment transaction
+      await connection.execute(
+        `UPDATE payment_transactions 
+         SET status = 'completed',
+             stripe_charge_id = ?,
+             paid_at = NOW(),
+             updated_at = NOW(),
+             metadata = JSON_SET(metadata, '$.participant_id', ?)
+         WHERE stripe_payment_intent_id = ?`,
+        [paymentIntent.latest_charge, participantId, payment_intent_id],
+      );
+
+      // Get event and user details for email
+      const [events]: any = await connection.execute(
+        `SELECT e.*, c.name as club_name 
+         FROM events e 
+         JOIN clubs c ON e.club_id = c.id 
+         WHERE e.id = ?`,
+        [event_id],
+      );
+      const event = events[0];
+
+      const [users]: any = await connection.execute(
+        "SELECT email, name FROM users WHERE id = ?",
+        [user_id],
+      );
+      const user = users[0];
+
+      // Commit transaction
+      await connection.commit();
+      connection.release();
+
+      // Send confirmation email (async, don't wait)
+      sendEventRegistrationEmail(
+        user.email,
+        user.name,
+        registrationNumber,
+        event.title,
+        event.event_type,
+        event.event_date,
+        event.start_time,
+        event.end_time,
+        event.club_name,
+        parseFloat(registration_fee),
+      ).catch((error) => {
+        console.error("Failed to send event registration email:", error);
+      });
+
+      res.json({
+        success: true,
+        data: {
+          participantId,
+          registrationNumber,
+          eventTitle: event.title,
+        },
+        message: "Event registration successful",
+      });
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    console.error("Confirm event payment error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to confirm event registration",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/admin/events/:eventId/participants
+ * Get all participants for an event with user details and payment info
+ */
+const handleGetEventParticipants: RequestHandler = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    const [rows]: any = await pool.execute(
+      `SELECT 
+        ep.id as participant_id,
+        ep.registration_date,
+        ep.payment_status,
+        ep.status,
+        u.id as user_id,
+        u.name,
+        u.email,
+        u.phone,
+        pt.amount as payment_amount,
+        pt.stripe_payment_intent_id,
+        pt.paid_at
+      FROM event_participants ep
+      JOIN users u ON ep.user_id = u.id
+      LEFT JOIN (
+        SELECT 
+          JSON_EXTRACT(metadata, '$.event_id') as event_id,
+          JSON_EXTRACT(metadata, '$.user_id') as user_id,
+          stripe_payment_intent_id,
+          amount,
+          paid_at,
+          created_at
+        FROM payment_transactions
+        WHERE transaction_type = 'event_registration'
+          AND JSON_EXTRACT(metadata, '$.event_id') = ?
+        ORDER BY created_at DESC
+      ) pt ON pt.event_id = ? AND pt.user_id = u.id
+      WHERE ep.event_id = ?
+      GROUP BY ep.id
+      ORDER BY ep.registration_date DESC`,
+      [eventId, eventId, eventId],
+    );
+
+    res.json({
+      success: true,
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Get event participants error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch event participants",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/users/:userId/event-registrations
+ * Get all event registrations for a user
+ */
+const handleGetUserEventRegistrations: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const [rows]: any = await pool.execute(
+      `SELECT 
+        ep.id as registration_id,
+        ep.registration_date,
+        ep.payment_status,
+        ep.status,
+        e.id as event_id,
+        e.title,
+        e.description,
+        e.event_type,
+        e.event_date,
+        e.start_time,
+        e.end_time,
+        e.registration_fee,
+        e.prize_pool,
+        e.skill_level,
+        c.id as club_id,
+        c.name as club_name,
+        c.address as club_address,
+        pt.amount as payment_amount,
+        pt.paid_at
+      FROM event_participants ep
+      JOIN events e ON ep.event_id = e.id
+      JOIN clubs c ON e.club_id = c.id
+      LEFT JOIN (
+        SELECT 
+          JSON_EXTRACT(metadata, '$.event_id') as event_id,
+          JSON_EXTRACT(metadata, '$.user_id') as user_id,
+          stripe_payment_intent_id,
+          amount,
+          paid_at,
+          created_at
+        FROM payment_transactions
+        WHERE transaction_type = 'event_registration'
+          AND JSON_EXTRACT(metadata, '$.user_id') = ?
+        ORDER BY created_at DESC
+      ) pt ON pt.event_id = e.id AND pt.user_id = ?
+      WHERE ep.user_id = ?
+      GROUP BY ep.id
+      ORDER BY e.event_date DESC, e.start_time DESC`,
+      [userId, userId, userId],
+    );
+
+    res.json({
+      success: true,
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Get user event registrations error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch event registrations",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
 
 // ==================== CLUB POLICIES HANDLERS ====================
 
@@ -2138,17 +2685,19 @@ const verifyAdminSession = async (
 const handleGetDashboardStats: RequestHandler = async (req, res) => {
   try {
     const admin = (req as any).admin;
-    const clubFilter = admin.club_id ? `WHERE club_id = ${admin.club_id}` : "";
+    const clubFilter = admin.club_id
+      ? `WHERE b.club_id = ${admin.club_id}`
+      : "";
 
     // Total bookings
     const [bookingsCount] = await pool.query<any[]>(
-      `SELECT COUNT(*) as total FROM bookings ${clubFilter}`,
+      `SELECT COUNT(*) as total FROM bookings b ${clubFilter}`,
     );
 
     // Total revenue
     const [revenue] = await pool.query<any[]>(
-      `SELECT SUM(total_price) as total FROM bookings 
-       WHERE payment_status = 'paid' ${clubFilter ? "AND " + clubFilter.substring(6) : ""}`,
+      `SELECT SUM(b.total_price) as total FROM bookings b
+       WHERE b.payment_status = 'paid' ${clubFilter ? "AND b.club_id = " + admin.club_id : ""}`,
     );
 
     // Total players
@@ -2158,8 +2707,8 @@ const handleGetDashboardStats: RequestHandler = async (req, res) => {
 
     // Upcoming bookings
     const [upcomingCount] = await pool.query<any[]>(
-      `SELECT COUNT(*) as total FROM bookings 
-       WHERE booking_date >= CURDATE() AND status != 'cancelled' ${clubFilter ? "AND " + clubFilter.substring(6) : ""}`,
+      `SELECT COUNT(*) as total FROM bookings b
+       WHERE b.booking_date >= CURDATE() AND b.status != 'cancelled' ${clubFilter ? "AND b.club_id = " + admin.club_id : ""}`,
     );
 
     // Recent bookings
@@ -2726,6 +3275,559 @@ const handleUpdateAdmin: RequestHandler = async (req, res) => {
  * PUT /api/admin/clubs/:id/policies/:policyType
  * Update club policy (HTML content)
  */
+/**
+ * GET /api/admin/events
+ * Get all events for admin's club
+ */
+const handleGetAdminEvents: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+
+    let query = `
+      SELECT e.*, c.name as club_name
+      FROM events e
+      JOIN clubs c ON e.club_id = c.id
+      WHERE 1=1
+    `;
+
+    const params: any[] = [];
+
+    // Filter by admin's club
+    if (admin.club_id) {
+      query += " AND e.club_id = ?";
+      params.push(admin.club_id);
+    }
+
+    query += " ORDER BY e.event_date DESC, e.start_time ASC";
+
+    const [events] = await pool.query<any[]>(query, params);
+
+    // Fetch court schedules for all events
+    const eventIds = events.map((e) => e.id);
+    let courtSchedules: any[] = [];
+
+    if (eventIds.length > 0) {
+      const [schedules] = await pool.query<any[]>(
+        `SELECT * FROM event_court_schedules WHERE event_id IN (?)`,
+        [eventIds],
+      );
+      courtSchedules = schedules;
+    }
+
+    // Attach court schedules to events
+    const eventsWithSchedules = events.map((event) => ({
+      ...event,
+      court_schedules: courtSchedules.filter((s) => s.event_id === event.id),
+    }));
+
+    res.json({
+      success: true,
+      data: eventsWithSchedules,
+    });
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch events",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/admin/events
+ * Create new event
+ */
+const handleCreateAdminEvent: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const {
+      club_id,
+      event_type,
+      title,
+      description,
+      event_date,
+      start_time,
+      end_time,
+      max_participants,
+      registration_fee,
+      prize_pool,
+      skill_level,
+      status,
+      courts_used,
+      court_schedules,
+      image_url,
+      rules,
+      organizer_name,
+      organizer_email,
+    } = req.body as CreateEventData;
+
+    // Verify club access
+    if (admin.club_id && club_id !== admin.club_id) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only create events for your club",
+      });
+    }
+
+    // Check for existing bookings that would conflict with this event
+    const courtsToCheck = courts_used;
+    let bookingConflicts: any[] = [];
+
+    if (court_schedules && court_schedules.length > 0) {
+      // Check each court schedule for conflicts
+      for (const schedule of court_schedules) {
+        const [conflicts] = await pool.query<any[]>(
+          `SELECT b.id, b.booking_date, b.start_time, b.end_time, b.court_id, 
+                  c.name as court_name, u.name as user_name
+           FROM bookings b
+           JOIN courts c ON b.court_id = c.id
+           LEFT JOIN users u ON b.user_id = u.id
+           WHERE b.court_id = ?
+           AND b.booking_date = ?
+           AND b.status IN ('pending', 'confirmed')
+           AND (
+             (b.start_time < ? AND b.end_time > ?) OR
+             (b.start_time >= ? AND b.start_time < ?)
+           )`,
+          [
+            schedule.court_id,
+            event_date,
+            schedule.end_time,
+            schedule.start_time,
+            schedule.start_time,
+            schedule.end_time,
+          ],
+        );
+        bookingConflicts.push(...conflicts);
+      }
+    } else {
+      // No specific court schedules - check all courts for the entire event time
+      for (const courtId of courtsToCheck) {
+        const [conflicts] = await pool.query<any[]>(
+          `SELECT b.id, b.booking_date, b.start_time, b.end_time, b.court_id, 
+                  c.name as court_name, u.name as user_name
+           FROM bookings b
+           JOIN courts c ON b.court_id = c.id
+           LEFT JOIN users u ON b.user_id = u.id
+           WHERE b.court_id = ?
+           AND b.booking_date = ?
+           AND b.status IN ('pending', 'confirmed')
+           AND (
+             (b.start_time < ? AND b.end_time > ?) OR
+             (b.start_time >= ? AND b.start_time < ?)
+           )`,
+          [courtId, event_date, end_time, start_time, start_time, end_time],
+        );
+        bookingConflicts.push(...conflicts);
+      }
+    }
+
+    if (bookingConflicts.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "No se puede crear el evento. Existen reservas confirmadas en las canchas seleccionadas durante este horario.",
+        conflicts: bookingConflicts.map((c) => ({
+          booking_id: c.id,
+          court_name: c.court_name,
+          user_name: c.user_name,
+          date: c.booking_date,
+          time: `${c.start_time} - ${c.end_time}`,
+        })),
+      });
+    }
+
+    const [result] = await pool.query<any>(
+      `INSERT INTO events (
+        club_id, event_type, title, description, event_date, 
+        start_time, end_time, max_participants, registration_fee, 
+        prize_pool, skill_level, status, courts_used, image_url, 
+        rules, organizer_name, organizer_email
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        club_id,
+        event_type,
+        title,
+        description,
+        event_date,
+        start_time,
+        end_time,
+        max_participants,
+        registration_fee,
+        prize_pool,
+        skill_level,
+        status,
+        JSON.stringify(courts_used),
+        image_url,
+        rules,
+        organizer_name,
+        organizer_email,
+      ],
+    );
+
+    const eventId = result.insertId;
+
+    // Insert court schedules if provided (granular court-time assignments)
+    if (court_schedules && court_schedules.length > 0) {
+      const scheduleValues = court_schedules.map((schedule) => [
+        eventId,
+        schedule.court_id,
+        schedule.start_time,
+        schedule.end_time,
+        schedule.notes || null,
+      ]);
+
+      await pool.query(
+        `INSERT INTO event_court_schedules 
+         (event_id, court_id, start_time, end_time, notes) 
+         VALUES ?`,
+        [scheduleValues],
+      );
+    }
+
+    // Fetch created event with club name and court schedules
+    const [events] = await pool.query<any[]>(
+      `SELECT e.*, c.name as club_name
+       FROM events e
+       JOIN clubs c ON e.club_id = c.id
+       WHERE e.id = ?`,
+      [eventId],
+    );
+
+    const [schedules] = await pool.query<any[]>(
+      `SELECT * FROM event_court_schedules WHERE event_id = ?`,
+      [eventId],
+    );
+
+    const eventData = {
+      ...events[0],
+      court_schedules: schedules,
+    };
+
+    res.json({
+      success: true,
+      data: eventData,
+      message: "Event created successfully",
+    });
+  } catch (error) {
+    console.error("Error creating event:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create event",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * PUT /api/admin/events/:id
+ * Update event
+ */
+const handleUpdateAdminEvent: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { id } = req.params;
+    const {
+      event_type,
+      title,
+      description,
+      event_date,
+      start_time,
+      end_time,
+      max_participants,
+      registration_fee,
+      prize_pool,
+      skill_level,
+      status,
+      courts_used,
+      court_schedules,
+      image_url,
+      rules,
+      organizer_name,
+      organizer_email,
+    } = req.body;
+
+    // Verify event belongs to admin's club
+    if (admin.club_id) {
+      const [events] = await pool.query<any[]>(
+        "SELECT club_id FROM events WHERE id = ?",
+        [id],
+      );
+
+      if (events.length === 0 || events[0].club_id !== admin.club_id) {
+        return res.status(403).json({
+          success: false,
+          message: "You can only update events for your club",
+        });
+      }
+    }
+
+    // Check for existing bookings that would conflict with the updated event
+    const courtsToCheck = courts_used;
+    let bookingConflicts: any[] = [];
+
+    if (court_schedules && court_schedules.length > 0) {
+      // Check each court schedule for conflicts
+      for (const schedule of court_schedules) {
+        const [conflicts] = await pool.query<any[]>(
+          `SELECT b.id, b.booking_date, b.start_time, b.end_time, b.court_id, 
+                  c.name as court_name, u.name as user_name
+           FROM bookings b
+           JOIN courts c ON b.court_id = c.id
+           LEFT JOIN users u ON b.user_id = u.id
+           WHERE b.court_id = ?
+           AND b.booking_date = ?
+           AND b.status IN ('pending', 'confirmed')
+           AND (
+             (b.start_time < ? AND b.end_time > ?) OR
+             (b.start_time >= ? AND b.start_time < ?)
+           )`,
+          [
+            schedule.court_id,
+            event_date,
+            schedule.end_time,
+            schedule.start_time,
+            schedule.start_time,
+            schedule.end_time,
+          ],
+        );
+        bookingConflicts.push(...conflicts);
+      }
+    } else {
+      // No specific court schedules - check all courts for the entire event time
+      for (const courtId of courtsToCheck) {
+        const [conflicts] = await pool.query<any[]>(
+          `SELECT b.id, b.booking_date, b.start_time, b.end_time, b.court_id, 
+                  c.name as court_name, u.name as user_name
+           FROM bookings b
+           JOIN courts c ON b.court_id = c.id
+           LEFT JOIN users u ON b.user_id = u.id
+           WHERE b.court_id = ?
+           AND b.booking_date = ?
+           AND b.status IN ('pending', 'confirmed')
+           AND (
+             (b.start_time < ? AND b.end_time > ?) OR
+             (b.start_time >= ? AND b.start_time < ?)
+           )`,
+          [courtId, event_date, end_time, start_time, start_time, end_time],
+        );
+        bookingConflicts.push(...conflicts);
+      }
+    }
+
+    if (bookingConflicts.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "No se puede actualizar el evento. Existen reservas confirmadas en las canchas seleccionadas durante este horario.",
+        conflicts: bookingConflicts.map((c) => ({
+          booking_id: c.id,
+          court_name: c.court_name,
+          user_name: c.user_name,
+          date: c.booking_date,
+          time: `${c.start_time} - ${c.end_time}`,
+        })),
+      });
+    }
+
+    await pool.query(
+      `UPDATE events SET 
+        event_type = ?, title = ?, description = ?, event_date = ?,
+        start_time = ?, end_time = ?, max_participants = ?, 
+        registration_fee = ?, prize_pool = ?, skill_level = ?,
+        status = ?, courts_used = ?, image_url = ?, rules = ?,
+        organizer_name = ?, organizer_email = ?
+       WHERE id = ?`,
+      [
+        event_type,
+        title,
+        description,
+        event_date,
+        start_time,
+        end_time,
+        max_participants,
+        registration_fee,
+        prize_pool,
+        skill_level,
+        status,
+        JSON.stringify(courts_used),
+        image_url,
+        rules,
+        organizer_name,
+        organizer_email,
+        id,
+      ],
+    );
+
+    // Update court schedules if provided
+    if (court_schedules !== undefined) {
+      // Delete existing schedules
+      await pool.query(`DELETE FROM event_court_schedules WHERE event_id = ?`, [
+        id,
+      ]);
+
+      // Insert new schedules if provided
+      if (court_schedules && court_schedules.length > 0) {
+        const scheduleValues = court_schedules.map((schedule: any) => [
+          id,
+          schedule.court_id,
+          schedule.start_time,
+          schedule.end_time,
+          schedule.notes || null,
+        ]);
+
+        await pool.query(
+          `INSERT INTO event_court_schedules 
+           (event_id, court_id, start_time, end_time, notes) 
+           VALUES ?`,
+          [scheduleValues],
+        );
+      }
+    }
+
+    // Fetch updated event with court schedules
+    const [events] = await pool.query<any[]>(
+      `SELECT e.*, c.name as club_name
+       FROM events e
+       JOIN clubs c ON e.club_id = c.id
+       WHERE e.id = ?`,
+      [id],
+    );
+
+    const [schedules] = await pool.query<any[]>(
+      `SELECT * FROM event_court_schedules WHERE event_id = ?`,
+      [id],
+    );
+
+    const eventData = {
+      ...events[0],
+      court_schedules: schedules,
+    };
+
+    res.json({
+      success: true,
+      data: eventData,
+      message: "Event updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update event",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * DELETE /api/admin/events/:id
+ * Delete event
+ */
+const handleDeleteAdminEvent: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { id } = req.params;
+
+    // Verify event belongs to admin's club
+    if (admin.club_id) {
+      const [events] = await pool.query<any[]>(
+        "SELECT club_id FROM events WHERE id = ?",
+        [id],
+      );
+
+      if (events.length === 0 || events[0].club_id !== admin.club_id) {
+        return res.status(403).json({
+          success: false,
+          message: "You can only delete events for your club",
+        });
+      }
+    }
+
+    await pool.query("DELETE FROM events WHERE id = ?", [id]);
+
+    res.json({
+      success: true,
+      message: "Event deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete event",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/events
+ * Get public events (for users to view and register)
+ */
+const handleGetPublicEvents: RequestHandler = async (req, res) => {
+  try {
+    const { clubId, startDate, endDate } = req.query;
+
+    let query = `
+      SELECT e.*, c.name as club_name, c.image_url as club_image_url
+      FROM events e
+      JOIN clubs c ON e.club_id = c.id
+      WHERE e.status IN ('open', 'full', 'in_progress')
+    `;
+
+    const params: any[] = [];
+
+    if (clubId) {
+      query += " AND e.club_id = ?";
+      params.push(clubId);
+    }
+
+    if (startDate) {
+      query += " AND e.event_date >= ?";
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      query += " AND e.event_date <= ?";
+      params.push(endDate);
+    }
+
+    query += " ORDER BY e.event_date ASC, e.start_time ASC";
+
+    const [events] = await pool.query<any[]>(query, params);
+
+    // Fetch court schedules for all events
+    const eventIds = events.map((e) => e.id);
+    let courtSchedules: any[] = [];
+
+    if (eventIds.length > 0) {
+      const [schedules] = await pool.query<any[]>(
+        `SELECT * FROM event_court_schedules WHERE event_id IN (?)`,
+        [eventIds],
+      );
+      courtSchedules = schedules;
+    }
+
+    // Attach court schedules to events
+    const eventsWithSchedules = events.map((event) => ({
+      ...event,
+      court_schedules: courtSchedules.filter((s) => s.event_id === event.id),
+    }));
+
+    res.json({
+      success: true,
+      data: eventsWithSchedules,
+    });
+  } catch (error) {
+    console.error("Error fetching public events:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch events",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 const handleUpdateClubPolicy: RequestHandler = async (req, res) => {
   try {
     const admin = (req as any).admin;
@@ -2826,10 +3928,27 @@ function createServer() {
 
   // User routes
   expressApp.put("/api/users/:id", handleUpdateUser);
+  expressApp.get(
+    "/api/users/:userId/event-registrations",
+    handleGetUserEventRegistrations,
+  );
 
   // Payment routes
   expressApp.post("/api/payment/create-intent", handleCreatePaymentIntent);
   expressApp.post("/api/payment/confirm", handleConfirmPayment);
+
+  // Event registration payment routes
+  expressApp.post(
+    "/api/events/payment/create-intent",
+    handleCreateEventPaymentIntent,
+  );
+  expressApp.post("/api/events/payment/confirm", handleConfirmEventPayment);
+
+  // Admin event routes
+  expressApp.get(
+    "/api/admin/events/:eventId/participants",
+    handleGetEventParticipants,
+  );
 
   // Admin auth routes (no auth required)
   expressApp.post("/api/admin/auth/send-code", handleAdminSendCode);
@@ -2887,6 +4006,25 @@ function createServer() {
     verifyAdminSession,
     handleUpdateClubPolicy,
   );
+
+  // Events routes
+  expressApp.get("/api/admin/events", verifyAdminSession, handleGetAdminEvents);
+  expressApp.post(
+    "/api/admin/events",
+    verifyAdminSession,
+    handleCreateAdminEvent,
+  );
+  expressApp.put(
+    "/api/admin/events/:id",
+    verifyAdminSession,
+    handleUpdateAdminEvent,
+  );
+  expressApp.delete(
+    "/api/admin/events/:id",
+    verifyAdminSession,
+    handleDeleteAdminEvent,
+  );
+  expressApp.get("/api/events", handleGetPublicEvents);
 
   // 404 handler - only for API routes
   expressApp.use("/api", (_req, res, next) => {

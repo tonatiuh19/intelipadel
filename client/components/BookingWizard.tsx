@@ -11,7 +11,12 @@ import {
   clearAvailability,
 } from "@/store/slices/availabilitySlice";
 import { createPaymentIntent, resetPayment } from "@/store/slices/paymentSlice";
+import {
+  createEventPaymentIntent,
+  resetEventPayment,
+} from "@/store/slices/eventPaymentSlice";
 import { Club } from "@shared/types";
+import type { Event } from "@shared/types";
 import { cn } from "@/lib/utils";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
@@ -19,6 +24,7 @@ import CalendarSelector from "@/components/booking/CalendarSelector";
 import CourtTimeSlotSelector from "@/components/booking/CourtTimeSlotSelector";
 import AuthModal from "@/components/auth/AuthModal";
 import BookingSummary from "@/components/booking/BookingSummary";
+import EventRegistrationSummary from "@/components/booking/EventRegistrationSummary";
 import StripePaymentForm from "@/components/booking/StripePaymentForm";
 import PaymentSuccessModal from "@/components/booking/PaymentSuccessModal";
 import PaymentFailedModal from "@/components/booking/PaymentFailedModal";
@@ -50,9 +56,16 @@ export default function BookingWizard() {
   const { clientSecret, loading: paymentLoading } = useAppSelector(
     (state) => state.payment,
   );
+  const {
+    clientSecret: eventClientSecret,
+    loading: eventPaymentLoading,
+    registrationNumber,
+  } = useAppSelector((state) => state.eventPayment);
 
   const [step, setStep] = useState<BookingStep>("club");
+  const [flowType, setFlowType] = useState<"booking" | "event" | null>(null);
   const [selectedClub, setSelectedClub] = useState<Club | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -62,6 +75,9 @@ export default function BookingWizard() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showFailedModal, setShowFailedModal] = useState(false);
   const [bookingNumber, setBookingNumber] = useState<string>("");
+  const [processingEventId, setProcessingEventId] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     dispatch(fetchClubs());
@@ -78,9 +94,13 @@ export default function BookingWizard() {
   useEffect(() => {
     if (step === "auth" && isAuthenticated) {
       setShowAuthModal(false);
-      handleProceedToPayment();
+      if (flowType === "event") {
+        handleProceedToEventPayment();
+      } else {
+        handleProceedToPayment();
+      }
     }
-  }, [isAuthenticated, step]);
+  }, [isAuthenticated, step, flowType]);
 
   // Fetch availability for specific date when selected
   const handleDateSelect = (date: Date) => {
@@ -126,6 +146,41 @@ export default function BookingWizard() {
   const handleSelectDateTime = (court: Court, time: string) => {
     setSelectedCourt(court);
     setSelectedTime(time);
+    setFlowType("booking");
+  };
+
+  const handleSelectEvent = async (event: Event) => {
+    setSelectedEvent(event);
+    setFlowType("event");
+    setProcessingEventId(event.id);
+
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      setStep("auth");
+      setShowAuthModal(true);
+      setProcessingEventId(null);
+    } else {
+      await handleProceedToEventPayment(event);
+      setProcessingEventId(null);
+    }
+  };
+
+  const handleProceedToEventPayment = async (event?: Event) => {
+    const eventToUse = event || selectedEvent;
+
+    if (!eventToUse || !user) {
+      return;
+    }
+
+    const eventData = {
+      user_id: user.id,
+      event_id: eventToUse.id,
+      registration_fee: Number(eventToUse.registration_fee),
+    };
+
+    // Create payment intent for event
+    await dispatch(createEventPaymentIntent(eventData));
+    setStep("payment");
   };
 
   const handleContinueToPayment = () => {
@@ -183,25 +238,33 @@ export default function BookingWizard() {
     if (step === "datetime") {
       setStep("club");
       setSelectedClub(null);
+      setFlowType(null);
     } else if (step === "auth") {
       setStep("datetime");
       setShowAuthModal(false);
     } else if (step === "payment") {
       setStep("datetime");
-      dispatch(resetPayment());
+      if (flowType === "event") {
+        dispatch(resetEventPayment());
+      } else {
+        dispatch(resetPayment());
+      }
     } else if (step === "success") {
       // Reset everything
       setStep("club");
       setSelectedClub(null);
+      setSelectedEvent(null);
       setSelectedDate(new Date());
       setCurrentMonth(new Date());
       setSelectedTime("");
       setSelectedCourt(null);
       setDuration(60);
+      setFlowType(null);
       setShowSuccessModal(false);
       setShowFailedModal(false);
       setBookingNumber("");
       dispatch(resetPayment());
+      dispatch(resetEventPayment());
     }
   };
 
@@ -400,6 +463,8 @@ export default function BookingWizard() {
               availability={availability}
               loading={loadingAvailability}
               onSelectTimeSlot={handleSelectDateTime}
+              onEventSelect={handleSelectEvent}
+              processingEventId={processingEventId}
             />
 
             {/* Duration & Price */}
@@ -474,8 +539,9 @@ export default function BookingWizard() {
           />
         )}
 
-        {/* Step 4: Payment */}
+        {/* Step 4: Payment - Booking Flow */}
         {step === "payment" &&
+          flowType === "booking" &&
           selectedClub &&
           selectedDate &&
           selectedTime &&
@@ -556,11 +622,90 @@ export default function BookingWizard() {
             </div>
           )}
 
+        {/* Step 4: Payment - Event Flow */}
+        {step === "payment" &&
+          flowType === "event" &&
+          selectedClub &&
+          selectedEvent &&
+          user && (
+            <div
+              className={cn(
+                "grid lg:grid-cols-2 gap-8 transition-all duration-500 transform",
+                "animate-in fade-in slide-in-from-right-4",
+              )}
+            >
+              {/* Left: Payment Form */}
+              <div className="space-y-6">
+                {eventClientSecret && (
+                  <Elements
+                    stripe={stripePromise}
+                    options={{
+                      clientSecret: eventClientSecret,
+                      locale: "es",
+                      appearance: {
+                        theme: "stripe",
+                      },
+                    }}
+                  >
+                    <StripePaymentForm
+                      eventData={{
+                        user_id: user.id,
+                        event_id: selectedEvent.id,
+                        registration_fee: Number(
+                          selectedEvent.registration_fee,
+                        ),
+                      }}
+                      clubId={selectedClub.id}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                      isEventPayment={true}
+                    />
+                  </Elements>
+                )}
+
+                {!eventClientSecret && eventPaymentLoading && (
+                  <Card className="p-8">
+                    <div className="text-center">
+                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-orange-600 border-r-transparent"></div>
+                      <p className="mt-4 text-muted-foreground">
+                        Preparando inscripción...
+                      </p>
+                    </div>
+                  </Card>
+                )}
+
+                <Button
+                  variant="outline"
+                  onClick={goBack}
+                  className="w-full"
+                  size="lg"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Volver a Selección
+                </Button>
+              </div>
+
+              {/* Right: Event Registration Summary */}
+              <div>
+                <EventRegistrationSummary
+                  event={selectedEvent}
+                  clubName={selectedClub.name}
+                  clubImage={selectedClub.image_url}
+                  totalPrice={Number(selectedEvent.registration_fee)}
+                />
+              </div>
+            </div>
+          )}
+
         {/* Payment Success Modal */}
         <PaymentSuccessModal
           open={showSuccessModal}
           onClose={goBack}
-          bookingNumber={bookingNumber}
+          bookingNumber={flowType === "booking" ? bookingNumber : undefined}
+          registrationNumber={
+            flowType === "event" ? registrationNumber : undefined
+          }
+          isEventRegistration={flowType === "event"}
         />
 
         {/* Payment Failed Modal */}

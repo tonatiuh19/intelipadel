@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 26, 2025 at 03:27 PM
+-- Generation Time: Dec 26, 2025 at 07:05 PM
 -- Server version: 5.7.23-23
 -- PHP Version: 8.1.34
 
@@ -45,7 +45,39 @@ CREATE TABLE `admins` (
 --
 
 INSERT INTO `admins` (`id`, `email`, `name`, `phone`, `role`, `club_id`, `is_active`, `created_at`, `updated_at`, `last_login_at`) VALUES
-(1, 'admin@intelipadel.com', 'System Administrator', NULL, 'super_admin', NULL, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49', NULL);
+(1, 'axgoomez@gmail.com', 'Felix Gomez', NULL, 'super_admin', 1, 1, '2025-12-22 22:29:49', '2025-12-27 00:15:11', '2025-12-27 00:15:11');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_sessions`
+--
+
+CREATE TABLE `admin_sessions` (
+  `id` int(11) NOT NULL,
+  `admin_id` int(11) NOT NULL,
+  `session_token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `expires_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_activity_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` text COLLATE utf8mb4_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `admin_sessions`
+--
+
+INSERT INTO `admin_sessions` (`id`, `admin_id`, `session_token`, `expires_at`, `created_at`, `last_activity_at`, `ip_address`, `user_agent`) VALUES
+(1, 1, '6404c666b78b68bc399e21cbe8496ca4fe8e883de70f40620de1f5f4f5ef0791', '2025-12-27 00:37:50', '2025-12-26 21:52:50', '2025-12-27 00:37:50', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(2, 1, '2dc28ed3e9c2a7ec0e6aa71af0095a677e1f54b8fcb9449fc07750c164cc9a3f', '2025-12-26 22:01:26', '2025-12-26 22:01:25', '2025-12-26 22:01:26', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(3, 1, '4ef8174216bf77b586b0015d273d7442a3065e340e7c543fd4934c2b937f1a5d', '2025-12-26 22:09:28', '2025-12-26 22:09:27', '2025-12-26 22:09:28', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(4, 1, '06e26c9f8dde368e65faa84a76e67939afd6501870718b525bbe512fec4721f8', '2025-12-26 22:12:13', '2025-12-26 22:12:12', '2025-12-26 22:12:13', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(5, 1, '6516c6b11afcc43045aad468909ce31ca94495d2a8172664ef56100465d1e181', '2025-12-26 22:14:29', '2025-12-26 22:14:28', '2025-12-26 22:14:29', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(6, 1, '3feb41d7723eb0504ea5340ad7d9197f05cbb013db3fc835221dcb16e10077b8', '2025-12-26 22:16:52', '2025-12-26 22:16:51', '2025-12-26 22:16:52', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(7, 1, '6f7192b949720e5799efad896445e6e97128fea48c60e787901750d83841323e', '2025-12-26 22:22:44', '2025-12-26 22:22:38', '2025-12-26 22:22:44', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(8, 1, '6890630018f87d583d43ed8b0f253199177b1d729419e4b4cf876064e754fd7e', '2025-12-26 22:27:53', '2025-12-26 22:27:45', '2025-12-26 22:27:53', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(9, 1, 'aaf8b83c3b351eed19284bd6597eeb39c1f41192d00cb42419cd1f0c90278ae9', '2025-12-26 22:29:47', '2025-12-26 22:29:46', '2025-12-26 22:29:47', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36');
 
 -- --------------------------------------------------------
 
@@ -62,6 +94,13 @@ CREATE TABLE `auth_codes` (
   `is_used` tinyint(1) DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `auth_codes`
+--
+
+INSERT INTO `auth_codes` (`id`, `email`, `code`, `user_type`, `expires_at`, `is_used`, `created_at`) VALUES
+(18, 'axgoomez@gmail.com', '144627', 'admin', '2025-12-27 00:15:11', 1, '2025-12-27 00:14:52');
 
 -- --------------------------------------------------------
 
@@ -160,6 +199,7 @@ CREATE TABLE `clubs` (
   `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `website` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `image_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `logo_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `gallery` json DEFAULT NULL,
   `amenities` json DEFAULT NULL,
   `rating` decimal(3,2) DEFAULT '0.00',
@@ -176,11 +216,11 @@ CREATE TABLE `clubs` (
 -- Dumping data for table `clubs`
 --
 
-INSERT INTO `clubs` (`id`, `name`, `slug`, `description`, `address`, `city`, `state`, `postal_code`, `country`, `latitude`, `longitude`, `phone`, `email`, `website`, `image_url`, `gallery`, `amenities`, `rating`, `review_count`, `price_per_hour`, `currency`, `is_active`, `featured`, `created_at`, `updated_at`) VALUES
-(1, 'Club Elite Padel', 'club-elite-padel', 'Premier padel club in Madrid with state-of-the-art facilities', 'Calle del Deporte 45', 'Madrid', 'Madrid', '28001', 'España', NULL, NULL, '+34 912 345 678', 'info@elitepadel.es', NULL, 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800', NULL, '[\"parking\", \"lockers\", \"showers\", \"pro_shop\", \"cafe\"]', 4.80, 234, 45.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(2, 'Padel Barcelona Center', 'padel-barcelona-center', 'Modern padel facility in the heart of Barcelona', 'Avinguda Diagonal 123', 'Barcelona', 'Barcelona', '08019', 'España', NULL, NULL, '+34 933 456 789', 'contact@barcapadel.es', NULL, 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=800', NULL, '[\"parking\", \"lockers\", \"showers\", \"cafe\"]', 4.70, 189, 42.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(3, 'Valencia Padel Club', 'valencia-padel-club', 'Premium outdoor courts with ocean views', 'Carrer de la Mar 89', 'Valencia', 'Valencia', '46001', 'España', NULL, NULL, '+34 963 567 890', 'hello@valenciapadel.es', NULL, 'https://images.unsplash.com/photo-1519505907962-0a6cb0167c73?w=800', NULL, '[\"parking\", \"showers\", \"pro_shop\", \"cafe\"]', 4.90, 312, 40.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(4, 'Sevilla Sports Complex', 'sevilla-sports-complex', 'Multi-sport facility with excellent padel courts', 'Avenida de la Constitución 56', 'Sevilla', 'Sevilla', '41001', 'España', NULL, NULL, '+34 954 678 901', 'info@sevillapadel.es', NULL, 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800', NULL, '[\"parking\", \"lockers\", \"showers\"]', 4.60, 156, 38.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
+INSERT INTO `clubs` (`id`, `name`, `slug`, `description`, `address`, `city`, `state`, `postal_code`, `country`, `latitude`, `longitude`, `phone`, `email`, `website`, `image_url`, `logo_url`, `gallery`, `amenities`, `rating`, `review_count`, `price_per_hour`, `currency`, `is_active`, `featured`, `created_at`, `updated_at`) VALUES
+(1, 'Club Elite Padel', 'club-elite-padel', 'Premier padel club in Madrid with state-of-the-art facilities', 'Calle del Deporte 45', 'Madrid', 'Madrid', '28001', 'España', NULL, NULL, '+34 912 345 678', 'info@elitepadel.es', NULL, 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800', 'https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\", \"pro_shop\", \"cafe\"]', 4.80, 234, 45.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37'),
+(2, 'Padel Barcelona Center', 'padel-barcelona-center', 'Modern padel facility in the heart of Barcelona', 'Avinguda Diagonal 123', 'Barcelona', 'Barcelona', '08019', 'España', NULL, NULL, '+34 933 456 789', 'contact@barcapadel.es', NULL, 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=800', 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\", \"cafe\"]', 4.70, 189, 42.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37'),
+(3, 'Valencia Padel Club', 'valencia-padel-club', 'Premium outdoor courts with ocean views', 'Carrer de la Mar 89', 'Valencia', 'Valencia', '46001', 'España', NULL, NULL, '+34 963 567 890', 'hello@valenciapadel.es', NULL, 'https://images.unsplash.com/photo-1519505907962-0a6cb0167c73?w=800', 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=200&h=200&fit=crop', NULL, '[\"parking\", \"showers\", \"pro_shop\", \"cafe\"]', 4.90, 312, 40.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37'),
+(4, 'Sevilla Sports Complex', 'sevilla-sports-complex', 'Multi-sport facility with excellent padel courts', 'Avenida de la Constitución 56', 'Sevilla', 'Sevilla', '41001', 'España', NULL, NULL, '+34 954 678 901', 'info@sevillapadel.es', NULL, 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800', 'https://images.unsplash.com/photo-1519505907962-0a6cb0167c73?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\"]', 4.60, 156, 38.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37');
 
 -- --------------------------------------------------------
 
@@ -332,19 +372,19 @@ CREATE TABLE `courts` (
 --
 
 INSERT INTO `courts` (`id`, `club_id`, `name`, `court_type`, `surface_type`, `has_lighting`, `is_active`, `display_order`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Court 1', 'indoor', 'glass', 1, 1, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
+(1, 1, 'Cancha 1 \"Yeti\"', 'covered', 'glass', 1, 1, 1, '2025-12-22 22:29:49', '2025-12-27 00:39:02'),
 (2, 2, 'Court 1', 'indoor', 'glass', 1, 1, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (3, 3, 'Court 1', 'indoor', 'glass', 1, 1, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (4, 4, 'Court 1', 'indoor', 'glass', 1, 1, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(5, 1, 'Court 2', 'indoor', 'glass', 1, 1, 2, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
+(5, 1, 'Cancha 3 \"Nestle\"', 'outdoor', 'glass', 1, 1, 2, '2025-12-22 22:29:49', '2025-12-27 00:38:01'),
 (6, 2, 'Court 2', 'indoor', 'glass', 1, 1, 2, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (7, 3, 'Court 2', 'indoor', 'glass', 1, 1, 2, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (8, 4, 'Court 2', 'indoor', 'glass', 1, 1, 2, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(9, 1, 'Court 3', 'outdoor', 'glass', 1, 1, 3, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
+(9, 1, 'Cancha 3 \"Tesla\"', 'indoor', 'glass', 1, 1, 3, '2025-12-22 22:29:49', '2025-12-27 00:32:11'),
 (10, 2, 'Court 3', 'outdoor', 'glass', 1, 1, 3, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (11, 3, 'Court 3', 'outdoor', 'glass', 1, 1, 3, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (12, 4, 'Court 3', 'outdoor', 'glass', 1, 1, 3, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(13, 1, 'Court 4', 'outdoor', 'glass', 1, 1, 4, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
+(13, 1, 'Cancha 4', 'indoor', 'glass', 1, 1, 4, '2025-12-22 22:29:49', '2025-12-27 00:29:17'),
 (14, 2, 'Court 4', 'outdoor', 'glass', 1, 1, 4, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (15, 3, 'Court 4', 'outdoor', 'glass', 1, 1, 4, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (16, 4, 'Court 4', 'outdoor', 'glass', 1, 1, 4, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
@@ -758,7 +798,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `email`, `name`, `phone`, `avatar_url`, `stripe_customer_id`, `is_active`, `created_at`, `updated_at`, `last_login_at`) VALUES
 (1, 'user@example.com', 'John Doe', NULL, NULL, NULL, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49', NULL),
-(2, 'axgoomez@gmail.com', 'Felix Gomez', '4741400363', NULL, NULL, 1, '2025-12-23 18:23:11', '2025-12-26 20:29:34', '2025-12-26 20:29:34');
+(2, 'axgoomez@gmail.com', 'Felix Gomez', '4741400363', NULL, NULL, 1, '2025-12-23 18:23:11', '2025-12-26 21:46:02', '2025-12-26 21:46:02');
 
 -- --------------------------------------------------------
 
@@ -783,7 +823,7 @@ CREATE TABLE `users_sessions` (
 --
 
 INSERT INTO `users_sessions` (`id`, `user_id`, `session_code`, `user_session`, `user_session_date_start`, `created_at`, `expires_at`, `ip_address`, `user_agent`) VALUES
-(5, 2, 521869, 1, '2025-12-26 19:29:23', '2025-12-26 20:29:23', NULL, NULL, NULL);
+(6, 2, 236729, 1, '2025-12-26 20:45:38', '2025-12-26 21:45:38', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -832,7 +872,18 @@ ALTER TABLE `admins`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
   ADD KEY `idx_email` (`email`),
-  ADD KEY `idx_club_id` (`club_id`);
+  ADD KEY `idx_club_id` (`club_id`),
+  ADD KEY `idx_admins_club_id` (`club_id`);
+
+--
+-- Indexes for table `admin_sessions`
+--
+ALTER TABLE `admin_sessions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `session_token` (`session_token`),
+  ADD KEY `admin_id` (`admin_id`),
+  ADD KEY `expires_at` (`expires_at`),
+  ADD KEY `idx_admin_sessions_token_expires` (`session_token`,`expires_at`);
 
 --
 -- Indexes for table `auth_codes`
@@ -850,7 +901,8 @@ ALTER TABLE `blocked_slots`
   ADD KEY `created_by_admin_id` (`created_by_admin_id`),
   ADD KEY `idx_club_date` (`club_id`,`block_date`),
   ADD KEY `idx_court_date` (`court_id`,`block_date`),
-  ADD KEY `idx_type` (`block_type`);
+  ADD KEY `idx_type` (`block_type`),
+  ADD KEY `idx_blocked_slots_club_id` (`club_id`);
 
 --
 -- Indexes for table `bookings`
@@ -866,7 +918,8 @@ ALTER TABLE `bookings`
   ADD KEY `idx_status` (`status`),
   ADD KEY `idx_date_range` (`booking_date`,`start_time`),
   ADD KEY `idx_stripe_payment_intent` (`stripe_payment_intent_id`),
-  ADD KEY `idx_factura_requested` (`factura_requested`);
+  ADD KEY `idx_factura_requested` (`factura_requested`),
+  ADD KEY `idx_bookings_club_id` (`club_id`);
 
 --
 -- Indexes for table `clubs`
@@ -920,7 +973,8 @@ ALTER TABLE `club_terms_conditions`
 ALTER TABLE `courts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_club_id` (`club_id`),
-  ADD KEY `idx_active` (`is_active`);
+  ADD KEY `idx_active` (`is_active`),
+  ADD KEY `idx_courts_club_id` (`club_id`);
 
 --
 -- Indexes for table `events`
@@ -930,7 +984,9 @@ ALTER TABLE `events`
   ADD KEY `idx_club_id` (`club_id`),
   ADD KEY `idx_event_date` (`event_date`),
   ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_type` (`event_type`);
+  ADD KEY `idx_type` (`event_type`),
+  ADD KEY `idx_events_date_status` (`event_date`,`status`),
+  ADD KEY `idx_events_club_id` (`club_id`);
 
 --
 -- Indexes for table `event_participants`
@@ -940,7 +996,10 @@ ALTER TABLE `event_participants`
   ADD UNIQUE KEY `unique_event_user` (`event_id`,`user_id`),
   ADD KEY `partner_user_id` (`partner_user_id`),
   ADD KEY `idx_event_id` (`event_id`),
-  ADD KEY `idx_user_id` (`user_id`);
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_event_participants_event_id` (`event_id`),
+  ADD KEY `idx_event_participants_user_id` (`user_id`),
+  ADD KEY `idx_event_participants_status` (`payment_status`,`status`);
 
 --
 -- Indexes for table `instructors`
@@ -1096,10 +1155,16 @@ ALTER TABLE `admins`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT for table `admin_sessions`
+--
+ALTER TABLE `admin_sessions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
 -- AUTO_INCREMENT for table `auth_codes`
 --
 ALTER TABLE `auth_codes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `blocked_slots`
@@ -1231,7 +1296,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `users_sessions`
 --
 ALTER TABLE `users_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `user_subscriptions`
@@ -1242,6 +1307,12 @@ ALTER TABLE `user_subscriptions`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `admin_sessions`
+--
+ALTER TABLE `admin_sessions`
+  ADD CONSTRAINT `admin_sessions_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `admins` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `blocked_slots`
