@@ -9,7 +9,9 @@ import {
   Filter,
   List,
   Calendar,
+  Plus,
 } from "lucide-react";
+import ManualBookingModal from "@/components/admin/ManualBookingModal";
 import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -46,6 +48,11 @@ export default function AdminBookings() {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "calendar">("calendar");
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [showManualBookingModal, setShowManualBookingModal] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     const params: any = {};
@@ -80,8 +87,15 @@ export default function AdminBookings() {
           </p>
         </div>
 
-        {/* View Toggle */}
+        {/* Actions */}
         <div className="flex gap-2">
+          <Button
+            onClick={() => setShowManualBookingModal(true)}
+            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Crear Reserva
+          </Button>
           <Button
             variant={viewMode === "calendar" ? "default" : "outline"}
             onClick={() => setViewMode("calendar")}
@@ -375,6 +389,22 @@ export default function AdminBookings() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Manual Booking Modal */}
+      <ManualBookingModal
+        open={showManualBookingModal}
+        onClose={() => {
+          setShowManualBookingModal(false);
+          setSelectedPlayer(null);
+        }}
+        userId={selectedPlayer?.id}
+        userName={selectedPlayer?.name}
+        onSuccess={() => {
+          setShowManualBookingModal(false);
+          setSelectedPlayer(null);
+          dispatch(getAdminBookings({}));
+        }}
+      />
     </div>
   );
 }

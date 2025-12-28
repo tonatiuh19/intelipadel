@@ -156,12 +156,14 @@ export default function CourtTimeSlotSelector({
         // Check if court is booked at this time
         const isBooked = availability.bookings.some((booking) => {
           const bookingDate = booking.booking_date.split("T")[0];
-          return (
-            booking.court_id === court.id &&
-            bookingDate === dateStr &&
-            time >= booking.start_time &&
-            time < booking.end_time
-          );
+          if (booking.court_id !== court.id || bookingDate !== dateStr)
+            return false;
+
+          // Normalize booking times to HH:MM format for comparison
+          const bookingStartTime = booking.start_time.substring(0, 5);
+          const bookingEndTime = booking.end_time.substring(0, 5);
+
+          return time >= bookingStartTime && time < bookingEndTime;
         });
 
         // Check if court is occupied by an event

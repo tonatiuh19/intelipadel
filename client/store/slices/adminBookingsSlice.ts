@@ -19,12 +19,14 @@ interface Booking {
 interface AdminBookingsState {
   bookings: Booking[];
   isLoading: boolean;
+  isSubmitting: boolean;
   error: string | null;
 }
 
 const initialState: AdminBookingsState = {
   bookings: [],
   isLoading: false,
+  isSubmitting: false,
   error: null,
 };
 
@@ -64,6 +66,34 @@ export const getAdminBookings = createAsyncThunk(
   },
 );
 
+interface CreateManualBookingData {
+  user_id: number;
+  club_id: number;
+  court_id: number;
+  booking_date: string;
+  start_time: string;
+  end_time: string;
+  total_price: number;
+  notes?: string | null;
+}
+
+export const createManualBooking = createAsyncThunk(
+  "adminBookings/createManualBooking",
+  async (data: CreateManualBookingData, { rejectWithValue }) => {
+    try {
+      const sessionToken = localStorage.getItem("adminSessionToken");
+      const response = await axios.post("/api/admin/bookings/manual", data, {
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to create manual booking",
+      );
+    }
+  },
+);
+
 const adminBookingsSlice = createSlice({
   name: "adminBookings",
   initialState,
@@ -84,6 +114,21 @@ const adminBookingsSlice = createSlice({
       })
       .addCase(getAdminBookings.rejected, (state, action) => {
         state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Create manual booking
+    builder
+      .addCase(createManualBooking.pending, (state) => {
+        state.isSubmitting = true;
+        state.error = null;
+      })
+      .addCase(createManualBooking.fulfilled, (state, action) => {
+        state.isSubmitting = false;
+        state.bookings.unshift(action.payload);
+      })
+      .addCase(createManualBooking.rejected, (state, action) => {
+        state.isSubmitting = false;
         state.error = action.payload as string;
       });
   },

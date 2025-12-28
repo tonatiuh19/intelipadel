@@ -853,6 +853,191 @@ const handleCreateBooking: RequestHandler = async (req, res) => {
 };
 
 /**
+ * POST /api/admin/bookings/manual
+ * Create a manual booking (admin only)
+ */
+const handleCreateManualBooking: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const {
+      user_id,
+      club_id,
+      court_id,
+      booking_date,
+      start_time,
+      end_time,
+      total_price,
+      notes,
+    } = req.body;
+
+    // Verify admin has access to this club
+    if (admin.club_id && club_id !== admin.club_id) {
+      return res.status(403).json({
+        success: false,
+        message: "No tienes permiso para crear reservas en este club",
+      });
+    }
+
+    // Check if court exists and belongs to the club
+    const [courts] = await pool.query<any[]>(
+      "SELECT * FROM courts WHERE id = ? AND club_id = ?",
+      [court_id, club_id],
+    );
+
+    if (courts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Cancha no encontrada",
+      });
+    }
+
+    // Verify admin exists in database
+    const adminId = admin.admin_id || admin.id;
+    const [admins] = await pool.query<any[]>(
+      "SELECT id FROM admins WHERE id = ?",
+      [adminId],
+    );
+
+    if (admins.length === 0) {
+      console.error("Admin not found in database:", adminId);
+      return res.status(403).json({
+        success: false,
+        message: "Sesión de administrador inválida",
+      });
+    }
+
+    // Check for existing bookings at this time
+    const [existingBookings] = await pool.query<any[]>(
+      `SELECT * FROM bookings 
+       WHERE court_id = ? 
+       AND booking_date = ? 
+       AND status IN ('pending', 'confirmed')
+       AND (
+         (start_time < ? AND end_time > ?) OR
+         (start_time >= ? AND start_time < ?)
+       )`,
+      [court_id, booking_date, end_time, start_time, start_time, end_time],
+    );
+
+    if (existingBookings.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "Ya existe una reserva en este horario",
+      });
+    }
+
+    // Calculate duration in minutes
+    const durationMinutes = Math.round(
+      (new Date(`2000-01-01 ${end_time}`).getTime() -
+        new Date(`2000-01-01 ${start_time}`).getTime()) /
+        (1000 * 60),
+    );
+
+    // Use transaction to create both time_slot and booking
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // First, create the time_slot entry
+      const [timeSlotResult] = await connection.execute(
+        `INSERT INTO time_slots (
+          court_id, date, start_time, end_time, duration_minutes, 
+          price, is_available, availability_status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 0, 'booked', NOW(), NOW())`,
+        [
+          court_id,
+          booking_date,
+          start_time,
+          end_time,
+          durationMinutes,
+          total_price,
+        ],
+      );
+
+      const timeSlotId = (timeSlotResult as any).insertId;
+
+      // Create booking with manual payment method
+      const bookingNumber = `BK${Date.now()}`;
+      const [bookingResult] = await connection.execute(
+        `INSERT INTO bookings (
+          user_id, club_id, court_id, time_slot_id, booking_number, booking_date,
+          start_time, end_time, duration_minutes, total_price, status, payment_status,
+          payment_method, notes, created_by_admin_id, confirmed_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', 'paid', 'manual', ?, ?, NOW())`,
+        [
+          user_id,
+          club_id,
+          court_id,
+          timeSlotId,
+          bookingNumber,
+          booking_date,
+          start_time,
+          end_time,
+          durationMinutes,
+          total_price,
+          notes || null,
+          adminId,
+        ],
+      );
+
+      const bookingId = (bookingResult as any).insertId;
+
+      await connection.commit();
+      connection.release();
+
+      // Fetch the created booking with details
+      const [bookings] = await pool.query<any[]>(
+        `SELECT b.*, u.name as user_name, u.email as user_email, u.phone as user_phone,
+                c.name as club_name, co.name as court_name
+         FROM bookings b
+         JOIN users u ON b.user_id = u.id
+         JOIN clubs c ON b.club_id = c.id
+         JOIN courts co ON b.court_id = co.id
+         WHERE b.id = ?`,
+        [bookingId],
+      );
+
+      const booking = bookings[0];
+
+      // Send confirmation email (async, same as Stripe booking flow)
+      sendBookingConfirmationEmail(
+        booking.user_email,
+        booking.user_name,
+        bookingNumber,
+        booking.club_name,
+        booking.court_name,
+        booking_date,
+        start_time,
+        end_time,
+        total_price,
+      ).catch((error) => {
+        console.error(
+          "Failed to send manual booking confirmation email:",
+          error,
+        );
+      });
+
+      res.json({
+        success: true,
+        data: booking,
+        message: "Reserva manual creada exitosamente",
+      });
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    console.error("Error creating manual booking:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al crear la reserva manual",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
  * Get courts for a club
  */
 const handleGetCourts: RequestHandler = async (req, res) => {
@@ -1831,6 +2016,192 @@ const handleGetEventParticipants: RequestHandler = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch event participants",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/admin/events/:eventId/participants
+ * Manually add a participant to an event (follows same pattern as Stripe but with manual payment)
+ */
+const handleAddEventParticipant: RequestHandler = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { user_id, payment_status = "paid", notes } = req.body;
+    const admin = (req as any).admin;
+
+    // Validate required fields
+    if (!user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "El ID del jugador es requerido",
+      });
+    }
+
+    // Check if event exists and get details
+    const [events] = await pool.query<any[]>(
+      "SELECT * FROM events WHERE id = ? AND club_id = ?",
+      [eventId, admin.club_id],
+    );
+
+    if (events.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Evento no encontrado",
+      });
+    }
+
+    const event = events[0];
+
+    // Check if user exists
+    const [users] = await pool.query<any[]>(
+      "SELECT id, name, email FROM users WHERE id = ?",
+      [user_id],
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Jugador no encontrado",
+      });
+    }
+
+    const user = users[0];
+
+    // Verify admin exists
+    const adminId = admin.admin_id || admin.id;
+    const [admins] = await pool.query<any[]>(
+      "SELECT id FROM admins WHERE id = ?",
+      [adminId],
+    );
+
+    if (admins.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "Sesión de administrador inválida",
+      });
+    }
+
+    // Start transaction (same pattern as Stripe payment confirmation)
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // Check if already registered (race condition protection, same as Stripe)
+      const [existing] = await connection.query<any[]>(
+        "SELECT id FROM event_participants WHERE event_id = ? AND user_id = ?",
+        [eventId, user_id],
+      );
+
+      if (existing.length > 0) {
+        await connection.rollback();
+        connection.release();
+        return res.status(409).json({
+          success: false,
+          message: "El jugador ya está registrado en este evento",
+        });
+      }
+
+      // Check if event is full
+      if (event.max_participants) {
+        const [countResult] = await connection.query<any[]>(
+          "SELECT COUNT(*) as count FROM event_participants WHERE event_id = ?",
+          [eventId],
+        );
+        if (countResult[0].count >= event.max_participants) {
+          await connection.rollback();
+          connection.release();
+          return res.status(400).json({
+            success: false,
+            message: "El evento está lleno",
+          });
+        }
+      }
+
+      // Generate registration number
+      const registrationNumber = `REG${Date.now()}`;
+
+      // Add participant with 'confirmed' status (same as Stripe flow)
+      // Note: registration_number and created_by_admin_id require migration 008
+      const [participantResult] = await connection.execute(
+        `INSERT INTO event_participants 
+         (event_id, user_id, registration_date, payment_status, status, notes) 
+         VALUES (?, ?, NOW(), ?, 'confirmed', ?)`,
+        [eventId, user_id, payment_status, notes || null],
+      );
+
+      const participantId = (participantResult as any).insertId;
+
+      // Update event participant count
+      await connection.execute(
+        "UPDATE events SET current_participants = current_participants + 1 WHERE id = ?",
+        [eventId],
+      );
+
+      // Create payment transaction record (follows Stripe pattern but marks as manual)
+      const transactionNumber = `TXN${Date.now()}`;
+      await connection.execute(
+        `INSERT INTO payment_transactions (
+          transaction_number, user_id, club_id, transaction_type, event_participant_id, 
+          amount, currency, status, payment_provider, metadata, created_at, paid_at
+        ) VALUES (?, ?, ?, 'event', ?, ?, 'mxn', 'completed', 'manual', ?, NOW(), NOW())`,
+        [
+          transactionNumber,
+          user_id,
+          admin.club_id,
+          participantId,
+          event.registration_fee || 0,
+          JSON.stringify({
+            type: "event_registration",
+            event_id: eventId,
+            participant_id: participantId,
+            created_by_admin_id: adminId,
+            admin_name: admin.name,
+            event_title: event.title,
+            notes: notes || null,
+          }),
+        ],
+      );
+
+      // Commit transaction
+      await connection.commit();
+      connection.release();
+
+      // Send confirmation email (async, same as Stripe flow)
+      if (event.event_date && event.start_time) {
+        const clubName = event.club_name || "Club";
+        sendEventRegistrationEmail(
+          user.email,
+          user.name,
+          registrationNumber,
+          event.title,
+          event.event_type,
+          event.event_date,
+          event.start_time,
+          event.end_time,
+          clubName,
+          parseFloat(event.registration_fee || 0),
+        ).catch((error) => {
+          console.error("Error sending event registration email:", error);
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Participante agregado exitosamente",
+        data: { registrationNumber },
+      });
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    console.error("Add event participant error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al agregar participante",
       error: error instanceof Error ? error.message : "Unknown error",
     });
   }
@@ -2847,6 +3218,62 @@ const handleGetAdminPlayers: RequestHandler = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch players",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * Create a new player manually by admin
+ */
+const handleCreateAdminPlayer: RequestHandler = async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+
+    // Validate required fields
+    if (!name || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Nombre y email son requeridos",
+      });
+    }
+
+    // Check if email already exists
+    const [existingUsers] = await pool.query<any[]>(
+      "SELECT id FROM users WHERE email = ?",
+      [email],
+    );
+
+    if (existingUsers.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "Ya existe un jugador con este email",
+      });
+    }
+
+    // Create the player
+    const [result] = await pool.query<any>(
+      `INSERT INTO users (name, email, phone, is_active, created_at, updated_at) 
+       VALUES (?, ?, ?, 1, NOW(), NOW())`,
+      [name, email, phone || null],
+    );
+
+    // Fetch the created player
+    const [players] = await pool.query<any[]>(
+      "SELECT * FROM users WHERE id = ?",
+      [result.insertId],
+    );
+
+    res.json({
+      success: true,
+      data: players[0],
+      message: "Jugador creado exitosamente",
+    });
+  } catch (error) {
+    console.error("Error creating player:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al crear el jugador",
       error: error instanceof Error ? error.message : "Unknown error",
     });
   }
@@ -3949,6 +4376,11 @@ function createServer() {
     "/api/admin/events/:eventId/participants",
     handleGetEventParticipants,
   );
+  expressApp.post(
+    "/api/admin/events/:eventId/participants",
+    verifyAdminSession,
+    handleAddEventParticipant,
+  );
 
   // Admin auth routes (no auth required)
   expressApp.post("/api/admin/auth/send-code", handleAdminSendCode);
@@ -3967,10 +4399,20 @@ function createServer() {
     verifyAdminSession,
     handleGetAdminBookings,
   );
+  expressApp.post(
+    "/api/admin/bookings/manual",
+    verifyAdminSession,
+    handleCreateManualBooking,
+  );
   expressApp.get(
     "/api/admin/players",
     verifyAdminSession,
     handleGetAdminPlayers,
+  );
+  expressApp.post(
+    "/api/admin/players",
+    verifyAdminSession,
+    handleCreateAdminPlayer,
   );
   expressApp.get("/api/admin/courts", verifyAdminSession, handleGetAdminCourts);
   expressApp.post("/api/admin/courts", verifyAdminSession, handleCreateCourt);

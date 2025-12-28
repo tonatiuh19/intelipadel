@@ -1,14 +1,22 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Calendar, Plus } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { getAdminPlayers } from "@/store/slices/adminPlayersSlice";
+import ManualBookingModal from "../ManualBookingModal";
+import AddPlayerModal from "../AddPlayerModal";
 
 export default function AdminPlayers() {
   const dispatch = useAppDispatch();
   const { players, isLoading } = useAppSelector((state) => state.adminPlayers);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPlayer, setSelectedPlayer] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
+  const [showAddPlayerModal, setShowAddPlayerModal] = useState(false);
 
   useEffect(() => {
     dispatch(getAdminPlayers());
@@ -26,13 +34,22 @@ export default function AdminPlayers() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Gestión de Jugadores
-        </h1>
-        <p className="text-gray-600 mt-1">
-          Ve y administra los jugadores registrados
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Gestión de Jugadores
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Ve y administra los jugadores registrados
+          </p>
+        </div>
+        <Button
+          onClick={() => setShowAddPlayerModal(true)}
+          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Agregar Jugador
+        </Button>
       </div>
 
       <Card>
@@ -85,7 +102,7 @@ export default function AdminPlayers() {
                     <div>
                       <p className="text-sm text-gray-600">Total Gastado</p>
                       <p className="font-bold text-lg text-green-600">
-                        €
+                        $
                         {player.total_spent
                           ? Number(player.total_spent).toFixed(2)
                           : "0.00"}
@@ -107,12 +124,48 @@ export default function AdminPlayers() {
                       </span>
                     </div>
                   </div>
+                  <div className="ml-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setSelectedPlayer({ id: player.id, name: player.name })
+                      }
+                      className="hover:bg-orange-50 hover:border-orange-500"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Crear Reserva
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Manual Booking Modal */}
+      {selectedPlayer && (
+        <ManualBookingModal
+          open={!!selectedPlayer}
+          onClose={() => setSelectedPlayer(null)}
+          userId={selectedPlayer.id}
+          userName={selectedPlayer.name}
+          onSuccess={() => {
+            dispatch(getAdminPlayers());
+          }}
+        />
+      )}
+
+      {/* Add Player Modal */}
+      <AddPlayerModal
+        open={showAddPlayerModal}
+        onClose={() => setShowAddPlayerModal(false)}
+        onSuccess={() => {
+          setShowAddPlayerModal(false);
+          dispatch(getAdminPlayers());
+        }}
+      />
     </div>
   );
 }
