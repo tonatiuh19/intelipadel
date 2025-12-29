@@ -79,7 +79,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              €{stats?.totalRevenue?.toFixed(2) || "0.00"}
+              ${stats?.totalRevenue?.toFixed(2) || "0.00"}
             </div>
             <p className="text-xs text-gray-600 mt-1">
               De reservaciones pagadas
@@ -141,7 +141,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-blue-600">
-                      €{booking.total_price}
+                      ${booking.total_price}
                     </p>
                     <span
                       className={`inline-block px-2 py-1 text-xs rounded-full ${

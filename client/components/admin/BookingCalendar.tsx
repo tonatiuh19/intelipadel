@@ -334,7 +334,7 @@ export default function BookingCalendar({
                               {booking.start_time} - {booking.end_time}
                             </div>
                             <div className="text-sm text-gray-600">
-                              €{booking.total_price}
+                              ${booking.total_price}
                             </div>
                             <span
                               className={`inline-block mt-2 px-2 py-1 text-xs rounded-full ${

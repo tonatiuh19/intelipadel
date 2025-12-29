@@ -298,7 +298,7 @@ export default function AdminBookings() {
                           {booking.status}
                         </span>
                         <span className="font-bold text-blue-600">
-                          €{booking.total_price}
+                          ${booking.total_price}
                         </span>
                       </div>
                     </div>
@@ -381,7 +381,7 @@ export default function AdminBookings() {
                     </span>
                   </div>
                   <p className="font-bold text-orange-600 text-lg mt-1">
-                    €{selectedBooking.total_price}
+                    ${selectedBooking.total_price}
                   </p>
                 </div>
               </div>
