@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 26, 2025 at 07:05 PM
+-- Generation Time: Dec 29, 2025 at 04:55 PM
 -- Server version: 5.7.23-23
 -- PHP Version: 8.1.34
 
@@ -45,7 +45,7 @@ CREATE TABLE `admins` (
 --
 
 INSERT INTO `admins` (`id`, `email`, `name`, `phone`, `role`, `club_id`, `is_active`, `created_at`, `updated_at`, `last_login_at`) VALUES
-(1, 'axgoomez@gmail.com', 'Felix Gomez', NULL, 'super_admin', 1, 1, '2025-12-22 22:29:49', '2025-12-27 00:15:11', '2025-12-27 00:15:11');
+(1, 'axgoomez@gmail.com', 'Felix Gomez', NULL, 'super_admin', 1, 1, '2025-12-22 22:29:49', '2025-12-29 22:38:18', '2025-12-29 22:38:18');
 
 -- --------------------------------------------------------
 
@@ -69,7 +69,7 @@ CREATE TABLE `admin_sessions` (
 --
 
 INSERT INTO `admin_sessions` (`id`, `admin_id`, `session_token`, `expires_at`, `created_at`, `last_activity_at`, `ip_address`, `user_agent`) VALUES
-(1, 1, '6404c666b78b68bc399e21cbe8496ca4fe8e883de70f40620de1f5f4f5ef0791', '2025-12-27 00:37:50', '2025-12-26 21:52:50', '2025-12-27 00:37:50', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(1, 1, '6404c666b78b68bc399e21cbe8496ca4fe8e883de70f40620de1f5f4f5ef0791', '2025-12-29 22:53:18', '2025-12-26 21:52:50', '2025-12-29 22:53:18', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (2, 1, '2dc28ed3e9c2a7ec0e6aa71af0095a677e1f54b8fcb9449fc07750c164cc9a3f', '2025-12-26 22:01:26', '2025-12-26 22:01:25', '2025-12-26 22:01:26', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (3, 1, '4ef8174216bf77b586b0015d273d7442a3065e340e7c543fd4934c2b937f1a5d', '2025-12-26 22:09:28', '2025-12-26 22:09:27', '2025-12-26 22:09:28', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (4, 1, '06e26c9f8dde368e65faa84a76e67939afd6501870718b525bbe512fec4721f8', '2025-12-26 22:12:13', '2025-12-26 22:12:12', '2025-12-26 22:12:13', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
@@ -77,7 +77,9 @@ INSERT INTO `admin_sessions` (`id`, `admin_id`, `session_token`, `expires_at`, `
 (6, 1, '3feb41d7723eb0504ea5340ad7d9197f05cbb013db3fc835221dcb16e10077b8', '2025-12-26 22:16:52', '2025-12-26 22:16:51', '2025-12-26 22:16:52', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (7, 1, '6f7192b949720e5799efad896445e6e97128fea48c60e787901750d83841323e', '2025-12-26 22:22:44', '2025-12-26 22:22:38', '2025-12-26 22:22:44', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (8, 1, '6890630018f87d583d43ed8b0f253199177b1d729419e4b4cf876064e754fd7e', '2025-12-26 22:27:53', '2025-12-26 22:27:45', '2025-12-26 22:27:53', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
-(9, 1, 'aaf8b83c3b351eed19284bd6597eeb39c1f41192d00cb42419cd1f0c90278ae9', '2025-12-26 22:29:47', '2025-12-26 22:29:46', '2025-12-26 22:29:47', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36');
+(9, 1, 'aaf8b83c3b351eed19284bd6597eeb39c1f41192d00cb42419cd1f0c90278ae9', '2025-12-26 22:29:47', '2025-12-26 22:29:46', '2025-12-26 22:29:47', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(12, 1, '8e0a234fbd8908988809aaef9b2c34175aa84af1d001cb8c423ba900f5d12718', '2026-01-03 18:30:04', '2025-12-27 19:30:03', '2025-12-27 19:30:03', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(14, 1, '6962f44ba0540add633549e6f52354977ad1e498fc43977ba77765a44335653c', '2026-01-05 22:38:19', '2025-12-29 22:38:18', '2025-12-29 22:38:18', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36');
 
 -- --------------------------------------------------------
 
@@ -100,7 +102,7 @@ CREATE TABLE `auth_codes` (
 --
 
 INSERT INTO `auth_codes` (`id`, `email`, `code`, `user_type`, `expires_at`, `is_used`, `created_at`) VALUES
-(18, 'axgoomez@gmail.com', '144627', 'admin', '2025-12-27 00:15:11', 1, '2025-12-27 00:14:52');
+(21, 'axgoomez@gmail.com', '776033', 'admin', '2025-12-29 22:38:18', 1, '2025-12-29 22:38:06');
 
 -- --------------------------------------------------------
 
@@ -165,17 +167,22 @@ CREATE TABLE `bookings` (
   `cancelled_at` timestamp NULL DEFAULT NULL,
   `confirmed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_by_admin_id` int(11) DEFAULT NULL COMMENT 'Admin ID if booking was created manually'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `bookings`
 --
 
-INSERT INTO `bookings` (`id`, `booking_number`, `user_id`, `club_id`, `court_id`, `time_slot_id`, `booking_date`, `start_time`, `end_time`, `duration_minutes`, `total_price`, `status`, `payment_status`, `payment_method`, `stripe_payment_intent_id`, `booking_type`, `is_recurring`, `notes`, `factura_requested`, `factura_requested_at`, `factura_sent_at`, `cancellation_reason`, `cancelled_at`, `confirmed_at`, `created_at`, `updated_at`) VALUES
-(3, 'BK1766778360951457', 2, 1, 13, 2, '2025-12-28', '10:00:00', '11:00:00', 60, 45.00, 'confirmed', 'paid', 'card', NULL, 'single', 0, NULL, 1, '2025-12-26 20:07:59', NULL, NULL, NULL, '2025-12-26 19:46:01', '2025-12-26 19:46:01', '2025-12-26 20:07:59'),
-(4, 'BK1766778754513559', 2, 1, 5, 3, '2025-12-28', '09:00:00', '10:00:00', 60, 45.00, 'confirmed', 'paid', 'card', 'pi_3Sih3VCDsJ3n85lg0zGGh6PU', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-26 19:52:34', '2025-12-26 19:52:34', '2025-12-26 19:52:34'),
-(5, 'BK1766781405527755', 2, 1, 13, 4, '2025-12-28', '22:00:00', '23:00:00', 60, 45.00, 'confirmed', 'paid', 'card', 'pi_3SihkQCDsJ3n85lg0c7KlutU', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-26 20:36:45', '2025-12-26 20:36:45', '2025-12-26 20:36:45');
+INSERT INTO `bookings` (`id`, `booking_number`, `user_id`, `club_id`, `court_id`, `time_slot_id`, `booking_date`, `start_time`, `end_time`, `duration_minutes`, `total_price`, `status`, `payment_status`, `payment_method`, `stripe_payment_intent_id`, `booking_type`, `is_recurring`, `notes`, `factura_requested`, `factura_requested_at`, `factura_sent_at`, `cancellation_reason`, `cancelled_at`, `confirmed_at`, `created_at`, `updated_at`, `created_by_admin_id`) VALUES
+(3, 'BK1766778360951457', 2, 1, 13, 2, '2025-12-28', '10:00:00', '11:00:00', 60, 45.00, 'confirmed', 'paid', 'card', NULL, 'single', 0, NULL, 1, '2025-12-26 20:07:59', NULL, NULL, NULL, '2025-12-26 19:46:01', '2025-12-26 19:46:01', '2025-12-26 20:07:59', NULL),
+(4, 'BK1766778754513559', 2, 1, 5, 3, '2025-12-28', '09:00:00', '10:00:00', 60, 45.00, 'confirmed', 'paid', 'card', 'pi_3Sih3VCDsJ3n85lg0zGGh6PU', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-26 19:52:34', '2025-12-26 19:52:34', '2025-12-26 19:52:34', NULL),
+(5, 'BK1766781405527755', 2, 1, 13, 4, '2025-12-28', '22:00:00', '23:00:00', 60, 45.00, 'confirmed', 'paid', 'card', 'pi_3SihkQCDsJ3n85lg0c7KlutU', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-26 20:36:45', '2025-12-26 20:36:45', '2025-12-26 20:36:45', NULL),
+(8, 'BK1766873186483', 3, 1, 13, 6, '2026-01-06', '08:00:00', '09:00:00', 60, 0.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-27 22:06:26', '2025-12-27 22:06:26', '2025-12-29 22:47:44', 1),
+(9, 'BK1766873598308', 3, 1, 9, 7, '2026-01-06', '09:00:00', '10:00:00', 60, 950.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-27 22:13:18', '2025-12-27 22:13:18', '2025-12-27 22:13:18', 1),
+(10, 'BK1766957552996', 2, 1, 5, 8, '2025-12-28', '15:00:00', '16:00:00', 60, 550.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-28 21:32:33', '2025-12-28 21:32:33', '2025-12-28 21:32:33', 1),
+(11, 'BK1767048846907', 3, 1, 9, 9, '2026-01-09', '08:00:00', '09:00:00', 60, 800.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-29 22:54:07', '2025-12-29 22:54:07', '2025-12-29 22:54:07', 1);
 
 -- --------------------------------------------------------
 
@@ -424,8 +431,33 @@ CREATE TABLE `events` (
 --
 
 INSERT INTO `events` (`id`, `club_id`, `event_type`, `title`, `description`, `event_date`, `start_time`, `end_time`, `max_participants`, `current_participants`, `registration_fee`, `prize_pool`, `skill_level`, `status`, `courts_used`, `image_url`, `rules`, `organizer_name`, `organizer_email`, `created_at`, `updated_at`) VALUES
-(1, 1, 'tournament', 'New Year Championship 2026', 'Competitive doubles tournament for all skill levels', '2026-01-10', '09:00:00', '18:00:00', 32, 0, 50.00, 1000.00, 'all', 'open', '[1, 2, 3, 4]', NULL, NULL, NULL, NULL, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(2, 2, 'clinic', 'Advanced Tactics Clinic', 'Learn advanced strategies from professional coaches', '2026-01-15', '10:00:00', '13:00:00', 16, 0, 35.00, 0.00, 'advanced', 'open', '[1, 2]', NULL, NULL, NULL, NULL, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
+(1, 1, 'tournament', 'New Year Championship 2026', 'Competitive doubles tournament for all skill levels', '2026-01-10', '09:00:00', '18:00:00', 32, 1, 50.00, 1000.00, 'all', 'open', '[1, 2, 3, 4]', NULL, NULL, NULL, NULL, '2025-12-22 22:29:49', '2025-12-27 19:24:45'),
+(2, 2, 'clinic', 'Advanced Tactics Clinic', 'Learn advanced strategies from professional coaches', '2026-01-15', '10:00:00', '13:00:00', 16, 0, 35.00, 0.00, 'advanced', 'open', '[1, 2]', NULL, NULL, NULL, NULL, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
+(3, 1, 'tournament', 'Torneo de Reyes', 'El mejor torneo para partir la rosca', '2026-01-06', '15:30:00', '23:00:00', 120, 2, 320.00, 3500.00, 'intermediate', 'open', '[5, 13]', NULL, NULL, NULL, NULL, '2025-12-27 19:51:03', '2025-12-27 22:42:12');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `event_court_schedules`
+--
+
+CREATE TABLE `event_court_schedules` (
+  `id` int(11) NOT NULL,
+  `event_id` int(11) NOT NULL,
+  `court_id` int(11) NOT NULL,
+  `start_time` time NOT NULL,
+  `end_time` time NOT NULL,
+  `notes` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `event_court_schedules`
+--
+
+INSERT INTO `event_court_schedules` (`id`, `event_id`, `court_id`, `start_time`, `end_time`, `notes`, `created_at`) VALUES
+(3, 3, 5, '15:30:00', '23:00:00', NULL, '2025-12-27 19:54:40'),
+(4, 3, 13, '15:30:00', '17:00:00', NULL, '2025-12-27 19:54:40');
 
 -- --------------------------------------------------------
 
@@ -444,6 +476,15 @@ CREATE TABLE `event_participants` (
   `status` enum('registered','confirmed','withdrawn','disqualified') COLLATE utf8mb4_unicode_ci DEFAULT 'registered',
   `notes` text COLLATE utf8mb4_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `event_participants`
+--
+
+INSERT INTO `event_participants` (`id`, `event_id`, `user_id`, `registration_date`, `payment_status`, `team_name`, `partner_user_id`, `status`, `notes`) VALUES
+(1, 1, 2, '2025-12-27 19:24:45', 'paid', NULL, NULL, 'confirmed', NULL),
+(2, 3, 3, '2025-12-27 20:30:14', 'paid', NULL, NULL, 'confirmed', NULL),
+(4, 3, 2, '2025-12-27 22:42:12', 'paid', NULL, NULL, 'confirmed', NULL);
 
 -- --------------------------------------------------------
 
@@ -588,7 +629,20 @@ INSERT INTO `payment_transactions` (`id`, `transaction_number`, `user_id`, `club
 (6, 'TXN1766778345200606', 2, 1, 'booking', 3, NULL, NULL, NULL, 45.00, 'EUR', 'completed', NULL, 'stripe', 'pi_3SigxJCDsJ3n85lg1dWU5kO5', 'ch_3SigxJCDsJ3n85lg1JfleqEN', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 19:46:01', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:45:45', '2025-12-26 19:46:01'),
 (7, 'TXN1766778729944755', 2, 1, 'booking', 4, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sih3VCDsJ3n85lg0zGGh6PU', 'ch_3Sih3VCDsJ3n85lg0BhnRHIS', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 19:52:35', NULL, NULL, NULL, '{\"court_id\": 5, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:52:10', '2025-12-26 19:52:35'),
 (8, 'TXN1766781390788962', 2, 1, 'booking', 5, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SihkQCDsJ3n85lg0c7KlutU', 'ch_3SihkQCDsJ3n85lg0p2mxQOB', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 20:36:46', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"23:00\", \"start_time\": \"22:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 20:36:30', '2025-12-26 20:36:46'),
-(9, 'TXN1766782271707626', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SihydCDsJ3n85lg13n4XNNm', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"13:00\", \"start_time\": \"12:00\", \"booking_date\": \"2025-12-31\", \"duration_minutes\": 60}', '2025-12-26 20:51:11', '2025-12-26 20:51:11');
+(9, 'TXN1766782271707626', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SihydCDsJ3n85lg13n4XNNm', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"13:00\", \"start_time\": \"12:00\", \"booking_date\": \"2025-12-31\", \"duration_minutes\": 60}', '2025-12-26 20:51:11', '2025-12-26 20:51:11'),
+(10, 'EVT1766799776726884', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SimWyCDsJ3n85lg10LvYCng', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 01:42:56', '2025-12-27 01:42:56'),
+(11, 'EVT1766799873421468', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SimYXCDsJ3n85lg0ZuD82NF', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 01:44:33', '2025-12-27 01:44:33'),
+(12, 'EVT1766799873174694', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SimYXCDsJ3n85lg0h9o87yv', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 01:44:34', '2025-12-27 01:44:34'),
+(13, 'EVT1766799874624798', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SimYXCDsJ3n85lg0lQ7NwS6', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 01:44:34', '2025-12-27 01:44:34'),
+(14, 'EVT1766799874703704', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SimYXCDsJ3n85lg1laRAPB9', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 01:44:34', '2025-12-27 01:44:34'),
+(15, 'EVT1766863214034152', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sj32ACDsJ3n85lg1mygzKeT', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 19:20:14', '2025-12-27 19:20:14'),
+(16, 'EVT1766863214281979', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sj32ACDsJ3n85lg0IxC8Lac', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 19:20:14', '2025-12-27 19:20:14'),
+(17, 'EVT1766863214285878', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sj32ACDsJ3n85lg1xmYARaX', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 19:20:14', '2025-12-27 19:20:14'),
+(18, 'EVT176686321462075', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sj32ACDsJ3n85lg0TJbxIwU', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 19:20:14', '2025-12-27 19:20:14'),
+(19, 'EVT1766863371030992', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sj34gCDsJ3n85lg0uHTxZX0', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 19:22:51', '2025-12-27 19:22:51'),
+(20, 'EVT1766863467759478', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sj36FCDsJ3n85lg0CmXbDay', 'ch_3Sj36FCDsJ3n85lg0hPUuEk9', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-27 19:24:46', NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\", \"participant_id\": 1}', '2025-12-27 19:24:28', '2025-12-27 19:24:46'),
+(21, 'EVT176686739407294', 3, 1, '', NULL, NULL, NULL, NULL, 320.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sj47aCDsJ3n85lg1oiFMaGO', 'ch_3Sj47aCDsJ3n85lg1cfNxu2j', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-27 20:30:14', NULL, NULL, NULL, '{\"event_id\": 3, \"event_date\": \"2026-01-06T07:00:00.000Z\", \"event_title\": \"Torneo de Reyes\", \"participant_id\": 2}', '2025-12-27 20:29:54', '2025-12-27 20:30:14'),
+(22, 'TXN1766875332855', 2, 1, 'event', NULL, NULL, 4, NULL, 320.00, 'mxn', 'completed', NULL, 'manual', NULL, NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-27 22:42:13', NULL, NULL, NULL, '{\"type\": \"event_registration\", \"notes\": null, \"event_id\": \"3\", \"admin_name\": \"Felix Gomez\", \"event_title\": \"Torneo de Reyes\", \"participant_id\": 4, \"created_by_admin_id\": 1}', '2025-12-27 22:42:13', '2025-12-27 22:42:13');
 
 -- --------------------------------------------------------
 
@@ -771,7 +825,11 @@ CREATE TABLE `time_slots` (
 INSERT INTO `time_slots` (`id`, `court_id`, `date`, `start_time`, `end_time`, `duration_minutes`, `price`, `is_available`, `availability_status`, `created_at`, `updated_at`) VALUES
 (2, 13, '2025-12-28', '10:00:00', '11:00:00', 60, 45.00, 0, 'booked', '2025-12-26 19:46:01', '2025-12-26 19:46:01'),
 (3, 5, '2025-12-28', '09:00:00', '10:00:00', 60, 45.00, 0, 'booked', '2025-12-26 19:52:34', '2025-12-26 19:52:34'),
-(4, 13, '2025-12-28', '22:00:00', '23:00:00', 60, 45.00, 0, 'booked', '2025-12-26 20:36:45', '2025-12-26 20:36:45');
+(4, 13, '2025-12-28', '22:00:00', '23:00:00', 60, 45.00, 0, 'booked', '2025-12-26 20:36:45', '2025-12-26 20:36:45'),
+(6, 13, '2026-01-06', '08:00:00', '09:00:00', 60, 0.00, 0, 'booked', '2025-12-27 22:06:26', '2025-12-27 22:06:26'),
+(7, 9, '2026-01-06', '09:00:00', '10:00:00', 60, 950.00, 0, 'booked', '2025-12-27 22:13:18', '2025-12-27 22:13:18'),
+(8, 5, '2025-12-28', '15:00:00', '16:00:00', 60, 550.00, 0, 'booked', '2025-12-28 21:32:33', '2025-12-28 21:32:33'),
+(9, 9, '2026-01-09', '08:00:00', '09:00:00', 60, 800.00, 0, 'booked', '2025-12-29 22:54:07', '2025-12-29 22:54:07');
 
 -- --------------------------------------------------------
 
@@ -781,6 +839,7 @@ INSERT INTO `time_slots` (`id`, `court_id`, `date`, `start_time`, `end_time`, `d
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
+  `club_id` int(11) DEFAULT NULL,
   `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `phone` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -790,15 +849,17 @@ CREATE TABLE `users` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `last_login_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Users table with club-based multi-tenancy. Same email can exist for different clubs.';
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `name`, `phone`, `avatar_url`, `stripe_customer_id`, `is_active`, `created_at`, `updated_at`, `last_login_at`) VALUES
-(1, 'user@example.com', 'John Doe', NULL, NULL, NULL, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49', NULL),
-(2, 'axgoomez@gmail.com', 'Felix Gomez', '4741400363', NULL, NULL, 1, '2025-12-23 18:23:11', '2025-12-26 21:46:02', '2025-12-26 21:46:02');
+INSERT INTO `users` (`id`, `club_id`, `email`, `name`, `phone`, `avatar_url`, `stripe_customer_id`, `is_active`, `created_at`, `updated_at`, `last_login_at`) VALUES
+(1, 1, 'user@example.com', 'John Doe', NULL, NULL, NULL, 1, '2025-12-22 22:29:49', '2025-12-29 22:34:25', NULL),
+(2, 1, 'axgoomez@gmail.com', 'Felix Gomez', '4741400363', NULL, NULL, 1, '2025-12-23 18:23:11', '2025-12-29 22:34:25', '2025-12-27 01:42:56'),
+(3, 1, 'tonatiuh.gom@gmail.com', 'Alex Gomez', '4741400363', NULL, NULL, 1, '2025-12-27 20:29:29', '2025-12-29 22:34:25', '2025-12-27 20:29:52'),
+(4, 2, 'lesliegcardona@gmail.com', 'Leslie Gonzalez', NULL, NULL, NULL, 1, '2025-12-27 22:21:45', '2025-12-29 22:35:47', NULL);
 
 -- --------------------------------------------------------
 
@@ -823,7 +884,8 @@ CREATE TABLE `users_sessions` (
 --
 
 INSERT INTO `users_sessions` (`id`, `user_id`, `session_code`, `user_session`, `user_session_date_start`, `created_at`, `expires_at`, `ip_address`, `user_agent`) VALUES
-(6, 2, 236729, 1, '2025-12-26 20:45:38', '2025-12-26 21:45:38', NULL, NULL, NULL);
+(7, 2, 623651, 1, '2025-12-27 00:42:44', '2025-12-27 01:42:44', NULL, NULL, NULL),
+(8, 3, 849691, 1, '2025-12-27 19:29:30', '2025-12-27 20:29:30', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -919,7 +981,9 @@ ALTER TABLE `bookings`
   ADD KEY `idx_date_range` (`booking_date`,`start_time`),
   ADD KEY `idx_stripe_payment_intent` (`stripe_payment_intent_id`),
   ADD KEY `idx_factura_requested` (`factura_requested`),
-  ADD KEY `idx_bookings_club_id` (`club_id`);
+  ADD KEY `idx_bookings_club_id` (`club_id`),
+  ADD KEY `idx_payment_method` (`payment_method`),
+  ADD KEY `fk_bookings_created_by_admin` (`created_by_admin_id`);
 
 --
 -- Indexes for table `clubs`
@@ -987,6 +1051,15 @@ ALTER TABLE `events`
   ADD KEY `idx_type` (`event_type`),
   ADD KEY `idx_events_date_status` (`event_date`,`status`),
   ADD KEY `idx_events_club_id` (`club_id`);
+
+--
+-- Indexes for table `event_court_schedules`
+--
+ALTER TABLE `event_court_schedules`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_event_court_schedules_event_id` (`event_id`),
+  ADD KEY `idx_event_court_schedules_court_id` (`court_id`),
+  ADD KEY `idx_event_court_schedules_times` (`start_time`,`end_time`);
 
 --
 -- Indexes for table `event_participants`
@@ -1114,10 +1187,11 @@ ALTER TABLE `time_slots`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`),
   ADD UNIQUE KEY `stripe_customer_id` (`stripe_customer_id`),
+  ADD UNIQUE KEY `unique_email_per_club` (`email`,`club_id`),
   ADD KEY `idx_email` (`email`),
-  ADD KEY `idx_stripe_customer` (`stripe_customer_id`);
+  ADD KEY `idx_stripe_customer` (`stripe_customer_id`),
+  ADD KEY `idx_users_club_id` (`club_id`);
 
 --
 -- Indexes for table `users_sessions`
@@ -1158,13 +1232,13 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `admin_sessions`
 --
 ALTER TABLE `admin_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `auth_codes`
 --
 ALTER TABLE `auth_codes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `blocked_slots`
@@ -1176,7 +1250,7 @@ ALTER TABLE `blocked_slots`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `clubs`
@@ -1218,13 +1292,19 @@ ALTER TABLE `courts`
 -- AUTO_INCREMENT for table `events`
 --
 ALTER TABLE `events`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `event_court_schedules`
+--
+ALTER TABLE `event_court_schedules`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `event_participants`
 --
 ALTER TABLE `event_participants`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `instructors`
@@ -1248,7 +1328,7 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `player_stats`
@@ -1284,19 +1364,19 @@ ALTER TABLE `subscription_plans`
 -- AUTO_INCREMENT for table `time_slots`
 --
 ALTER TABLE `time_slots`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `users_sessions`
 --
 ALTER TABLE `users_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `user_subscriptions`
@@ -1329,7 +1409,8 @@ ALTER TABLE `bookings`
   ADD CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `bookings_ibfk_3` FOREIGN KEY (`court_id`) REFERENCES `courts` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `bookings_ibfk_4` FOREIGN KEY (`time_slot_id`) REFERENCES `time_slots` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `bookings_ibfk_4` FOREIGN KEY (`time_slot_id`) REFERENCES `time_slots` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_bookings_created_by_admin` FOREIGN KEY (`created_by_admin_id`) REFERENCES `admins` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `club_cancellation_policy`
@@ -1366,6 +1447,13 @@ ALTER TABLE `courts`
 --
 ALTER TABLE `events`
   ADD CONSTRAINT `events_ibfk_1` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `event_court_schedules`
+--
+ALTER TABLE `event_court_schedules`
+  ADD CONSTRAINT `event_court_schedules_ibfk_1` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `event_court_schedules_ibfk_2` FOREIGN KEY (`court_id`) REFERENCES `courts` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `event_participants`
@@ -1440,6 +1528,12 @@ ALTER TABLE `subscription_plans`
 --
 ALTER TABLE `time_slots`
   ADD CONSTRAINT `time_slots_ibfk_1` FOREIGN KEY (`court_id`) REFERENCES `courts` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `users`
+--
+ALTER TABLE `users`
+  ADD CONSTRAINT `fk_users_club_id` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `users_sessions`

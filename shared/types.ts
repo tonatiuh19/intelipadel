@@ -9,6 +9,7 @@
 
 export interface User {
   id: number;
+  club_id?: number | null;
   email: string;
   name: string;
   phone?: string;

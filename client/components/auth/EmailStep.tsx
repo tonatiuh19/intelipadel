@@ -17,7 +17,7 @@ const emailSchema = Yup.object({
 
 export default function EmailStep() {
   const dispatch = useAppDispatch();
-  const { loading, error, tempUserId, tempEmail } = useAppSelector(
+  const { loading, error, tempUserId, tempEmail, tempClubId } = useAppSelector(
     (state) => state.auth,
   );
 
@@ -37,7 +37,12 @@ export default function EmailStep() {
 
   const handleSubmit = async (values: { email: string }) => {
     dispatch(clearError());
-    await dispatch(checkUser(values.email.toLowerCase().trim()));
+    await dispatch(
+      checkUser({
+        email: values.email.toLowerCase().trim(),
+        club_id: tempClubId || undefined,
+      }),
+    );
   };
 
   return (

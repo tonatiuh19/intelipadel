@@ -31,7 +31,9 @@ const createUserSchema = Yup.object({
 
 export default function CreateUserStep() {
   const dispatch = useAppDispatch();
-  const { loading, error, tempEmail } = useAppSelector((state) => state.auth);
+  const { loading, error, tempEmail, tempClubId } = useAppSelector(
+    (state) => state.auth,
+  );
 
   useEffect(() => {
     // Clear error when component mounts
@@ -56,6 +58,7 @@ export default function CreateUserStep() {
         last_name: values.last_name.trim(),
         phone: values.phone.trim(),
         date_of_birth: values.date_of_birth || undefined,
+        club_id: tempClubId || undefined, // Pass club_id from state
       }),
     );
 

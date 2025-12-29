@@ -320,6 +320,214 @@ async function sendAdminVerificationEmail(
   }
 }
 
+/**
+ * Helper function to send welcome email
+ */
+async function sendWelcomeEmail(
+  email: string,
+  userName: string,
+  isManualCreation: boolean = false,
+  clubName: string = "InteliPadel",
+): Promise<boolean> {
+  try {
+    console.log("👋 Sending welcome email");
+    console.log("   User email:", email);
+    console.log("   User name:", userName);
+    console.log("   Manual creation:", isManualCreation);
+    console.log("   Club:", clubName);
+
+    // Always use configured SMTP settings
+    const transportConfig = {
+      host: process.env.SMTP_HOST || "mail.disruptinglabs.com",
+      port: parseInt(process.env.SMTP_PORT || "465"),
+      secure: process.env.SMTP_SECURE === "true" || true,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    };
+
+    if (!transportConfig.auth.user || !transportConfig.auth.pass) {
+      console.error("❌ SMTP credentials not configured!");
+      return false;
+    }
+
+    // Configure email transporter
+    const transporter = nodemailer.createTransport(transportConfig);
+
+    // Verify SMTP connection
+    await transporter.verify();
+
+    // Welcome email template
+    const emailBody = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f4f4f4; 
+            padding: 20px; 
+            margin: 0;
+          }
+          .container { 
+            background-color: white; 
+            border-radius: 10px; 
+            padding: 40px; 
+            max-width: 600px; 
+            margin: 0 auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+          }
+          .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.95;
+          }
+          .welcome-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+          }
+          .content {
+            color: #333;
+            line-height: 1.8;
+          }
+          .content h2 {
+            color: #10b981;
+            margin-top: 0;
+          }
+          .features {
+            background-color: #f0fdf4;
+            border-left: 4px solid #10b981;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+          }
+          .features h3 {
+            margin-top: 0;
+            color: #059669;
+            font-size: 18px;
+          }
+          .features ul {
+            margin: 10px 0;
+            padding-left: 20px;
+          }
+          .features li {
+            margin: 8px 0;
+            color: #065f46;
+          }
+          .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 15px 35px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: center;
+          }
+          .footer { 
+            color: #666; 
+            font-size: 12px; 
+            text-align: center; 
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+          }
+          .footer p {
+            margin: 5px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="welcome-icon">🎾</div>
+            <h1>¡Bienvenido a ${clubName}!</h1>
+            <p>Tu cuenta ha sido creada exitosamente</p>
+          </div>
+          
+          <div class="content">
+            <h2>Hola ${userName},</h2>
+            <p>
+              ${
+                isManualCreation
+                  ? `Un administrador ha creado tu cuenta en ${clubName}.`
+                  : `¡Gracias por registrarte en ${clubName}!`
+              }
+              Ahora puedes disfrutar de la mejor experiencia para reservar tus partidos de pádel.
+            </p>
+            
+            <div class="features">
+              <h3>✨ ¿Qué puedes hacer ahora?</h3>
+              <ul>
+                <li>🏟️ <strong>Reservar pistas</strong> en los mejores clubes</li>
+                <li>📅 <strong>Ver tu historial</strong> de reservas</li>
+                <li>🎯 <strong>Registrarte en eventos</strong> y torneos</li>
+                <li>👥 <strong>Gestionar tus datos</strong> de perfil</li>
+                <li>💳 <strong>Pagos seguros</strong> con Stripe</li>
+              </ul>
+            </div>
+            
+            <p style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL || "https://intelipadel.com"}" class="cta-button">
+                Ir a InteliPadel
+              </a>
+            </p>
+            
+            <p style="color: #666; font-size: 14px; margin-top: 25px;">
+              Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos. 
+              ¡Estamos aquí para ayudarte!
+            </p>
+          </div>
+          
+          <div class="footer">
+            <p><strong>${clubName}</strong></p>
+            <p>Tu plataforma de reservas de pádel</p>
+            <p style="margin-top: 10px; color: #999;">
+              Este es un correo automático, por favor no respondas a este mensaje.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const info = await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"${clubName}" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: `¡Bienvenido a ${clubName}! 🎾`,
+      html: emailBody,
+    });
+
+    console.log("✅ Welcome email sent successfully!");
+    console.log("   Message ID:", info.messageId);
+    console.log("   Target:", email);
+
+    return true;
+  } catch (error) {
+    console.error("❌ Error sending welcome email:", error);
+    if (error instanceof Error) {
+      console.error("   Error name:", error.name);
+      console.error("   Error message:", error.message);
+    }
+    return false;
+  }
+}
+
 // ==================== ROUTE HANDLERS ====================
 
 /**
@@ -488,11 +696,11 @@ const handleGetBookings: RequestHandler = async (req, res) => {
 
 /**
  * POST /api/auth/check-user
- * Check if a user exists by email
+ * Check if a user exists by email (and optionally club_id)
  */
 const handleCheckUser: RequestHandler = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, club_id } = req.body;
 
     if (!email) {
       return res
@@ -500,11 +708,15 @@ const handleCheckUser: RequestHandler = async (req, res) => {
         .json({ success: false, message: "Email is required" });
     }
 
-    const [rows] = await pool.query<any[]>(
-      `SELECT id, email, name, phone, avatar_url, stripe_customer_id, is_active, created_at, updated_at, last_login_at
-       FROM users WHERE email = ?`,
-      [email],
-    );
+    // Check for user with club_id if provided, otherwise check without club scope
+    const query = club_id
+      ? `SELECT id, club_id, email, name, phone, avatar_url, stripe_customer_id, is_active, created_at, updated_at, last_login_at
+         FROM users WHERE email = ? AND club_id = ?`
+      : `SELECT id, club_id, email, name, phone, avatar_url, stripe_customer_id, is_active, created_at, updated_at, last_login_at
+         FROM users WHERE email = ? AND club_id IS NULL`;
+
+    const params = club_id ? [email, club_id] : [email];
+    const [rows] = await pool.query<any[]>(query, params);
 
     if (rows.length > 0) {
       res.json({ success: true, exists: true, patient: rows[0] });
@@ -523,7 +735,8 @@ const handleCheckUser: RequestHandler = async (req, res) => {
  */
 const handleCreateUser: RequestHandler = async (req, res) => {
   try {
-    const { email, first_name, last_name, phone, date_of_birth } = req.body;
+    const { email, first_name, last_name, phone, date_of_birth, club_id } =
+      req.body;
 
     if (!email || !first_name || !last_name || !phone) {
       return res.status(400).json({
@@ -532,35 +745,54 @@ const handleCreateUser: RequestHandler = async (req, res) => {
       });
     }
 
-    // Check if user already exists
-    const [existingUsers] = await pool.query<any[]>(
-      "SELECT id FROM users WHERE email = ?",
-      [email],
-    );
+    // Check if user already exists for this club
+    const checkQuery = club_id
+      ? "SELECT id FROM users WHERE email = ? AND club_id = ?"
+      : "SELECT id FROM users WHERE email = ? AND club_id IS NULL";
+    const checkParams = club_id ? [email, club_id] : [email];
+
+    const [existingUsers] = await pool.query<any[]>(checkQuery, checkParams);
 
     if (existingUsers.length > 0) {
       return res.status(409).json({
         success: false,
-        message: "User with this email already exists",
+        message: "User with this email already exists for this club",
       });
+    }
+
+    // Fetch club name if club_id is provided
+    let clubName = "InteliPadel";
+    if (club_id) {
+      const [clubs] = await pool.query<any[]>(
+        "SELECT name FROM clubs WHERE id = ?",
+        [club_id],
+      );
+      if (clubs.length > 0) {
+        clubName = clubs[0].name;
+      }
     }
 
     // Create new user
     const fullName = `${first_name} ${last_name}`;
     const [result] = await pool.query<any>(
-      `INSERT INTO users (email, name, phone, is_active, created_at)
-       VALUES (?, ?, ?, 1, NOW())`,
-      [email, fullName, phone],
+      `INSERT INTO users (club_id, email, name, phone, is_active, created_at)
+       VALUES (?, ?, ?, ?, 1, NOW())`,
+      [club_id || null, email, fullName, phone],
     );
 
     const userId = result.insertId;
 
     // Get the created user
     const [users] = await pool.query<any[]>(
-      `SELECT id, email, name, phone, created_at
+      `SELECT id, club_id, email, name, phone, created_at
        FROM users WHERE id = ?`,
       [userId],
     );
+
+    // Send welcome email (non-blocking)
+    sendWelcomeEmail(email, fullName, false, clubName).catch((error) => {
+      console.error("Failed to send welcome email:", error);
+    });
 
     res.status(201).json({
       success: true,
@@ -3122,8 +3354,17 @@ const handleGetDashboardStats: RequestHandler = async (req, res) => {
 const handleGetAdminBookings: RequestHandler = async (req, res) => {
   try {
     const admin = (req as any).admin;
-    const { startDate, endDate, clubId, status } = req.query;
+    const { startDate, endDate, status } = req.query;
 
+    // Admin must have a club_id
+    if (!admin.club_id) {
+      return res.json({
+        success: true,
+        data: [],
+      });
+    }
+
+    // Always filter by admin's club_id
     let query = `
       SELECT b.*, u.name as user_name, u.email as user_email, u.phone as user_phone,
              c.name as club_name, co.name as court_name
@@ -3131,19 +3372,10 @@ const handleGetAdminBookings: RequestHandler = async (req, res) => {
       JOIN users u ON b.user_id = u.id
       JOIN clubs c ON b.club_id = c.id
       JOIN courts co ON b.court_id = co.id
-      WHERE 1=1
+      WHERE b.club_id = ?
     `;
 
-    const params: any[] = [];
-
-    // Filter by admin's club if they have one
-    if (admin.club_id) {
-      query += " AND b.club_id = ?";
-      params.push(admin.club_id);
-    } else if (clubId) {
-      query += " AND b.club_id = ?";
-      params.push(clubId);
-    }
+    const params: any[] = [admin.club_id];
 
     if (startDate) {
       query += " AND b.booking_date >= ?";
@@ -3180,23 +3412,64 @@ const handleGetAdminBookings: RequestHandler = async (req, res) => {
 
 /**
  * GET /api/admin/players
- * Get all players
+ * Get players for admin's club only
  */
 const handleGetAdminPlayers: RequestHandler = async (req, res) => {
   try {
     console.log("📋 Fetching admin players...");
     const { search, limit = 100 } = req.query;
 
+    // Get admin's club_id from session token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        message: "No session token provided",
+      });
+    }
+
+    const sessionToken = authHeader.substring(7);
+
+    // Get admin info from session
+    const [sessions] = await pool.query<any[]>(
+      `SELECT a.club_id, a.role
+       FROM admin_sessions s
+       JOIN admins a ON s.admin_id = a.id
+       WHERE s.session_token = ? AND s.expires_at > NOW()`,
+      [sessionToken],
+    );
+
+    if (sessions.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired session",
+      });
+    }
+
+    const admin = sessions[0];
+    console.log("👤 Admin club_id:", admin.club_id, "role:", admin.role);
+
+    // Admin must have a club_id to see players
+    if (!admin.club_id) {
+      console.log("⚠️ Admin has no club_id - returning empty list");
+      return res.json({
+        success: true,
+        data: [],
+      });
+    }
+
+    // Build query - ALWAYS filter by admin's club_id
     let query = `
       SELECT u.*, 
              COUNT(DISTINCT b.id) as total_bookings,
              SUM(CASE WHEN b.payment_status = 'paid' THEN b.total_price ELSE 0 END) as total_spent
       FROM users u
       LEFT JOIN bookings b ON u.id = b.user_id
-      WHERE 1=1
+      WHERE u.club_id = ?
     `;
 
-    const params: any[] = [];
+    const params: any[] = [admin.club_id];
+    console.log("🔒 Filtering players for club_id:", admin.club_id);
 
     if (search) {
       query += " AND (u.name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)";
@@ -3208,6 +3481,7 @@ const handleGetAdminPlayers: RequestHandler = async (req, res) => {
     params.push(parseInt(limit as string));
 
     const [players] = await pool.query<any[]>(query, params);
+    console.log("✅ Found", players.length, "players for admin's club");
 
     res.json({
       success: true,
@@ -3228,7 +3502,7 @@ const handleGetAdminPlayers: RequestHandler = async (req, res) => {
  */
 const handleCreateAdminPlayer: RequestHandler = async (req, res) => {
   try {
-    const { name, email, phone } = req.body;
+    const { name, email, phone, club_id } = req.body;
 
     // Validate required fields
     if (!name || !email) {
@@ -3238,24 +3512,50 @@ const handleCreateAdminPlayer: RequestHandler = async (req, res) => {
       });
     }
 
-    // Check if email already exists
-    const [existingUsers] = await pool.query<any[]>(
-      "SELECT id FROM users WHERE email = ?",
-      [email],
-    );
+    // If club_id not provided, try to get it from admin session
+    let clubId = club_id;
+    if (!clubId && req.body.admin_id) {
+      const [admins] = await pool.query<any[]>(
+        "SELECT club_id FROM admins WHERE id = ?",
+        [req.body.admin_id],
+      );
+      if (admins.length > 0) {
+        clubId = admins[0].club_id;
+      }
+    }
+
+    // Fetch club name
+    let clubName = "InteliPadel";
+    if (clubId) {
+      const [clubs] = await pool.query<any[]>(
+        "SELECT name FROM clubs WHERE id = ?",
+        [clubId],
+      );
+      if (clubs.length > 0) {
+        clubName = clubs[0].name;
+      }
+    }
+
+    // Check if email already exists for this club
+    const checkQuery = clubId
+      ? "SELECT id FROM users WHERE email = ? AND club_id = ?"
+      : "SELECT id FROM users WHERE email = ? AND club_id IS NULL";
+    const checkParams = clubId ? [email, clubId] : [email];
+
+    const [existingUsers] = await pool.query<any[]>(checkQuery, checkParams);
 
     if (existingUsers.length > 0) {
       return res.status(409).json({
         success: false,
-        message: "Ya existe un jugador con este email",
+        message: "Ya existe un jugador con este email en este club",
       });
     }
 
     // Create the player
     const [result] = await pool.query<any>(
-      `INSERT INTO users (name, email, phone, is_active, created_at, updated_at) 
-       VALUES (?, ?, ?, 1, NOW(), NOW())`,
-      [name, email, phone || null],
+      `INSERT INTO users (club_id, name, email, phone, is_active, created_at, updated_at) 
+       VALUES (?, ?, ?, ?, 1, NOW(), NOW())`,
+      [clubId || null, name, email, phone || null],
     );
 
     // Fetch the created player
@@ -3263,6 +3563,11 @@ const handleCreateAdminPlayer: RequestHandler = async (req, res) => {
       "SELECT * FROM users WHERE id = ?",
       [result.insertId],
     );
+
+    // Send welcome email (non-blocking, mark as manual creation)
+    sendWelcomeEmail(email, name, true, clubName).catch((error) => {
+      console.error("Failed to send welcome email:", error);
+    });
 
     res.json({
       success: true,
@@ -3286,27 +3591,25 @@ const handleCreateAdminPlayer: RequestHandler = async (req, res) => {
 const handleGetAdminCourts: RequestHandler = async (req, res) => {
   try {
     const admin = (req as any).admin;
-    const { clubId } = req.query;
 
-    let query = `
+    // Admin must have a club_id
+    if (!admin.club_id) {
+      return res.json({
+        success: true,
+        data: [],
+      });
+    }
+
+    // Always filter by admin's club_id
+    const query = `
       SELECT co.*, c.name as club_name
       FROM courts co
       JOIN clubs c ON co.club_id = c.id
-      WHERE 1=1
+      WHERE co.club_id = ?
+      ORDER BY c.name, co.name
     `;
 
-    const params: any[] = [];
-
-    // Filter by admin's club if they have one
-    if (admin.club_id) {
-      query += " AND co.club_id = ?";
-      params.push(admin.club_id);
-    } else if (clubId) {
-      query += " AND co.club_id = ?";
-      params.push(clubId);
-    }
-
-    query += " ORDER BY c.name, co.name";
+    const params: any[] = [admin.club_id];
 
     const [courts] = await pool.query<any[]>(query, params);
 
@@ -3427,27 +3730,27 @@ const handleUpdateCourt: RequestHandler = async (req, res) => {
 const handleGetBlockedSlots: RequestHandler = async (req, res) => {
   try {
     const admin = (req as any).admin;
-    const { clubId, startDate, endDate } = req.query;
+    const { startDate, endDate } = req.query;
 
+    // Admin must have a club_id
+    if (!admin.club_id) {
+      return res.json({
+        success: true,
+        data: [],
+      });
+    }
+
+    // Always filter by admin's club_id
     let query = `
       SELECT bs.*, c.name as club_name, co.name as court_name, a.name as created_by_name
       FROM blocked_slots bs
       JOIN clubs c ON bs.club_id = c.id
       LEFT JOIN courts co ON bs.court_id = co.id
       LEFT JOIN admins a ON bs.created_by_admin_id = a.id
-      WHERE 1=1
+      WHERE bs.club_id = ?
     `;
 
-    const params: any[] = [];
-
-    // Filter by admin's club if they have one
-    if (admin.club_id) {
-      query += " AND bs.club_id = ?";
-      params.push(admin.club_id);
-    } else if (clubId) {
-      query += " AND bs.club_id = ?";
-      params.push(clubId);
-    }
+    const params: any[] = [admin.club_id];
 
     if (startDate) {
       query += " AND bs.block_date >= ?";
@@ -3710,22 +4013,24 @@ const handleGetAdminEvents: RequestHandler = async (req, res) => {
   try {
     const admin = (req as any).admin;
 
-    let query = `
+    // Admin must have a club_id
+    if (!admin.club_id) {
+      return res.json({
+        success: true,
+        data: [],
+      });
+    }
+
+    // Always filter by admin's club_id
+    const query = `
       SELECT e.*, c.name as club_name
       FROM events e
       JOIN clubs c ON e.club_id = c.id
-      WHERE 1=1
+      WHERE e.club_id = ?
+      ORDER BY e.event_date DESC, e.start_time ASC
     `;
 
-    const params: any[] = [];
-
-    // Filter by admin's club
-    if (admin.club_id) {
-      query += " AND e.club_id = ?";
-      params.push(admin.club_id);
-    }
-
-    query += " ORDER BY e.event_date DESC, e.start_time ASC";
+    const params: any[] = [admin.club_id];
 
     const [events] = await pool.query<any[]>(query, params);
 

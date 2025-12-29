@@ -6,6 +6,7 @@ import { addDays, format, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchClubs } from "@/store/slices/clubsSlice";
+import { setTempClubId } from "@/store/slices/authSlice";
 import {
   fetchAvailability,
   clearAvailability,
@@ -156,12 +157,31 @@ export default function BookingWizard() {
 
     // Check if user is authenticated
     if (!isAuthenticated) {
+      // Set club_id before showing auth modal
+      if (selectedClub) {
+        dispatch(setTempClubId(selectedClub.id));
+      }
       setStep("auth");
       setShowAuthModal(true);
       setProcessingEventId(null);
     } else {
-      await handleProceedToEventPayment(event);
-      setProcessingEventId(null);
+      // Check if user is trying to register at a different club
+      if (
+        user &&
+        selectedClub &&
+        user.club_id &&
+        user.club_id !== selectedClub.id
+      ) {
+        // User authenticated but at different club - need new account
+        dispatch(setTempClubId(selectedClub.id));
+        setStep("auth");
+        setShowAuthModal(true);
+        setProcessingEventId(null);
+      } else {
+        // Same club or no club restriction - proceed
+        await handleProceedToEventPayment(event);
+        setProcessingEventId(null);
+      }
     }
   };
 
@@ -186,10 +206,29 @@ export default function BookingWizard() {
   const handleContinueToPayment = () => {
     // Check if user is authenticated
     if (!isAuthenticated) {
+      // Set club_id before showing auth modal
+      if (selectedClub) {
+        dispatch(setTempClubId(selectedClub.id));
+      }
       setStep("auth");
       setShowAuthModal(true);
     } else {
-      handleProceedToPayment();
+      // Check if user is trying to book at a different club
+      if (
+        user &&
+        selectedClub &&
+        user.club_id &&
+        user.club_id !== selectedClub.id
+      ) {
+        // User is authenticated but at a different club
+        // Show auth modal to create new account for this club
+        dispatch(setTempClubId(selectedClub.id));
+        setStep("auth");
+        setShowAuthModal(true);
+      } else {
+        // Same club or no club restriction - proceed to payment
+        handleProceedToPayment();
+      }
     }
   };
 

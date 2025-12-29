@@ -19,7 +19,13 @@ interface AuthModalProps {
 
 export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const dispatch = useAppDispatch();
-  const { authStep, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { authStep, isAuthenticated, tempClubId } = useAppSelector(
+    (state) => state.auth,
+  );
+  const { clubs } = useAppSelector((state) => state.clubs);
+
+  // Get selected club name
+  const selectedClubName = clubs.find((c) => c.id === tempClubId)?.name;
 
   // Close modal when authenticated
   useEffect(() => {
@@ -41,13 +47,19 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
     switch (authStep) {
       case "email":
         return {
-          title: "¡Bienvenido! 👋",
-          description: "Ingresa tu correo electrónico para comenzar",
+          title: selectedClubName
+            ? `¡Bienvenido a ${selectedClubName}! 👋`
+            : "¡Bienvenido! 👋",
+          description: selectedClubName
+            ? `Ingresa tu correo para continuar en ${selectedClubName}`
+            : "Ingresa tu correo electrónico para comenzar",
         };
       case "create-user":
         return {
           title: "Completa tu perfil 🎾",
-          description: "Solo necesitamos algunos datos más",
+          description: selectedClubName
+            ? `Crea tu cuenta para ${selectedClubName}`
+            : "Solo necesitamos algunos datos más",
         };
       case "verify-code":
         return {

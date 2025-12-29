@@ -11,6 +11,7 @@ interface AuthState {
   authStep: "email" | "create-user" | "verify-code" | "complete";
   tempEmail: string | null;
   tempUserId: number | null;
+  tempClubId: number | null; // Store club_id during auth flow
   userExists: boolean | null;
 }
 
@@ -22,6 +23,7 @@ const initialState: AuthState = {
   authStep: "email",
   tempEmail: null,
   tempUserId: null,
+  tempClubId: null, // Initialize club_id
   userExists: null,
 };
 
@@ -42,9 +44,15 @@ if (storedUser) {
  */
 export const checkUser = createAsyncThunk(
   "auth/checkUser",
-  async (email: string, { rejectWithValue }) => {
+  async (
+    { email, club_id }: { email: string; club_id?: number },
+    { rejectWithValue },
+  ) => {
     try {
-      const response = await axios.post("/api/auth/check-user", { email });
+      const response = await axios.post("/api/auth/check-user", {
+        email,
+        club_id,
+      });
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
@@ -66,6 +74,7 @@ export const createUser = createAsyncThunk(
       last_name: string;
       phone: string;
       date_of_birth?: string;
+      club_id?: number;
     },
     { rejectWithValue },
   ) => {
@@ -164,6 +173,7 @@ const authSlice = createSlice({
       state.authStep = "email";
       state.tempEmail = null;
       state.tempUserId = null;
+      state.tempClubId = null;
       state.userExists = null;
       state.error = null;
       localStorage.removeItem("intelipadel_user");
@@ -172,9 +182,13 @@ const authSlice = createSlice({
       state.authStep = "email";
       state.tempEmail = null;
       state.tempUserId = null;
+      state.tempClubId = null;
       state.userExists = null;
       state.error = null;
       state.loading = false;
+    },
+    setTempClubId: (state, action: PayloadAction<number | null>) => {
+      state.tempClubId = action.payload;
     },
     clearError: (state) => {
       state.error = null;
@@ -194,6 +208,7 @@ const authSlice = createSlice({
         if (exists && patient) {
           state.tempEmail = patient.email;
           state.tempUserId = patient.id;
+          state.tempClubId = patient.club_id || null; // Store club_id from user
           state.userExists = true;
 
           // Check if user is active
@@ -207,7 +222,8 @@ const authSlice = createSlice({
             state.authStep = "email";
           }
         } else {
-          state.tempEmail = action.meta.arg;
+          state.tempEmail = action.meta.arg.email;
+          state.tempClubId = action.meta.arg.club_id || null; // Store club_id from check request
           state.userExists = false;
           state.authStep = "create-user";
         }
@@ -293,5 +309,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, resetAuthFlow, clearError } = authSlice.actions;
+export const { logout, resetAuthFlow, setTempClubId, clearError } =
+  authSlice.actions;
 export default authSlice.reducer;
