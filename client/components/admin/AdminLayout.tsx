@@ -60,7 +60,7 @@ const navigationItems = [
     label: "Panel Principal",
     icon: LayoutDashboard,
   },
-  { id: "bookings" as Section, label: "Reservaciones", icon: Calendar },
+  { id: "bookings" as Section, label: "Calendario", icon: Calendar },
   { id: "players" as Section, label: "Jugadores", icon: Users },
   { id: "courts" as Section, label: "Gestión de Canchas", icon: Building2 },
   { id: "admin-users" as Section, label: "Usuarios Admin", icon: Shield },

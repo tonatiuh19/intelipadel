@@ -1296,6 +1296,87 @@ const handleGetCourts: RequestHandler = async (req, res) => {
 };
 
 /**
+ * Get instructors for a club
+ * GET /api/instructors/:clubId
+ */
+const handleGetInstructors: RequestHandler = async (req, res) => {
+  try {
+    const { clubId } = req.params;
+    const { date } = req.query;
+
+    let query = `
+      SELECT DISTINCT i.id, i.club_id, i.name, i.email, i.phone, i.bio, 
+             i.specialties, i.hourly_rate, i.avatar_url, i.rating, 
+             i.review_count, i.is_active,
+             ia.start_time, ia.end_time, ia.day_of_week
+      FROM instructors i
+      INNER JOIN instructor_availability ia ON i.id = ia.instructor_id
+      WHERE i.club_id = ? AND i.is_active = 1 AND ia.is_active = 1
+    `;
+
+    const params: any[] = [clubId];
+
+    // If date is provided, filter by day of week
+    if (date && typeof date === "string") {
+      // Get day of week from date (0 = Sunday, 6 = Saturday)
+      // DAYOFWEEK returns 1-7 (1=Sunday), so we subtract 1 to match our 0-6 format
+      query += ` AND ia.day_of_week = (DAYOFWEEK(?) - 1)`;
+      params.push(date);
+    }
+
+    query += ` ORDER BY i.rating DESC, i.name ASC`;
+
+    const [instructors] = await pool.query(query, params);
+
+    // Parse specialties JSON field and group availability by instructor
+    const instructorMap = new Map();
+    (instructors as any[]).forEach((row) => {
+      if (!instructorMap.has(row.id)) {
+        instructorMap.set(row.id, {
+          id: row.id,
+          club_id: row.club_id,
+          name: row.name,
+          email: row.email,
+          phone: row.phone,
+          bio: row.bio,
+          specialties:
+            typeof row.specialties === "string"
+              ? JSON.parse(row.specialties)
+              : row.specialties || [],
+          hourly_rate: row.hourly_rate,
+          avatar_url: row.avatar_url,
+          rating: row.rating,
+          review_count: row.review_count,
+          is_active: row.is_active,
+          availability: [],
+        });
+      }
+
+      // Add availability slot to instructor
+      instructorMap.get(row.id).availability.push({
+        day_of_week: row.day_of_week,
+        start_time: row.start_time,
+        end_time: row.end_time,
+      });
+    });
+
+    const parsedInstructors = Array.from(instructorMap.values());
+
+    res.json({
+      success: true,
+      data: parsedInstructors,
+    });
+  } catch (error) {
+    console.error("Error fetching instructors:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch instructors",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
  * Get availability for a specific club and date range
  * Includes: time slots, existing bookings, blocked slots
  */
@@ -2504,6 +2585,500 @@ const handleGetUserEventRegistrations: RequestHandler = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/users/:userId/private-classes
+ * Get all private classes for a user
+ */
+const handleGetUserPrivateClasses: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const [rows]: any = await pool.execute(
+      `SELECT 
+        pc.id,
+        pc.booking_number,
+        pc.class_date,
+        pc.start_time,
+        pc.end_time,
+        pc.duration_minutes,
+        pc.class_type,
+        pc.number_of_students,
+        pc.total_price,
+        pc.status,
+        pc.payment_status,
+        pc.notes,
+        pc.confirmed_at,
+        pc.created_at,
+        i.name as instructor_name,
+        i.email as instructor_email,
+        i.bio as instructor_bio,
+        c.id as club_id,
+        c.name as club_name,
+        ct.id as court_id,
+        ct.name as court_name
+      FROM private_classes pc
+      JOIN instructors i ON pc.instructor_id = i.id
+      JOIN clubs c ON pc.club_id = c.id
+      LEFT JOIN courts ct ON pc.court_id = ct.id
+      WHERE pc.user_id = ?
+      ORDER BY pc.class_date DESC, pc.start_time DESC`,
+      [userId],
+    );
+
+    res.json({
+      success: true,
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Get user private classes error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch private classes",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+// ==================== PRIVATE CLASS BOOKING HANDLERS ====================
+
+/**
+ * Send private class confirmation email
+ */
+async function sendPrivateClassConfirmationEmail(
+  email: string,
+  userName: string,
+  bookingNumber: string,
+  classType: string,
+  classDate: string,
+  startTime: string,
+  endTime: string,
+  clubName: string,
+  instructorName: string,
+  totalPrice: number,
+  numberOfStudents: number,
+  focusAreas: string[] | null,
+): Promise<void> {
+  try {
+    let transportConfig: any;
+
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
+      const testAccount = await nodemailer.createTestAccount();
+      transportConfig = {
+        host: testAccount.smtp.host,
+        port: testAccount.smtp.port,
+        secure: testAccount.smtp.secure,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass,
+        },
+      };
+    } else {
+      transportConfig = {
+        host: process.env.SMTP_HOST || "mail.disruptinglabs.com",
+        port: parseInt(process.env.SMTP_PORT || "465"),
+        secure: process.env.SMTP_SECURE === "true",
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASSWORD,
+        },
+      };
+    }
+
+    const transporter = nodemailer.createTransport(transportConfig);
+
+    const classTypeLabels: Record<string, string> = {
+      individual: "Individual",
+      group: "Grupal",
+      semi_private: "Semi-Privada",
+    };
+
+    const focusAreasHtml =
+      focusAreas && focusAreas.length > 0
+        ? `
+        <div class="detail-row">
+          <span class="label">Áreas de Enfoque:</span>
+          <span class="value">${focusAreas.join(", ")}</span>
+        </div>
+      `
+        : "";
+
+    const emailBody = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
+          .container { background-color: white; border-radius: 10px; padding: 30px; max-width: 600px; margin: 0 auto; }
+          .header { background-color: #10b981; color: white; padding: 20px; border-radius: 5px; text-align: center; }
+          .class-badge { background-color: #d1fae5; color: #065f46; padding: 5px 15px; border-radius: 20px; display: inline-block; margin: 10px 0; font-weight: bold; }
+          .class-details { background-color: #f0fdf4; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #10b981; }
+          .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #d1fae5; }
+          .label { font-weight: bold; color: #065f46; }
+          .value { color: #333; }
+          .total { font-size: 20px; font-weight: bold; color: #10b981; }
+          .footer { color: #666; font-size: 12px; text-align: center; margin-top: 30px; }
+          .highlight { background-color: #d1fae5; padding: 15px; border-radius: 5px; margin: 15px 0; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>¡Clase Confirmada! 🎾</h1>
+          </div>
+          <p>Hola ${userName},</p>
+          <p>Tu clase privada ha sido confirmada exitosamente.</p>
+          <div class="highlight">
+            <span class="class-badge">${classTypeLabels[classType] || classType}</span>
+            <h2 style="margin: 10px 0; color: #065f46;">Clase Privada de Pádel</h2>
+          </div>
+          <div class="class-details">
+            <div class="detail-row">
+              <span class="label">Número de Reserva:</span>
+              <span class="value">${bookingNumber}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Club:</span>
+              <span class="value">${clubName}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Instructor:</span>
+              <span class="value">${instructorName}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Fecha:</span>
+              <span class="value">${classDate}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Horario:</span>
+              <span class="value">${startTime} - ${endTime}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Tipo de Clase:</span>
+              <span class="value">${classTypeLabels[classType] || classType}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Número de Estudiantes:</span>
+              <span class="value">${numberOfStudents}</span>
+            </div>
+            ${focusAreasHtml}
+            <div class="detail-row">
+              <span class="label">Total:</span>
+              <span class="value total">$${totalPrice.toFixed(2)} MXN</span>
+            </div>
+          </div>
+          <p><strong>Importante:</strong> Llega al menos 10 minutos antes para prepararte y aprovechar al máximo tu clase.</p>
+          <p>¡Nos vemos en ${clubName}!</p>
+          <div class="footer">
+            <p>InteliPadel - Tu plataforma de reservas de pádel</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"InteliPadel" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: `Confirmación de Clase Privada - ${bookingNumber}`,
+      html: emailBody,
+    });
+
+    console.log("Private class confirmation email sent to:", email);
+  } catch (error) {
+    console.error("Failed to send private class confirmation email:", error);
+    throw error;
+  }
+}
+
+/**
+ * Create Payment Intent for Private Class
+ * POST /api/private-classes/payment/create-intent
+ */
+const handleCreateClassPaymentIntent: RequestHandler = async (req, res) => {
+  try {
+    const {
+      user_id,
+      instructor_id,
+      club_id,
+      court_id,
+      class_type,
+      class_date,
+      start_time,
+      end_time,
+      duration_minutes,
+      number_of_students,
+      total_price,
+      focus_areas,
+      student_level,
+      notes,
+    } = req.body;
+
+    if (
+      !user_id ||
+      !instructor_id ||
+      !club_id ||
+      !class_type ||
+      !class_date ||
+      !start_time ||
+      !end_time ||
+      !duration_minutes ||
+      total_price === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    // Check if instructor exists
+    const [instructors]: any = await pool.query(
+      "SELECT id, name FROM instructors WHERE id = ? AND club_id = ? AND is_active = 1",
+      [instructor_id, club_id],
+    );
+
+    if (instructors.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Instructor not found or not available",
+      });
+    }
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    // Create payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(total_price * 100), // Convert to cents
+      currency: "mxn",
+      metadata: {
+        user_id: user_id.toString(),
+        instructor_id: instructor_id.toString(),
+        club_id: club_id.toString(),
+        class_type,
+        class_date,
+        start_time,
+        end_time,
+        transaction_type: "private_class",
+      },
+    });
+
+    // Generate transaction number
+    const transactionNumber = `CLS${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+    // Create pending payment transaction record
+    const [result] = await pool.execute(
+      `INSERT INTO payment_transactions (
+        transaction_number, user_id, club_id, transaction_type,
+        amount, currency, status, payment_provider,
+        stripe_payment_intent_id, metadata, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      [
+        transactionNumber,
+        user_id,
+        club_id,
+        "private_class",
+        total_price,
+        "MXN",
+        "pending",
+        "stripe",
+        paymentIntent.id,
+        JSON.stringify({
+          instructor_id,
+          court_id,
+          class_type,
+          class_date,
+          start_time,
+          end_time,
+          duration_minutes,
+          number_of_students: number_of_students || 1,
+          focus_areas,
+          student_level,
+          notes,
+        }),
+      ],
+    );
+
+    const transactionId = (result as any).insertId;
+
+    res.json({
+      success: true,
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+      transactionId,
+    });
+  } catch (error) {
+    console.error("Create class payment intent error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create payment intent",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * Confirm Private Class Payment
+ * POST /api/private-classes/payment/confirm
+ */
+const handleConfirmClassPayment: RequestHandler = async (req, res) => {
+  try {
+    const {
+      payment_intent_id,
+      user_id,
+      instructor_id,
+      club_id,
+      court_id,
+      class_type,
+      class_date,
+      start_time,
+      end_time,
+      duration_minutes,
+      number_of_students,
+      total_price,
+      focus_areas,
+      student_level,
+      notes,
+    } = req.body;
+
+    if (!payment_intent_id || !user_id || !instructor_id || !club_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    // Initialize Stripe and retrieve payment intent
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    const paymentIntent =
+      await stripe.paymentIntents.retrieve(payment_intent_id);
+
+    if (paymentIntent.status !== "succeeded") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment has not been completed",
+      });
+    }
+
+    // Start transaction
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // Generate booking number
+      const bookingNumber = `PCL${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+      // Create private class booking
+      const [classResult] = await connection.execute(
+        `INSERT INTO private_classes (
+          booking_number, user_id, instructor_id, club_id, court_id,
+          class_type, class_date, start_time, end_time, duration_minutes,
+          number_of_students, total_price, status, payment_status,
+          focus_areas, student_level, notes, confirmed_at, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [
+          bookingNumber,
+          user_id,
+          instructor_id,
+          club_id,
+          court_id || null,
+          class_type,
+          class_date,
+          start_time,
+          end_time,
+          duration_minutes,
+          number_of_students || 1,
+          total_price,
+          "confirmed",
+          "paid",
+          focus_areas ? JSON.stringify(focus_areas) : null,
+          student_level || null,
+          notes || null,
+        ],
+      );
+
+      const classId = (classResult as any).insertId;
+
+      // Update payment transaction
+      await connection.execute(
+        `UPDATE payment_transactions 
+         SET status = 'completed',
+             private_class_id = ?,
+             stripe_charge_id = ?,
+             paid_at = NOW(),
+             updated_at = NOW()
+         WHERE stripe_payment_intent_id = ?`,
+        [classId, paymentIntent.latest_charge, payment_intent_id],
+      );
+
+      // Get class details for email
+      const [classes]: any = await connection.execute(
+        `SELECT pc.*, i.name as instructor_name, c.name as club_name
+         FROM private_classes pc
+         JOIN instructors i ON pc.instructor_id = i.id
+         JOIN clubs c ON pc.club_id = c.id
+         WHERE pc.id = ?`,
+        [classId],
+      );
+      const privateClass = classes[0];
+
+      const [users]: any = await connection.execute(
+        "SELECT email, name FROM users WHERE id = ?",
+        [user_id],
+      );
+      const user = users[0];
+
+      // Commit transaction
+      await connection.commit();
+      connection.release();
+
+      // Send confirmation email (async, don't wait)
+      sendPrivateClassConfirmationEmail(
+        user.email,
+        user.name,
+        bookingNumber,
+        privateClass.class_type,
+        privateClass.class_date,
+        privateClass.start_time,
+        privateClass.end_time,
+        privateClass.club_name,
+        privateClass.instructor_name,
+        parseFloat(total_price),
+        privateClass.number_of_students,
+        focus_areas,
+      ).catch((error) => {
+        console.error("Failed to send class confirmation email:", error);
+      });
+
+      res.json({
+        success: true,
+        data: {
+          classId,
+          bookingNumber,
+        },
+        message: "Private class booking successful",
+      });
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    console.error("Confirm class payment error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to confirm class booking",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 // ==================== CLUB POLICIES HANDLERS ====================
 
 /**
@@ -3411,6 +3986,264 @@ const handleGetAdminBookings: RequestHandler = async (req, res) => {
 };
 
 /**
+ * GET /api/admin/private-classes
+ * Get all private classes with filters
+ */
+const handleGetAdminPrivateClasses: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { startDate, endDate, status } = req.query;
+
+    // Admin must have a club_id
+    if (!admin.club_id) {
+      return res.json({
+        success: true,
+        data: [],
+      });
+    }
+
+    // Query private classes for admin's club
+    let query = `
+      SELECT pc.*, 
+             u.name as user_name, u.email as user_email, u.phone as user_phone,
+             c.name as club_name, 
+             co.name as court_name,
+             i.name as instructor_name
+      FROM private_classes pc
+      JOIN users u ON pc.user_id = u.id
+      JOIN clubs c ON pc.club_id = c.id
+      LEFT JOIN courts co ON pc.court_id = co.id
+      LEFT JOIN instructors i ON pc.instructor_id = i.id
+      WHERE pc.club_id = ?
+    `;
+
+    const params: any[] = [admin.club_id];
+
+    if (startDate) {
+      query += " AND pc.class_date >= ?";
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      query += " AND pc.class_date <= ?";
+      params.push(endDate);
+    }
+
+    if (status) {
+      query += " AND pc.status = ?";
+      params.push(status);
+    }
+
+    query += " ORDER BY pc.class_date DESC, pc.start_time DESC LIMIT 200";
+
+    const [classes] = await pool.query<any[]>(query, params);
+
+    res.json({
+      success: true,
+      data: classes,
+    });
+  } catch (error) {
+    console.error("Error fetching admin private classes:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch private classes",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/admin/private-classes/manual
+ * Create a manual private class booking
+ */
+const handleCreateManualPrivateClass: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const {
+      user_id,
+      instructor_id,
+      club_id,
+      court_id,
+      class_date,
+      start_time,
+      end_time,
+      class_type,
+      number_of_students,
+      total_price,
+      notes,
+    } = req.body;
+
+    // Validate admin has access to this club
+    if (admin.club_id !== club_id) {
+      return res.status(403).json({
+        success: false,
+        error: "No tienes permiso para crear clases en este club",
+      });
+    }
+
+    // Validate required fields
+    if (
+      !user_id ||
+      !instructor_id ||
+      !club_id ||
+      !court_id ||
+      !class_date ||
+      !start_time ||
+      !end_time ||
+      !class_type ||
+      !number_of_students ||
+      total_price === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "Faltan campos requeridos",
+      });
+    }
+
+    // Check for conflicts - existing bookings
+    const [conflicts] = await pool.query<any[]>(
+      `SELECT id FROM bookings 
+       WHERE court_id = ? 
+       AND booking_date = ? 
+       AND status IN ('confirmed', 'pending')
+       AND (
+         (start_time < ? AND end_time > ?) OR
+         (start_time < ? AND end_time > ?) OR
+         (start_time >= ? AND end_time <= ?)
+       )`,
+      [
+        court_id,
+        class_date,
+        end_time,
+        start_time,
+        end_time,
+        end_time,
+        start_time,
+        end_time,
+      ],
+    );
+
+    if (conflicts.length > 0) {
+      return res.status(409).json({
+        success: false,
+        error: "Ya existe una reserva en este horario",
+      });
+    }
+
+    // Check for conflicts - existing classes
+    const [classConflicts] = await pool.query<any[]>(
+      `SELECT id FROM private_classes 
+       WHERE court_id = ? 
+       AND class_date = ? 
+       AND status IN ('confirmed', 'pending')
+       AND (
+         (start_time < ? AND end_time > ?) OR
+         (start_time < ? AND end_time > ?) OR
+         (start_time >= ? AND end_time <= ?)
+       )`,
+      [
+        court_id,
+        class_date,
+        end_time,
+        start_time,
+        end_time,
+        end_time,
+        start_time,
+        end_time,
+      ],
+    );
+
+    if (classConflicts.length > 0) {
+      return res.status(409).json({
+        success: false,
+        error: "Ya existe una clase en este horario",
+      });
+    }
+
+    // Check for conflicts - existing events
+    const [eventConflicts] = await pool.query<any[]>(
+      `SELECT e.id FROM events e
+       JOIN event_court_schedules ecs ON e.id = ecs.event_id
+       WHERE ecs.court_id = ?
+       AND e.event_date = ?
+       AND e.status IN ('open', 'full', 'in_progress')
+       AND (
+         (ecs.start_time < ? AND ecs.end_time > ?) OR
+         (ecs.start_time < ? AND ecs.end_time > ?) OR
+         (ecs.start_time >= ? AND ecs.end_time <= ?)
+       )`,
+      [
+        court_id,
+        class_date,
+        end_time,
+        start_time,
+        end_time,
+        end_time,
+        start_time,
+        end_time,
+      ],
+    );
+
+    if (eventConflicts.length > 0) {
+      return res.status(409).json({
+        success: false,
+        error: "Ya existe un evento en este horario",
+      });
+    }
+
+    // Calculate duration in minutes
+    const startParts = start_time.split(":");
+    const endParts = end_time.split(":");
+    const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+    const endMinutes = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
+    const durationMinutes = endMinutes - startMinutes;
+
+    // Generate booking number
+    const bookingNumber = `PCL${Date.now()}${Math.floor(Math.random() * 10000)}`;
+
+    // Insert the private class
+    const [result] = await pool.query<any>(
+      `INSERT INTO private_classes 
+       (booking_number, user_id, instructor_id, club_id, court_id, class_date, start_time, end_time, 
+        duration_minutes, class_type, number_of_students, total_price, status, payment_status, notes, 
+        created_by_admin_id, confirmed_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', 'paid', ?, ?, NOW())`,
+      [
+        bookingNumber,
+        user_id,
+        instructor_id,
+        club_id,
+        court_id,
+        class_date,
+        start_time,
+        end_time,
+        durationMinutes,
+        class_type,
+        number_of_students,
+        total_price,
+        notes || null,
+        admin.id, // created_by_admin_id for audit tracking
+      ],
+    );
+
+    res.json({
+      success: true,
+      data: {
+        id: result.insertId,
+        message: "Clase privada creada exitosamente",
+      },
+    });
+  } catch (error) {
+    console.error("Error creating manual private class:", error);
+    res.status(500).json({
+      success: false,
+      error: "Error al crear la clase privada",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
  * GET /api/admin/players
  * Get players for admin's club only
  */
@@ -3579,6 +4412,407 @@ const handleCreateAdminPlayer: RequestHandler = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error al crear el jugador",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/admin/instructors
+ * Get all instructors for admin management
+ */
+const handleGetAdminInstructors: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+
+    // Admin must have a club_id
+    if (!admin.club_id) {
+      return res.json({
+        success: true,
+        data: [],
+      });
+    }
+
+    // Always filter by admin's club_id
+    const query = `
+      SELECT i.*, c.name as club_name
+      FROM instructors i
+      JOIN clubs c ON i.club_id = c.id
+      WHERE i.club_id = ?
+      ORDER BY i.name
+    `;
+
+    const params: any[] = [admin.club_id];
+
+    const [instructors] = await pool.query<any[]>(query, params);
+
+    res.json({
+      success: true,
+      data: instructors,
+    });
+  } catch (error) {
+    console.error("Error fetching instructors:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch instructors",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/admin/instructors
+ * Create new instructor
+ */
+const handleCreateAdminInstructor: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const {
+      name,
+      email,
+      phone,
+      bio,
+      specialties,
+      years_of_experience,
+      rating,
+      hourly_rate,
+      profile_image_url,
+      is_active,
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and email are required",
+      });
+    }
+
+    // Club admin can only create instructors for their club
+    if (!admin.club_id) {
+      return res.status(403).json({
+        success: false,
+        message: "You must be associated with a club to create instructors",
+      });
+    }
+
+    const [result] = await pool.query<any>(
+      `INSERT INTO instructors 
+       (club_id, name, email, phone, bio, specialties, years_of_experience, rating, hourly_rate, profile_image_url, is_active) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        admin.club_id,
+        name,
+        email,
+        phone || null,
+        bio || null,
+        specialties || null,
+        years_of_experience || 0,
+        rating || 5.0,
+        hourly_rate,
+        profile_image_url || null,
+        is_active !== undefined ? is_active : 1,
+      ],
+    );
+
+    // Fetch the created instructor
+    const [instructors] = await pool.query<any[]>(
+      `SELECT i.*, c.name as club_name
+       FROM instructors i
+       JOIN clubs c ON i.club_id = c.id
+       WHERE i.id = ?`,
+      [result.insertId],
+    );
+
+    res.json({
+      success: true,
+      data: instructors[0],
+      message: "Instructor creado exitosamente",
+    });
+  } catch (error) {
+    console.error("Error creating instructor:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al crear el instructor",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * PUT /api/admin/instructors/:id
+ * Update instructor
+ */
+const handleUpdateAdminInstructor: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { id } = req.params;
+    const {
+      name,
+      email,
+      phone,
+      bio,
+      specialties,
+      years_of_experience,
+      rating,
+      hourly_rate,
+      profile_image_url,
+      is_active,
+    } = req.body;
+
+    // Check if instructor exists and belongs to admin's club
+    const [instructors] = await pool.query<any[]>(
+      `SELECT * FROM instructors WHERE id = ? AND club_id = ?`,
+      [id, admin.club_id],
+    );
+
+    if (instructors.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Instructor not found or access denied",
+      });
+    }
+
+    await pool.query(
+      `UPDATE instructors 
+       SET name = ?, email = ?, phone = ?, bio = ?, specialties = ?, 
+           years_of_experience = ?, rating = ?, hourly_rate = ?, 
+           profile_image_url = ?, is_active = ?
+       WHERE id = ? AND club_id = ?`,
+      [
+        name,
+        email,
+        phone || null,
+        bio || null,
+        specialties || null,
+        years_of_experience || 0,
+        rating || 5.0,
+        hourly_rate,
+        profile_image_url || null,
+        is_active !== undefined ? is_active : 1,
+        id,
+        admin.club_id,
+      ],
+    );
+
+    // Fetch updated instructor
+    const [updatedInstructors] = await pool.query<any[]>(
+      `SELECT i.*, c.name as club_name
+       FROM instructors i
+       JOIN clubs c ON i.club_id = c.id
+       WHERE i.id = ?`,
+      [id],
+    );
+
+    res.json({
+      success: true,
+      data: updatedInstructors[0],
+      message: "Instructor actualizado exitosamente",
+    });
+  } catch (error) {
+    console.error("Error updating instructor:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al actualizar el instructor",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * DELETE /api/admin/instructors/:id
+ * Delete instructor
+ */
+const handleDeleteAdminInstructor: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { id } = req.params;
+
+    // Check if instructor exists and belongs to admin's club
+    const [instructors] = await pool.query<any[]>(
+      `SELECT * FROM instructors WHERE id = ? AND club_id = ?`,
+      [id, admin.club_id],
+    );
+
+    if (instructors.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Instructor not found or access denied",
+      });
+    }
+
+    // Check if instructor has any private classes
+    const [classes] = await pool.query<any[]>(
+      `SELECT COUNT(*) as count FROM private_classes WHERE instructor_id = ?`,
+      [id],
+    );
+
+    if (classes[0].count > 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "No se puede eliminar el instructor porque tiene clases asociadas",
+      });
+    }
+
+    await pool.query(`DELETE FROM instructors WHERE id = ? AND club_id = ?`, [
+      id,
+      admin.club_id,
+    ]);
+
+    res.json({
+      success: true,
+      message: "Instructor eliminado exitosamente",
+    });
+  } catch (error) {
+    console.error("Error deleting instructor:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al eliminar el instructor",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/admin/instructors/:id/availability
+ * Get instructor availability schedule
+ */
+const handleGetInstructorAvailability: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { id } = req.params;
+
+    // Verify instructor belongs to admin's club
+    const [instructors] = await pool.query<any[]>(
+      `SELECT * FROM instructors WHERE id = ? AND club_id = ?`,
+      [id, admin.club_id],
+    );
+
+    if (instructors.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Instructor not found or access denied",
+      });
+    }
+
+    const [availability] = await pool.query<any[]>(
+      `SELECT * FROM instructor_availability 
+       WHERE instructor_id = ? AND is_active = 1
+       ORDER BY day_of_week, start_time`,
+      [id],
+    );
+
+    res.json({
+      success: true,
+      data: availability,
+    });
+  } catch (error) {
+    console.error("Error fetching instructor availability:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch availability",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/admin/instructors/:id/availability
+ * Add availability slot for instructor
+ */
+const handleAddInstructorAvailability: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { id } = req.params;
+    const { day_of_week, start_time, end_time } = req.body;
+
+    // Verify instructor belongs to admin's club
+    const [instructors] = await pool.query<any[]>(
+      `SELECT * FROM instructors WHERE id = ? AND club_id = ?`,
+      [id, admin.club_id],
+    );
+
+    if (instructors.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Instructor not found or access denied",
+      });
+    }
+
+    // Validate input
+    if (day_of_week < 0 || day_of_week > 6 || !start_time || !end_time) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid availability data",
+      });
+    }
+
+    const [result] = await pool.query<any>(
+      `INSERT INTO instructor_availability 
+       (instructor_id, day_of_week, start_time, end_time) 
+       VALUES (?, ?, ?, ?)`,
+      [id, day_of_week, start_time, end_time],
+    );
+
+    const [newSlot] = await pool.query<any[]>(
+      `SELECT * FROM instructor_availability WHERE id = ?`,
+      [result.insertId],
+    );
+
+    res.json({
+      success: true,
+      data: newSlot[0],
+      message: "Disponibilidad agregada exitosamente",
+    });
+  } catch (error) {
+    console.error("Error adding instructor availability:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al agregar disponibilidad",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * DELETE /api/admin/instructors/availability/:availabilityId
+ * Delete availability slot
+ */
+const handleDeleteInstructorAvailability: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { availabilityId } = req.params;
+
+    // Verify availability slot belongs to instructor in admin's club
+    const [slots] = await pool.query<any[]>(
+      `SELECT ia.*, i.club_id 
+       FROM instructor_availability ia
+       JOIN instructors i ON ia.instructor_id = i.id
+       WHERE ia.id = ? AND i.club_id = ?`,
+      [availabilityId, admin.club_id],
+    );
+
+    if (slots.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Availability slot not found or access denied",
+      });
+    }
+
+    await pool.query(`DELETE FROM instructor_availability WHERE id = ?`, [
+      availabilityId,
+    ]);
+
+    res.json({
+      success: true,
+      message: "Disponibilidad eliminada exitosamente",
+    });
+  } catch (error) {
+    console.error("Error deleting instructor availability:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al eliminar disponibilidad",
       error: error instanceof Error ? error.message : "Unknown error",
     });
   }
@@ -4651,6 +5885,7 @@ function createServer() {
   expressApp.post("/api/bookings/:id/request-invoice", handleRequestInvoice);
   expressApp.get("/api/availability", handleGetAvailability);
   expressApp.get("/api/courts/:clubId", handleGetCourts);
+  expressApp.get("/api/instructors/:clubId", handleGetInstructors);
 
   // Auth routes
   expressApp.post("/api/auth/check-user", handleCheckUser);
@@ -4664,6 +5899,10 @@ function createServer() {
     "/api/users/:userId/event-registrations",
     handleGetUserEventRegistrations,
   );
+  expressApp.get(
+    "/api/users/:userId/private-classes",
+    handleGetUserPrivateClasses,
+  );
 
   // Payment routes
   expressApp.post("/api/payment/create-intent", handleCreatePaymentIntent);
@@ -4675,6 +5914,16 @@ function createServer() {
     handleCreateEventPaymentIntent,
   );
   expressApp.post("/api/events/payment/confirm", handleConfirmEventPayment);
+
+  // Private class payment routes
+  expressApp.post(
+    "/api/private-classes/payment/create-intent",
+    handleCreateClassPaymentIntent,
+  );
+  expressApp.post(
+    "/api/private-classes/payment/confirm",
+    handleConfirmClassPayment,
+  );
 
   // Admin event routes
   expressApp.get(
@@ -4704,6 +5953,16 @@ function createServer() {
     verifyAdminSession,
     handleGetAdminBookings,
   );
+  expressApp.get(
+    "/api/admin/private-classes",
+    verifyAdminSession,
+    handleGetAdminPrivateClasses,
+  );
+  expressApp.post(
+    "/api/admin/private-classes/manual",
+    verifyAdminSession,
+    handleCreateManualPrivateClass,
+  );
   expressApp.post(
     "/api/admin/bookings/manual",
     verifyAdminSession,
@@ -4719,6 +5978,46 @@ function createServer() {
     verifyAdminSession,
     handleCreateAdminPlayer,
   );
+
+  // Instructors routes
+  expressApp.get(
+    "/api/admin/instructors",
+    verifyAdminSession,
+    handleGetAdminInstructors,
+  );
+  expressApp.post(
+    "/api/admin/instructors",
+    verifyAdminSession,
+    handleCreateAdminInstructor,
+  );
+  expressApp.put(
+    "/api/admin/instructors/:id",
+    verifyAdminSession,
+    handleUpdateAdminInstructor,
+  );
+  expressApp.delete(
+    "/api/admin/instructors/:id",
+    verifyAdminSession,
+    handleDeleteAdminInstructor,
+  );
+
+  // Instructor availability routes
+  expressApp.get(
+    "/api/admin/instructors/:id/availability",
+    verifyAdminSession,
+    handleGetInstructorAvailability,
+  );
+  expressApp.post(
+    "/api/admin/instructors/:id/availability",
+    verifyAdminSession,
+    handleAddInstructorAvailability,
+  );
+  expressApp.delete(
+    "/api/admin/instructors/availability/:availabilityId",
+    verifyAdminSession,
+    handleDeleteInstructorAvailability,
+  );
+
   expressApp.get("/api/admin/courts", verifyAdminSession, handleGetAdminCourts);
   expressApp.post("/api/admin/courts", verifyAdminSession, handleCreateCourt);
   expressApp.put(

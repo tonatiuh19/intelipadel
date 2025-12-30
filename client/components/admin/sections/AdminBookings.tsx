@@ -10,8 +10,10 @@ import {
   List,
   Calendar,
   Plus,
+  GraduationCap,
 } from "lucide-react";
 import ManualBookingModal from "@/components/admin/ManualBookingModal";
+import ManualPrivateClassModal from "@/components/admin/ManualPrivateClassModal";
 import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -42,6 +44,10 @@ export default function AdminBookings() {
   const { bookings, isLoading } = useAppSelector(
     (state) => state.adminBookings,
   );
+  const [privateClasses, setPrivateClasses] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
+  const [loadingClasses, setLoadingClasses] = useState(false);
+  const [loadingEvents, setLoadingEvents] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -49,11 +55,13 @@ export default function AdminBookings() {
   const [viewMode, setViewMode] = useState<"list" | "calendar">("calendar");
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [showManualBookingModal, setShowManualBookingModal] = useState(false);
+  const [showManualClassModal, setShowManualClassModal] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<{
     id: number;
     name: string;
   } | null>(null);
 
+  // Fetch regular bookings
   useEffect(() => {
     const params: any = {};
     if (startDate) params.startDate = format(startDate, "yyyy-MM-dd");
@@ -63,7 +71,112 @@ export default function AdminBookings() {
     dispatch(getAdminBookings(params));
   }, [dispatch, startDate, endDate, statusFilter]);
 
-  const filteredBookings = bookings.filter((booking) => {
+  // Fetch private classes
+  useEffect(() => {
+    const fetchPrivateClasses = async () => {
+      setLoadingClasses(true);
+      try {
+        const adminSessionToken = localStorage.getItem("adminSessionToken");
+        const params = new URLSearchParams();
+        if (startDate)
+          params.append("startDate", format(startDate, "yyyy-MM-dd"));
+        if (endDate) params.append("endDate", format(endDate, "yyyy-MM-dd"));
+        if (statusFilter !== "all") params.append("status", statusFilter);
+
+        const response = await fetch(
+          `/api/admin/private-classes?${params.toString()}`,
+          {
+            headers: {
+              Authorization: `Bearer ${adminSessionToken}`,
+            },
+          },
+        );
+        const data = await response.json();
+        if (data.success) {
+          setPrivateClasses(data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching private classes:", error);
+      } finally {
+        setLoadingClasses(false);
+      }
+    };
+
+    fetchPrivateClasses();
+  }, [startDate, endDate, statusFilter]);
+
+  // Fetch events
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoadingEvents(true);
+      try {
+        const adminSessionToken = localStorage.getItem("adminSessionToken");
+        const params = new URLSearchParams();
+        if (startDate)
+          params.append("startDate", format(startDate, "yyyy-MM-dd"));
+        if (endDate) params.append("endDate", format(endDate, "yyyy-MM-dd"));
+
+        const response = await fetch(`/api/admin/events?${params.toString()}`, {
+          headers: {
+            Authorization: `Bearer ${adminSessionToken}`,
+          },
+        });
+        const data = await response.json();
+        if (data.success) {
+          setEvents(data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      } finally {
+        setLoadingEvents(false);
+      }
+    };
+
+    fetchEvents();
+  }, [startDate, endDate]);
+
+  // Combine bookings, private classes, and events for calendar view
+  const combinedBookings = [
+    ...bookings.map((b) => ({ ...b, booking_type: "booking" as const })),
+    ...privateClasses.map((c) => ({
+      id: c.id,
+      booking_date: c.class_date,
+      start_time: c.start_time,
+      end_time: c.end_time,
+      status: c.status,
+      payment_status: c.status,
+      total_price: c.total_price,
+      user_name: c.user_name,
+      user_email: c.user_email,
+      user_phone: c.user_phone,
+      club_name: c.club_name,
+      court_name: c.court_name,
+      booking_type: "class" as const,
+      class_type: c.class_type,
+      instructor_name: c.instructor_name,
+    })),
+    ...events.map((e) => ({
+      id: e.id,
+      booking_date: e.event_date,
+      start_time: e.start_time,
+      end_time: e.end_time,
+      status: e.status,
+      payment_status: e.status,
+      total_price: e.registration_fee,
+      user_name: `${e.current_participants} participantes`,
+      user_email: "",
+      user_phone: "",
+      club_name: e.club_name,
+      court_name: e.courts_used
+        ? `${e.courts_used.length} canchas`
+        : "Varias canchas",
+      booking_type: "event" as const,
+      event_title: e.title,
+      event_type: e.event_type,
+    })),
+  ];
+
+  const filteredBookings = combinedBookings.filter((booking) => {
     if (!searchTerm) return true;
     const search = searchTerm.toLowerCase();
     return (
@@ -95,6 +208,13 @@ export default function AdminBookings() {
           >
             <Plus className="h-4 w-4 mr-2" />
             Crear Reserva
+          </Button>
+          <Button
+            onClick={() => setShowManualClassModal(true)}
+            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+          >
+            <GraduationCap className="h-4 w-4 mr-2" />
+            Crear Clase
           </Button>
           <Button
             variant={viewMode === "calendar" ? "default" : "outline"}
@@ -228,7 +348,7 @@ export default function AdminBookings() {
       {/* Calendar View */}
       {viewMode === "calendar" && (
         <BookingCalendar
-          bookings={bookings}
+          bookings={filteredBookings}
           onBookingClick={(booking) => setSelectedBooking(booking)}
         />
       )}
@@ -317,9 +437,19 @@ export default function AdminBookings() {
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Detalles de la Reservación</DialogTitle>
+            <DialogTitle>
+              {selectedBooking?.booking_type === "class"
+                ? "Detalles de la Clase"
+                : selectedBooking?.booking_type === "event"
+                  ? "Detalles del Evento"
+                  : "Detalles de la Reservación"}
+            </DialogTitle>
             <DialogDescription>
-              Información completa de la reservación
+              {selectedBooking?.booking_type === "class"
+                ? "Información completa de la clase privada"
+                : selectedBooking?.booking_type === "event"
+                  ? "Información completa del evento"
+                  : "Información completa de la reservación"}
             </DialogDescription>
           </DialogHeader>
 
@@ -337,13 +467,67 @@ export default function AdminBookings() {
                   </p>
                 </div>
 
-                <div>
-                  <Label className="text-gray-500">Club y Cancha</Label>
-                  <p className="font-semibold">{selectedBooking.club_name}</p>
-                  <p className="text-sm text-gray-600">
-                    {selectedBooking.court_name}
-                  </p>
-                </div>
+                {/* Show Instructor info for classes */}
+                {selectedBooking.booking_type === "class" && (
+                  <div>
+                    <Label className="text-gray-500">Instructor</Label>
+                    <p className="font-semibold">
+                      {selectedBooking.instructor_name || "N/A"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Tipo:{" "}
+                      {selectedBooking.class_type === "individual"
+                        ? "Individual"
+                        : "Grupal"}
+                    </p>
+                  </div>
+                )}
+
+                {/* Show Event info for events */}
+                {selectedBooking.booking_type === "event" && (
+                  <div>
+                    <Label className="text-gray-500">Evento</Label>
+                    <p className="font-semibold">
+                      {selectedBooking.event_title || "N/A"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Tipo: {selectedBooking.event_type || "N/A"}
+                    </p>
+                  </div>
+                )}
+
+                {/* Show Club and Court for regular bookings */}
+                {selectedBooking.booking_type !== "class" &&
+                  selectedBooking.booking_type !== "event" && (
+                    <div>
+                      <Label className="text-gray-500">Club y Cancha</Label>
+                      <p className="font-semibold">
+                        {selectedBooking.club_name}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {selectedBooking.court_name}
+                      </p>
+                    </div>
+                  )}
+
+                {/* Always show club and court for classes and events in separate section */}
+                {(selectedBooking.booking_type === "class" ||
+                  selectedBooking.booking_type === "event") && (
+                  <div className="col-span-2 grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-gray-500">Club</Label>
+                      <p className="font-semibold">
+                        {selectedBooking.club_name}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-500">Cancha</Label>
+                      <p className="font-semibold">
+                        {selectedBooking.court_name}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <Label className="text-gray-500">Fecha y Hora</Label>
@@ -402,6 +586,23 @@ export default function AdminBookings() {
         onSuccess={() => {
           setShowManualBookingModal(false);
           setSelectedPlayer(null);
+          dispatch(getAdminBookings({}));
+        }}
+      />
+
+      {/* Manual Private Class Modal */}
+      <ManualPrivateClassModal
+        open={showManualClassModal}
+        onClose={() => {
+          setShowManualClassModal(false);
+          setSelectedPlayer(null);
+        }}
+        userId={selectedPlayer?.id}
+        userName={selectedPlayer?.name}
+        onSuccess={() => {
+          setShowManualClassModal(false);
+          setSelectedPlayer(null);
+          // Refresh the calendar data
           dispatch(getAdminBookings({}));
         }}
       />

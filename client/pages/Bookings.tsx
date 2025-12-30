@@ -13,7 +13,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Calendar, Clock, MapPin, FileText, X, Trophy } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  FileText,
+  X,
+  Trophy,
+  GraduationCap,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -40,12 +48,16 @@ export default function Bookings() {
   );
   const [eventRegistrations, setEventRegistrations] = useState<any[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  const [privateClasses, setPrivateClasses] = useState<any[]>([]);
+  const [loadingClasses, setLoadingClasses] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
       dispatch(fetchBookings(user.id));
       // Fetch event registrations
       fetchEventRegistrations();
+      // Fetch private classes
+      fetchPrivateClasses();
     }
   }, [dispatch, user]);
 
@@ -64,6 +76,24 @@ export default function Bookings() {
       console.error("Error fetching event registrations:", error);
     } finally {
       setLoadingEvents(false);
+    }
+  };
+
+  const fetchPrivateClasses = async () => {
+    if (!user?.id) return;
+
+    try {
+      setLoadingClasses(true);
+      const response = await fetch(`/api/users/${user.id}/private-classes`);
+      const data = await response.json();
+
+      if (data.success) {
+        setPrivateClasses(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching private classes:", error);
+    } finally {
+      setLoadingClasses(false);
     }
   };
 
@@ -177,14 +207,16 @@ export default function Bookings() {
         {!loading &&
           !error &&
           bookings.length === 0 &&
-          eventRegistrations.length === 0 && (
+          eventRegistrations.length === 0 &&
+          privateClasses.length === 0 && (
             <Card className="p-12 text-center">
               <Calendar className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-xl font-semibold mb-2">
-                No tienes reservas ni inscripciones
+                No tienes reservas, clases ni inscripciones
               </h3>
               <p className="text-muted-foreground mb-6">
-                ¡Haz tu primera reserva o inscríbete a un evento!
+                ¡Haz tu primera reserva, inscríbete a un evento o agenda una
+                clase privada!
               </p>
               <Link to="/booking">
                 <Button size="lg">Nueva Reserva</Button>
@@ -335,6 +367,160 @@ export default function Bookings() {
                             {registration.payment_status === "paid"
                               ? "Pagado"
                               : "Pendiente"}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Private Classes Section */}
+        {!loadingClasses && privateClasses.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <GraduationCap className="h-8 w-8 text-green-600" />
+              <h2 className="text-2xl font-bold">Mis Clases Privadas</h2>
+            </div>
+            <div className="grid gap-6">
+              {privateClasses.map((privateClass: any, index: number) => {
+                const classDate = new Date(privateClass.class_date);
+                const isPastClass = classDate < new Date();
+
+                return (
+                  <Card
+                    key={privateClass.id}
+                    className={cn(
+                      "overflow-hidden transition-all duration-300 hover:shadow-lg border-l-4 border-l-green-600",
+                      "animate-in fade-in slide-in-from-bottom-4",
+                    )}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <div className="flex items-center gap-3 mb-2">
+                            <GraduationCap className="h-5 w-5 text-green-600" />
+                            <h3 className="text-xl font-bold">
+                              Clase con {privateClass.instructor_name}
+                            </h3>
+                            <Badge
+                              variant={isPastClass ? "secondary" : "default"}
+                              className={cn(
+                                isPastClass
+                                  ? "bg-gray-500 text-white"
+                                  : "bg-green-600 text-white",
+                              )}
+                            >
+                              {isPastClass ? "Completada" : "Próxima"}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Clase{" "}
+                            {privateClass.class_type === "individual"
+                              ? "Individual"
+                              : "Grupal"}{" "}
+                            • {privateClass.number_of_students} estudiante
+                            {privateClass.number_of_students > 1 ? "s" : ""}
+                          </p>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className="text-lg border-green-600 text-green-600"
+                        >
+                          ${Number(privateClass.total_price).toFixed(2)} MXN
+                        </Badge>
+                      </div>
+
+                      <div className="grid md:grid-cols-3 gap-4 mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-green-600/10 flex items-center justify-center">
+                            <Calendar className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">
+                              Fecha
+                            </p>
+                            <p className="font-semibold">
+                              {format(classDate, "dd MMM yyyy", { locale: es })}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-green-600/10 flex items-center justify-center">
+                            <Clock className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">
+                              Horario
+                            </p>
+                            <p className="font-semibold">
+                              {privateClass.start_time.slice(0, 5)} -{" "}
+                              {privateClass.end_time.slice(0, 5)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-green-600/10 flex items-center justify-center">
+                            <MapPin className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">
+                              Cancha
+                            </p>
+                            <p className="font-semibold">
+                              {privateClass.court_name || "Por asignar"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {privateClass.notes && (
+                        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 mb-4">
+                          <p className="text-sm">
+                            <span className="font-semibold text-green-600">
+                              Notas:
+                            </span>{" "}
+                            {privateClass.notes}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-4 border-t">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span>Reserva: #{privateClass.booking_number}</span>
+                          <Badge
+                            variant="outline"
+                            className="border-green-500 text-green-600"
+                          >
+                            {privateClass.payment_status === "paid"
+                              ? "Pagado"
+                              : "Pendiente"}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              privateClass.status === "confirmed" &&
+                                "border-green-500 text-green-600",
+                              privateClass.status === "completed" &&
+                                "border-blue-500 text-blue-600",
+                              privateClass.status === "cancelled" &&
+                                "border-red-500 text-red-600",
+                            )}
+                          >
+                            {privateClass.status === "confirmed" &&
+                              "Confirmada"}
+                            {privateClass.status === "completed" &&
+                              "Completada"}
+                            {privateClass.status === "cancelled" && "Cancelada"}
+                            {privateClass.status === "pending" && "Pendiente"}
+                            {privateClass.status === "rescheduled" &&
+                              "Reprogramada"}
                           </Badge>
                         </div>
                       </div>

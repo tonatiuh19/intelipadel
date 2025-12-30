@@ -157,3 +157,54 @@ export interface CreateEventData {
 export interface UpdateEventData extends Partial<CreateEventData> {
   id: number;
 }
+
+// ============================================
+// PRIVATE CLASSES
+// ============================================
+
+export interface PrivateClass {
+  id: number;
+  booking_number: string;
+  user_id: number;
+  instructor_id: number;
+  instructor_name?: string;
+  club_id: number;
+  club_name?: string;
+  court_id: number | null;
+  court_name?: string;
+  class_type: "individual" | "group" | "semi_private";
+  class_date: string;
+  start_time: string;
+  end_time: string;
+  duration_minutes: number;
+  number_of_students: number;
+  total_price: number;
+  status: "pending" | "confirmed" | "completed" | "cancelled" | "rescheduled";
+  payment_status: "pending" | "paid" | "refunded" | "failed";
+  focus_areas: string[] | null;
+  student_level: "beginner" | "intermediate" | "advanced" | "expert" | null;
+  notes: string | null;
+  instructor_notes: string | null;
+  cancellation_reason: string | null;
+  cancelled_at: string | null;
+  confirmed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatePrivateClassData {
+  user_id: number;
+  instructor_id: number;
+  club_id: number;
+  court_id?: number;
+  class_type: PrivateClass["class_type"];
+  class_date: string;
+  start_time: string;
+  end_time: string;
+  duration_minutes: number;
+  number_of_students?: number;
+  total_price: number;
+  focus_areas?: string[];
+  student_level?: PrivateClass["student_level"];
+  notes?: string;
+}

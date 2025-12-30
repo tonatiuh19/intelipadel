@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 29, 2025 at 04:55 PM
+-- Generation Time: Dec 29, 2025 at 08:21 PM
 -- Server version: 5.7.23-23
 -- PHP Version: 8.1.34
 
@@ -45,7 +45,7 @@ CREATE TABLE `admins` (
 --
 
 INSERT INTO `admins` (`id`, `email`, `name`, `phone`, `role`, `club_id`, `is_active`, `created_at`, `updated_at`, `last_login_at`) VALUES
-(1, 'axgoomez@gmail.com', 'Felix Gomez', NULL, 'super_admin', 1, 1, '2025-12-22 22:29:49', '2025-12-29 22:38:18', '2025-12-29 22:38:18');
+(1, 'axgoomez@gmail.com', 'Felix Gomez', NULL, 'super_admin', 1, 1, '2025-12-22 22:29:49', '2025-12-29 23:57:58', '2025-12-29 23:57:58');
 
 -- --------------------------------------------------------
 
@@ -69,7 +69,7 @@ CREATE TABLE `admin_sessions` (
 --
 
 INSERT INTO `admin_sessions` (`id`, `admin_id`, `session_token`, `expires_at`, `created_at`, `last_activity_at`, `ip_address`, `user_agent`) VALUES
-(1, 1, '6404c666b78b68bc399e21cbe8496ca4fe8e883de70f40620de1f5f4f5ef0791', '2025-12-29 22:53:18', '2025-12-26 21:52:50', '2025-12-29 22:53:18', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(1, 1, '6404c666b78b68bc399e21cbe8496ca4fe8e883de70f40620de1f5f4f5ef0791', '2025-12-30 02:13:49', '2025-12-26 21:52:50', '2025-12-30 02:13:49', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (2, 1, '2dc28ed3e9c2a7ec0e6aa71af0095a677e1f54b8fcb9449fc07750c164cc9a3f', '2025-12-26 22:01:26', '2025-12-26 22:01:25', '2025-12-26 22:01:26', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (3, 1, '4ef8174216bf77b586b0015d273d7442a3065e340e7c543fd4934c2b937f1a5d', '2025-12-26 22:09:28', '2025-12-26 22:09:27', '2025-12-26 22:09:28', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (4, 1, '06e26c9f8dde368e65faa84a76e67939afd6501870718b525bbe512fec4721f8', '2025-12-26 22:12:13', '2025-12-26 22:12:12', '2025-12-26 22:12:13', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
@@ -79,7 +79,7 @@ INSERT INTO `admin_sessions` (`id`, `admin_id`, `session_token`, `expires_at`, `
 (8, 1, '6890630018f87d583d43ed8b0f253199177b1d729419e4b4cf876064e754fd7e', '2025-12-26 22:27:53', '2025-12-26 22:27:45', '2025-12-26 22:27:53', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (9, 1, 'aaf8b83c3b351eed19284bd6597eeb39c1f41192d00cb42419cd1f0c90278ae9', '2025-12-26 22:29:47', '2025-12-26 22:29:46', '2025-12-26 22:29:47', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (12, 1, '8e0a234fbd8908988809aaef9b2c34175aa84af1d001cb8c423ba900f5d12718', '2026-01-03 18:30:04', '2025-12-27 19:30:03', '2025-12-27 19:30:03', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
-(14, 1, '6962f44ba0540add633549e6f52354977ad1e498fc43977ba77765a44335653c', '2026-01-05 22:38:19', '2025-12-29 22:38:18', '2025-12-29 22:38:18', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36');
+(15, 1, '5da56bd6d9146eebafa6105dd8221bf26de8eb27a2586b7a4e2c9bfa7af88d9c', '2026-01-05 23:57:58', '2025-12-29 23:57:58', '2025-12-29 23:57:58', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36');
 
 -- --------------------------------------------------------
 
@@ -102,7 +102,7 @@ CREATE TABLE `auth_codes` (
 --
 
 INSERT INTO `auth_codes` (`id`, `email`, `code`, `user_type`, `expires_at`, `is_used`, `created_at`) VALUES
-(21, 'axgoomez@gmail.com', '776033', 'admin', '2025-12-29 22:38:18', 1, '2025-12-29 22:38:06');
+(22, 'axgoomez@gmail.com', '336864', 'admin', '2025-12-29 23:57:58', 1, '2025-12-29 23:57:28');
 
 -- --------------------------------------------------------
 
@@ -521,6 +521,46 @@ INSERT INTO `instructors` (`id`, `club_id`, `name`, `email`, `phone`, `bio`, `sp
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `instructor_availability`
+--
+
+CREATE TABLE `instructor_availability` (
+  `id` int(11) NOT NULL,
+  `instructor_id` int(11) NOT NULL,
+  `day_of_week` tinyint(4) NOT NULL,
+  `start_time` time NOT NULL,
+  `end_time` time NOT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Dumping data for table `instructor_availability`
+--
+
+INSERT INTO `instructor_availability` (`id`, `instructor_id`, `day_of_week`, `start_time`, `end_time`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, '09:00:00', '17:00:00', 1, '2025-12-30 00:15:21', '2025-12-30 00:15:21');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `instructor_blocked_times`
+--
+
+CREATE TABLE `instructor_blocked_times` (
+  `id` int(11) NOT NULL,
+  `instructor_id` int(11) NOT NULL,
+  `blocked_date` date NOT NULL,
+  `start_time` time NOT NULL,
+  `end_time` time NOT NULL,
+  `reason` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `invoices`
 --
 
@@ -642,7 +682,19 @@ INSERT INTO `payment_transactions` (`id`, `transaction_number`, `user_id`, `club
 (19, 'EVT1766863371030992', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sj34gCDsJ3n85lg0uHTxZX0', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 19:22:51', '2025-12-27 19:22:51'),
 (20, 'EVT1766863467759478', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sj36FCDsJ3n85lg0CmXbDay', 'ch_3Sj36FCDsJ3n85lg0hPUuEk9', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-27 19:24:46', NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\", \"participant_id\": 1}', '2025-12-27 19:24:28', '2025-12-27 19:24:46'),
 (21, 'EVT176686739407294', 3, 1, '', NULL, NULL, NULL, NULL, 320.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sj47aCDsJ3n85lg1oiFMaGO', 'ch_3Sj47aCDsJ3n85lg1cfNxu2j', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-27 20:30:14', NULL, NULL, NULL, '{\"event_id\": 3, \"event_date\": \"2026-01-06T07:00:00.000Z\", \"event_title\": \"Torneo de Reyes\", \"participant_id\": 2}', '2025-12-27 20:29:54', '2025-12-27 20:30:14'),
-(22, 'TXN1766875332855', 2, 1, 'event', NULL, NULL, 4, NULL, 320.00, 'mxn', 'completed', NULL, 'manual', NULL, NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-27 22:42:13', NULL, NULL, NULL, '{\"type\": \"event_registration\", \"notes\": null, \"event_id\": \"3\", \"admin_name\": \"Felix Gomez\", \"event_title\": \"Torneo de Reyes\", \"participant_id\": 4, \"created_by_admin_id\": 1}', '2025-12-27 22:42:13', '2025-12-27 22:42:13');
+(22, 'TXN1766875332855', 2, 1, 'event', NULL, NULL, 4, NULL, 320.00, 'mxn', 'completed', NULL, 'manual', NULL, NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-27 22:42:13', NULL, NULL, NULL, '{\"type\": \"event_registration\", \"notes\": null, \"event_id\": \"3\", \"admin_name\": \"Felix Gomez\", \"event_title\": \"Torneo de Reyes\", \"participant_id\": 4, \"created_by_admin_id\": 1}', '2025-12-27 22:42:13', '2025-12-27 22:42:13'),
+(23, 'TXN1767051843370762', 3, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sjq6ZCDsJ3n85lg1Jl5hPAj', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-04\", \"duration_minutes\": 60}', '2025-12-29 23:44:03', '2025-12-29 23:44:03'),
+(24, 'CLS176705449249311', 2, 1, 'private_class', NULL, NULL, NULL, NULL, 60.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjqnICDsJ3n85lg0j484SLc', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"end_time\": \"9:00\", \"class_date\": \"2026-01-05\", \"class_type\": \"individual\", \"start_time\": \"08:00\", \"instructor_id\": 1, \"duration_minutes\": 60, \"number_of_students\": 1}', '2025-12-30 00:28:12', '2025-12-30 00:28:12'),
+(25, 'CLS1767054911664241', 2, 1, 'private_class', NULL, NULL, NULL, NULL, 60.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sjqu3CDsJ3n85lg1L0EtO8F', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:00\", \"class_date\": \"2026-01-05\", \"class_type\": \"individual\", \"start_time\": \"09:00\", \"instructor_id\": 1, \"duration_minutes\": 60, \"number_of_students\": 1}', '2025-12-30 00:35:11', '2025-12-30 00:35:11'),
+(26, 'TXN1767055123696153', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjqxTCDsJ3n85lg0MOnydJV', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:38:43', '2025-12-30 00:38:43'),
+(27, 'TXN1767055309693773', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sjr0TCDsJ3n85lg1XMYTL7Q', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:41:49', '2025-12-30 00:41:49'),
+(28, 'TXN1767055511032893', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sjr3iCDsJ3n85lg0f5NCmED', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:45:11', '2025-12-30 00:45:11'),
+(29, 'TXN1767055644716152', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sjr5sCDsJ3n85lg0IYMdj1Q', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:47:25', '2025-12-30 00:47:25'),
+(30, 'TXN1767055737196375', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sjr7NCDsJ3n85lg13qjuVzM', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:48:57', '2025-12-30 00:48:57'),
+(31, 'TXN1767056050269610', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjrCQCDsJ3n85lg0H2PL8pq', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:54:10', '2025-12-30 00:54:10'),
+(32, 'TXN1767056267559482', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjrFvCDsJ3n85lg0M7z3I6D', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:57:47', '2025-12-30 00:57:47'),
+(33, 'CLS1767056442881230', 2, 1, 'private_class', NULL, NULL, NULL, NULL, 60.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjrIkCDsJ3n85lg04glcSte', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"class_date\": \"2026-01-05\", \"class_type\": \"individual\", \"start_time\": \"08:00\", \"instructor_id\": 1, \"duration_minutes\": 60, \"number_of_students\": 1}', '2025-12-30 01:00:43', '2025-12-30 01:00:43'),
+(34, 'CLS1767056543938677', 2, 1, 'private_class', NULL, NULL, NULL, 1, 60.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SjrKNCDsJ3n85lg1XmHWTTz', 'ch_3SjrKNCDsJ3n85lg14kkV4ZQ', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-30 01:02:53', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"class_date\": \"2026-01-05\", \"class_type\": \"individual\", \"start_time\": \"10:00\", \"instructor_id\": 1, \"duration_minutes\": 60, \"number_of_students\": 1}', '2025-12-30 01:02:24', '2025-12-30 01:02:53');
 
 -- --------------------------------------------------------
 
@@ -735,8 +787,16 @@ CREATE TABLE `private_classes` (
   `cancelled_at` timestamp NULL DEFAULT NULL,
   `confirmed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_by_admin_id` int(11) DEFAULT NULL COMMENT 'Admin ID if class was created manually'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `private_classes`
+--
+
+INSERT INTO `private_classes` (`id`, `booking_number`, `user_id`, `instructor_id`, `club_id`, `court_id`, `class_type`, `class_date`, `start_time`, `end_time`, `duration_minutes`, `number_of_students`, `total_price`, `status`, `payment_status`, `focus_areas`, `student_level`, `notes`, `instructor_notes`, `cancellation_reason`, `cancelled_at`, `confirmed_at`, `created_at`, `updated_at`, `created_by_admin_id`) VALUES
+(1, 'PCL1767056573154395', 2, 1, 1, 13, 'individual', '2026-01-05', '10:00:00', '11:00:00', 60, 1, 60.00, 'confirmed', 'paid', NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-30 01:02:53', '2025-12-30 01:02:53', '2025-12-30 01:02:53', NULL);
 
 -- --------------------------------------------------------
 
@@ -857,7 +917,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `club_id`, `email`, `name`, `phone`, `avatar_url`, `stripe_customer_id`, `is_active`, `created_at`, `updated_at`, `last_login_at`) VALUES
 (1, 1, 'user@example.com', 'John Doe', NULL, NULL, NULL, 1, '2025-12-22 22:29:49', '2025-12-29 22:34:25', NULL),
-(2, 1, 'axgoomez@gmail.com', 'Felix Gomez', '4741400363', NULL, NULL, 1, '2025-12-23 18:23:11', '2025-12-29 22:34:25', '2025-12-27 01:42:56'),
+(2, 1, 'axgoomez@gmail.com', 'Felix Gomez', '4741400363', NULL, NULL, 1, '2025-12-23 18:23:11', '2025-12-30 00:28:11', '2025-12-30 00:28:11'),
 (3, 1, 'tonatiuh.gom@gmail.com', 'Alex Gomez', '4741400363', NULL, NULL, 1, '2025-12-27 20:29:29', '2025-12-29 22:34:25', '2025-12-27 20:29:52'),
 (4, 2, 'lesliegcardona@gmail.com', 'Leslie Gonzalez', NULL, NULL, NULL, 1, '2025-12-27 22:21:45', '2025-12-29 22:35:47', NULL);
 
@@ -884,8 +944,8 @@ CREATE TABLE `users_sessions` (
 --
 
 INSERT INTO `users_sessions` (`id`, `user_id`, `session_code`, `user_session`, `user_session_date_start`, `created_at`, `expires_at`, `ip_address`, `user_agent`) VALUES
-(7, 2, 623651, 1, '2025-12-27 00:42:44', '2025-12-27 01:42:44', NULL, NULL, NULL),
-(8, 3, 849691, 1, '2025-12-27 19:29:30', '2025-12-27 20:29:30', NULL, NULL, NULL);
+(8, 3, 849691, 1, '2025-12-27 19:29:30', '2025-12-27 20:29:30', NULL, NULL, NULL),
+(9, 2, 828244, 1, '2025-12-30 00:26:26', '2025-12-30 00:26:26', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1083,6 +1143,21 @@ ALTER TABLE `instructors`
   ADD KEY `idx_active` (`is_active`);
 
 --
+-- Indexes for table `instructor_availability`
+--
+ALTER TABLE `instructor_availability`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_instructor_day` (`instructor_id`,`day_of_week`),
+  ADD KEY `idx_active` (`is_active`);
+
+--
+-- Indexes for table `instructor_blocked_times`
+--
+ALTER TABLE `instructor_blocked_times`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_instructor_date` (`instructor_id`,`blocked_date`);
+
+--
 -- Indexes for table `invoices`
 --
 ALTER TABLE `invoices`
@@ -1149,7 +1224,8 @@ ALTER TABLE `private_classes`
   ADD KEY `idx_user_id` (`user_id`),
   ADD KEY `idx_instructor_id` (`instructor_id`),
   ADD KEY `idx_club_date` (`club_id`,`class_date`),
-  ADD KEY `idx_status` (`status`);
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_created_by_admin` (`created_by_admin_id`);
 
 --
 -- Indexes for table `stripe_webhook_events`
@@ -1232,13 +1308,13 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `admin_sessions`
 --
 ALTER TABLE `admin_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `auth_codes`
 --
 ALTER TABLE `auth_codes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `blocked_slots`
@@ -1313,6 +1389,18 @@ ALTER TABLE `instructors`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT for table `instructor_availability`
+--
+ALTER TABLE `instructor_availability`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `instructor_blocked_times`
+--
+ALTER TABLE `instructor_blocked_times`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
@@ -1328,7 +1416,7 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `player_stats`
@@ -1346,7 +1434,7 @@ ALTER TABLE `price_rules`
 -- AUTO_INCREMENT for table `private_classes`
 --
 ALTER TABLE `private_classes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `stripe_webhook_events`
@@ -1376,7 +1464,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `users_sessions`
 --
 ALTER TABLE `users_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `user_subscriptions`
@@ -1470,6 +1558,18 @@ ALTER TABLE `instructors`
   ADD CONSTRAINT `instructors_ibfk_1` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `instructor_availability`
+--
+ALTER TABLE `instructor_availability`
+  ADD CONSTRAINT `instructor_availability_ibfk_1` FOREIGN KEY (`instructor_id`) REFERENCES `instructors` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `instructor_blocked_times`
+--
+ALTER TABLE `instructor_blocked_times`
+  ADD CONSTRAINT `instructor_blocked_times_ibfk_1` FOREIGN KEY (`instructor_id`) REFERENCES `instructors` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `invoices`
 --
 ALTER TABLE `invoices`
@@ -1512,6 +1612,7 @@ ALTER TABLE `price_rules`
 -- Constraints for table `private_classes`
 --
 ALTER TABLE `private_classes`
+  ADD CONSTRAINT `fk_private_classes_created_by_admin` FOREIGN KEY (`created_by_admin_id`) REFERENCES `admins` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `private_classes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `private_classes_ibfk_2` FOREIGN KEY (`instructor_id`) REFERENCES `instructors` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `private_classes_ibfk_3` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`id`) ON DELETE CASCADE,

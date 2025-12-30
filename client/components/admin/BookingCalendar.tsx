@@ -35,6 +35,11 @@ interface Booking {
   user_phone: string;
   club_name: string;
   court_name: string;
+  booking_type?: "booking" | "class" | "event"; // Added to distinguish types
+  class_type?: string; // For private classes
+  instructor_name?: string; // For private classes
+  event_title?: string; // For events
+  event_type?: string; // For events
 }
 
 interface BookingCalendarProps {
@@ -78,14 +83,43 @@ export default function BookingCalendar({
     setCurrentDate(new Date());
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string, bookingType?: string) => {
+    // Events use orange theme
+    if (bookingType === "event") {
+      switch (status) {
+        case "open":
+        case "full":
+          return "bg-orange-600";
+        case "cancelled":
+          return "bg-red-500";
+        case "completed":
+        case "in_progress":
+          return "bg-orange-700";
+        default:
+          return "bg-orange-500";
+      }
+    }
+    // Private classes use green theme
+    if (bookingType === "class") {
+      switch (status) {
+        case "confirmed":
+          return "bg-green-600";
+        case "cancelled":
+          return "bg-red-500";
+        case "completed":
+          return "bg-green-700";
+        default:
+          return "bg-green-500";
+      }
+    }
+    // Regular bookings use blue/primary theme
     switch (status) {
       case "confirmed":
-        return "bg-green-500";
+        return "bg-blue-500";
       case "cancelled":
         return "bg-red-500";
       case "completed":
-        return "bg-blue-500";
+        return "bg-blue-700";
       default:
         return "bg-yellow-500";
     }
@@ -148,26 +182,54 @@ export default function BookingCalendar({
 
               {/* Bookings for this day */}
               <div className="space-y-1">
-                {dayBookings.slice(0, 3).map((booking) => (
-                  <div
-                    key={booking.id}
-                    onClick={() => onBookingClick?.(booking)}
-                    className={`text-xs p-1 rounded cursor-pointer hover:scale-105 transition-transform ${
-                      booking.status === "confirmed"
-                        ? "bg-green-100 text-green-800 hover:bg-green-200"
+                {dayBookings.slice(0, 3).map((booking) => {
+                  const isClass = booking.booking_type === "class";
+                  const isEvent = booking.booking_type === "event";
+
+                  const colorClass = isEvent
+                    ? booking.status === "open" || booking.status === "full"
+                      ? "bg-orange-100 text-orange-800 hover:bg-orange-200 border-l-2 border-orange-600"
+                      : booking.status === "cancelled"
+                        ? "bg-red-100 text-red-800 hover:bg-red-200"
+                        : booking.status === "completed" ||
+                            booking.status === "in_progress"
+                          ? "bg-orange-100 text-orange-900 hover:bg-orange-200"
+                          : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+                    : isClass
+                      ? booking.status === "confirmed"
+                        ? "bg-green-100 text-green-800 hover:bg-green-200 border-l-2 border-green-600"
                         : booking.status === "cancelled"
                           ? "bg-red-100 text-red-800 hover:bg-red-200"
                           : booking.status === "completed"
-                            ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
-                            : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                    }`}
-                  >
-                    <div className="font-semibold truncate">
-                      {booking.start_time}
+                            ? "bg-green-100 text-green-900 hover:bg-green-200"
+                            : "bg-green-50 text-green-700 hover:bg-green-100"
+                      : booking.status === "confirmed"
+                        ? "bg-blue-100 text-blue-800 hover:bg-blue-200 border-l-2 border-blue-600"
+                        : booking.status === "cancelled"
+                          ? "bg-red-100 text-red-800 hover:bg-red-200"
+                          : booking.status === "completed"
+                            ? "bg-blue-100 text-blue-900 hover:bg-blue-200"
+                            : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
+
+                  return (
+                    <div
+                      key={booking.id}
+                      onClick={() => onBookingClick?.(booking)}
+                      className={`text-xs p-1 rounded cursor-pointer hover:scale-105 transition-transform ${colorClass}`}
+                    >
+                      <div className="font-semibold truncate">
+                        {booking.start_time} {isClass && "🎓"} {isEvent && "🏆"}
+                      </div>
+                      <div className="truncate">
+                        {isEvent && booking.event_title
+                          ? booking.event_title
+                          : isClass && booking.instructor_name
+                            ? `${booking.instructor_name} - ${booking.user_name}`
+                            : booking.user_name}
+                      </div>
                     </div>
-                    <div className="truncate">{booking.user_name}</div>
-                  </div>
-                ))}
+                  );
+                })}
                 {dayBookings.length > 3 && (
                   <div className="text-xs text-gray-500 font-medium">
                     +{dayBookings.length - 3} más
@@ -453,16 +515,20 @@ export default function BookingCalendar({
         {/* Legend */}
         <div className="flex flex-wrap gap-4 mt-6 pt-4 border-t">
           <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-blue-500 border-l-2 border-blue-700"></div>
+            <span className="text-sm text-gray-600">Reserva de Cancha</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-green-500 border-l-2 border-green-700"></div>
+            <span className="text-sm text-gray-600">Clase Privada 🎓</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-orange-500 border-l-2 border-orange-700"></div>
+            <span className="text-sm text-gray-600">Evento 🏆</span>
+          </div>
+          <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-yellow-500"></div>
             <span className="text-sm text-gray-600">Pendiente</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-green-500"></div>
-            <span className="text-sm text-gray-600">Confirmada</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-blue-500"></div>
-            <span className="text-sm text-gray-600">Completada</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-red-500"></div>
