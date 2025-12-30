@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   logoutAdmin,
@@ -20,11 +20,13 @@ import {
   LogOut,
   Menu,
   X,
+  Maximize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import ScreensaverMode from "./ScreensaverMode";
 
 // Import admin section components
 import {
@@ -85,11 +87,62 @@ export default function AdminLayout() {
     return (saved as Section) || "dashboard";
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [screensaverMode, setScreensaverMode] = useState(false);
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Save active section to localStorage when it changes
   useEffect(() => {
     localStorage.setItem("adminActiveSection", activeSection);
   }, [activeSection]);
+
+  // Inactivity detection (3 minutes)
+  useEffect(() => {
+    const resetInactivityTimer = () => {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+
+      if (!screensaverMode) {
+        inactivityTimerRef.current = setTimeout(
+          () => {
+            setScreensaverMode(true);
+          },
+          3 * 60 * 1000,
+        ); // 3 minutes
+      }
+    };
+
+    const handleActivity = () => {
+      if (screensaverMode) {
+        setScreensaverMode(false);
+      }
+      resetInactivityTimer();
+    };
+
+    // Listen for user activity
+    const events = [
+      "mousedown",
+      "mousemove",
+      "keypress",
+      "scroll",
+      "touchstart",
+    ];
+    events.forEach((event) => {
+      document.addEventListener(event, handleActivity);
+    });
+
+    // Start initial timer
+    resetInactivityTimer();
+
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+      events.forEach((event) => {
+        document.removeEventListener(event, handleActivity);
+      });
+    };
+  }, [screensaverMode]);
 
   const handleLogout = async () => {
     await dispatch(logoutAdmin());
@@ -102,6 +155,14 @@ export default function AdminLayout() {
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const toggleScreensaver = () => {
+    setScreensaverMode(!screensaverMode);
+  };
+
+  const exitScreensaver = () => {
+    setScreensaverMode(false);
   };
 
   const renderSection = () => {
@@ -135,6 +196,14 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 relative">
+      {/* Screensaver Mode */}
+      <ScreensaverMode
+        isActive={screensaverMode}
+        onExit={exitScreensaver}
+        clubName={admin?.club_name}
+        clubLogo={admin?.club_logo}
+      />
+
       {/* Animated background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
@@ -319,7 +388,6 @@ export default function AdminLayout() {
               </>
             )}
           </div>
-          <div className="w-10" /> {/* Spacer for alignment */}
         </header>
 
         {/* Section Content */}
