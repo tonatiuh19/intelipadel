@@ -5811,21 +5811,44 @@ const handleUpdateClubPolicy: RequestHandler = async (req, res) => {
       });
     }
 
-    if (
-      !["booking_policy", "privacy_policy", "terms_of_service"].includes(
-        policyType,
-      )
+    // Validate policy type and map to table
+    let tableName: string;
+    if (policyType === "terms" || policyType === "terms_of_service") {
+      tableName = "club_terms_conditions";
+    } else if (policyType === "privacy" || policyType === "privacy_policy") {
+      tableName = "club_privacy_policy";
+    } else if (
+      policyType === "cancellation" ||
+      policyType === "cancellation_policy"
     ) {
+      tableName = "club_cancellation_policy";
+    } else {
       return res.status(400).json({
         success: false,
-        message: "Invalid policy type",
+        message:
+          "Invalid policy type. Use 'terms', 'privacy', or 'cancellation'",
       });
     }
 
-    await pool.query(`UPDATE clubs SET ${policyType} = ? WHERE id = ?`, [
-      content,
-      id,
-    ]);
+    // Check if policy exists for this club
+    const [existing] = await pool.query<any[]>(
+      `SELECT id FROM ${tableName} WHERE club_id = ? AND is_active = 1`,
+      [id],
+    );
+
+    if (existing.length > 0) {
+      // Update existing policy
+      await pool.query(
+        `UPDATE ${tableName} SET content = ?, updated_at = NOW() WHERE club_id = ? AND is_active = 1`,
+        [content, id],
+      );
+    } else {
+      // Insert new policy
+      await pool.query(
+        `INSERT INTO ${tableName} (club_id, content, effective_date, is_active) VALUES (?, ?, CURDATE(), 1)`,
+        [id, content],
+      );
+    }
 
     res.json({
       success: true,

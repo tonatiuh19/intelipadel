@@ -24,13 +24,18 @@ export const updateClubPolicy = createAsyncThunk(
   async (data: UpdatePolicyData, { rejectWithValue }) => {
     try {
       const sessionToken = localStorage.getItem("adminSessionToken");
-      const response = await axios.put("/api/admin/club-policies", data, {
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      });
+      const { club_id, policy_type, content } = data;
+      const response = await axios.put(
+        `/api/admin/clubs/${club_id}/policies/${policy_type}`,
+        { content },
+        {
+          headers: { Authorization: `Bearer ${sessionToken}` },
+        },
+      );
       return response.data.message;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.error || "Failed to update policy",
+        error.response?.data?.message || "Failed to update policy",
       );
     }
   },

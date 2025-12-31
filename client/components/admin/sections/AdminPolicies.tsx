@@ -21,10 +21,11 @@ import { updateClubPolicy } from "@/store/slices/adminPoliciesSlice";
 export default function AdminPolicies() {
   const dispatch = useAppDispatch();
   const { isSubmitting } = useAppSelector((state) => state.adminPolicies);
-  const [clubId, setClubId] = useState<number>(1);
-  const [bookingPolicy, setBookingPolicy] = useState("");
+  const { admin } = useAppSelector((state) => state.adminAuth);
+  const clubId = admin?.club_id || 1;
   const [privacyPolicy, setPrivacyPolicy] = useState("");
   const [termsOfService, setTermsOfService] = useState("");
+  const [cancellationPolicy, setCancellationPolicy] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -38,15 +39,15 @@ export default function AdminPolicies() {
     try {
       setIsLoading(true);
 
-      const [booking, privacy, terms] = await Promise.all([
-        axios.get(`/api/clubs/${clubId}/policies/booking_policy`),
-        axios.get(`/api/clubs/${clubId}/policies/privacy_policy`),
-        axios.get(`/api/clubs/${clubId}/policies/terms_of_service`),
+      const [terms, privacy, cancellation] = await Promise.all([
+        axios.get(`/api/clubs/${clubId}/policies/terms`),
+        axios.get(`/api/clubs/${clubId}/policies/privacy`),
+        axios.get(`/api/clubs/${clubId}/policies/cancellation`),
       ]);
 
-      setBookingPolicy(booking.data.data?.content || "");
-      setPrivacyPolicy(privacy.data.data?.content || "");
       setTermsOfService(terms.data.data?.content || "");
+      setPrivacyPolicy(privacy.data.data?.content || "");
+      setCancellationPolicy(cancellation.data.data?.content || "");
     } catch (err) {
       console.error("Failed to fetch policies:", err);
     } finally {
@@ -59,16 +60,16 @@ export default function AdminPolicies() {
       await dispatch(
         updateClubPolicy({
           club_id: clubId,
-          policy_type: policyType,
+          policy_type: policyType, // 'terms' or 'privacy'
           content,
         }),
       ).unwrap();
 
-      toast({ title: "Policy saved successfully" });
+      toast({ title: "Política guardada exitosamente" });
     } catch (err: any) {
       toast({
         title: "Error",
-        description: err || "Failed to save policy",
+        description: err || "Error al guardar política",
         variant: "destructive",
       });
     }
@@ -99,25 +100,7 @@ export default function AdminPolicies() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Editar Políticas</CardTitle>
-            <div className="w-64">
-              <Label htmlFor="club">Club</Label>
-              <Select
-                value={clubId.toString()}
-                onValueChange={(value) => setClubId(parseInt(value))}
-              >
-                <SelectTrigger id="club">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">Club 1</SelectItem>
-                  <SelectItem value="2">Club 2</SelectItem>
-                  <SelectItem value="3">Club 3</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <CardTitle>Editar Políticas</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -125,35 +108,16 @@ export default function AdminPolicies() {
               Cargando políticas...
             </div>
           ) : (
-            <Tabs defaultValue="booking" className="w-full">
+            <Tabs defaultValue="privacy" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="booking">Política de Reservas</TabsTrigger>
                 <TabsTrigger value="privacy">
                   Política de Privacidad
                 </TabsTrigger>
                 <TabsTrigger value="terms">Términos de Servicio</TabsTrigger>
+                <TabsTrigger value="cancellation">
+                  Política de Cancelación
+                </TabsTrigger>
               </TabsList>
-
-              <TabsContent value="booking" className="space-y-4">
-                <div className="border rounded-lg overflow-hidden">
-                  <ReactQuill
-                    theme="snow"
-                    value={bookingPolicy}
-                    onChange={setBookingPolicy}
-                    modules={modules}
-                    style={{ minHeight: "400px" }}
-                  />
-                </div>
-                <Button
-                  onClick={() => handleSave("booking_policy", bookingPolicy)}
-                  disabled={isSubmitting}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {isSubmitting
-                    ? "Guardando..."
-                    : "Guardar Política de Reservas"}
-                </Button>
-              </TabsContent>
 
               <TabsContent value="privacy" className="space-y-4">
                 <div className="border rounded-lg overflow-hidden">
@@ -166,7 +130,7 @@ export default function AdminPolicies() {
                   />
                 </div>
                 <Button
-                  onClick={() => handleSave("privacy_policy", privacyPolicy)}
+                  onClick={() => handleSave("privacy", privacyPolicy)}
                   disabled={isSubmitting}
                 >
                   <Save className="h-4 w-4 mr-2" />
@@ -187,13 +151,34 @@ export default function AdminPolicies() {
                   />
                 </div>
                 <Button
-                  onClick={() => handleSave("terms_of_service", termsOfService)}
+                  onClick={() => handleSave("terms", termsOfService)}
                   disabled={isSubmitting}
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {isSubmitting
                     ? "Guardando..."
                     : "Guardar Términos de Servicio"}
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="cancellation" className="space-y-4">
+                <div className="border rounded-lg overflow-hidden">
+                  <ReactQuill
+                    theme="snow"
+                    value={cancellationPolicy}
+                    onChange={setCancellationPolicy}
+                    modules={modules}
+                    style={{ minHeight: "400px" }}
+                  />
+                </div>
+                <Button
+                  onClick={() => handleSave("cancellation", cancellationPolicy)}
+                  disabled={isSubmitting}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSubmitting
+                    ? "Guardando..."
+                    : "Guardar Política de Cancelación"}
                 </Button>
               </TabsContent>
             </Tabs>
