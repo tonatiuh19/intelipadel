@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 29, 2025 at 08:21 PM
+-- Generation Time: Dec 30, 2025 at 05:38 PM
 -- Server version: 5.7.23-23
 -- PHP Version: 8.1.34
 
@@ -69,7 +69,7 @@ CREATE TABLE `admin_sessions` (
 --
 
 INSERT INTO `admin_sessions` (`id`, `admin_id`, `session_token`, `expires_at`, `created_at`, `last_activity_at`, `ip_address`, `user_agent`) VALUES
-(1, 1, '6404c666b78b68bc399e21cbe8496ca4fe8e883de70f40620de1f5f4f5ef0791', '2025-12-30 02:13:49', '2025-12-26 21:52:50', '2025-12-30 02:13:49', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(1, 1, '6404c666b78b68bc399e21cbe8496ca4fe8e883de70f40620de1f5f4f5ef0791', '2025-12-30 23:37:39', '2025-12-26 21:52:50', '2025-12-30 23:37:39', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (2, 1, '2dc28ed3e9c2a7ec0e6aa71af0095a677e1f54b8fcb9449fc07750c164cc9a3f', '2025-12-26 22:01:26', '2025-12-26 22:01:25', '2025-12-26 22:01:26', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (3, 1, '4ef8174216bf77b586b0015d273d7442a3065e340e7c543fd4934c2b937f1a5d', '2025-12-26 22:09:28', '2025-12-26 22:09:27', '2025-12-26 22:09:28', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (4, 1, '06e26c9f8dde368e65faa84a76e67939afd6501870718b525bbe512fec4721f8', '2025-12-26 22:12:13', '2025-12-26 22:12:12', '2025-12-26 22:12:13', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
@@ -182,7 +182,8 @@ INSERT INTO `bookings` (`id`, `booking_number`, `user_id`, `club_id`, `court_id`
 (8, 'BK1766873186483', 3, 1, 13, 6, '2026-01-06', '08:00:00', '09:00:00', 60, 0.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-27 22:06:26', '2025-12-27 22:06:26', '2025-12-29 22:47:44', 1),
 (9, 'BK1766873598308', 3, 1, 9, 7, '2026-01-06', '09:00:00', '10:00:00', 60, 950.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-27 22:13:18', '2025-12-27 22:13:18', '2025-12-27 22:13:18', 1),
 (10, 'BK1766957552996', 2, 1, 5, 8, '2025-12-28', '15:00:00', '16:00:00', 60, 550.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-28 21:32:33', '2025-12-28 21:32:33', '2025-12-28 21:32:33', 1),
-(11, 'BK1767048846907', 3, 1, 9, 9, '2026-01-09', '08:00:00', '09:00:00', 60, 800.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-29 22:54:07', '2025-12-29 22:54:07', '2025-12-29 22:54:07', 1);
+(11, 'BK1767048846907', 3, 1, 9, 9, '2026-01-09', '08:00:00', '09:00:00', 60, 800.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-29 22:54:07', '2025-12-29 22:54:07', '2025-12-29 22:54:07', 1),
+(12, 'BK1767062181447102', 2, 1, 13, 10, '2026-01-26', '13:00:00', '14:00:00', 60, 45.00, 'confirmed', 'paid', 'card', 'pi_3Sjsn6CDsJ3n85lg0ddSXbVk', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-30 02:36:22', '2025-12-30 02:36:22', '2025-12-30 02:36:22', NULL);
 
 -- --------------------------------------------------------
 
@@ -212,6 +213,7 @@ CREATE TABLE `clubs` (
   `rating` decimal(3,2) DEFAULT '0.00',
   `review_count` int(11) DEFAULT '0',
   `price_per_hour` decimal(10,2) NOT NULL,
+  `default_booking_duration` int(11) NOT NULL DEFAULT '60' COMMENT 'Default booking duration in minutes (60, 90, or 120)',
   `currency` varchar(3) COLLATE utf8mb4_unicode_ci DEFAULT 'EUR',
   `is_active` tinyint(1) DEFAULT '1',
   `featured` tinyint(1) DEFAULT '0',
@@ -223,11 +225,11 @@ CREATE TABLE `clubs` (
 -- Dumping data for table `clubs`
 --
 
-INSERT INTO `clubs` (`id`, `name`, `slug`, `description`, `address`, `city`, `state`, `postal_code`, `country`, `latitude`, `longitude`, `phone`, `email`, `website`, `image_url`, `logo_url`, `gallery`, `amenities`, `rating`, `review_count`, `price_per_hour`, `currency`, `is_active`, `featured`, `created_at`, `updated_at`) VALUES
-(1, 'Club Elite Padel', 'club-elite-padel', 'Premier padel club in Madrid with state-of-the-art facilities', 'Calle del Deporte 45', 'Madrid', 'Madrid', '28001', 'España', NULL, NULL, '+34 912 345 678', 'info@elitepadel.es', NULL, 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800', 'https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\", \"pro_shop\", \"cafe\"]', 4.80, 234, 45.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37'),
-(2, 'Padel Barcelona Center', 'padel-barcelona-center', 'Modern padel facility in the heart of Barcelona', 'Avinguda Diagonal 123', 'Barcelona', 'Barcelona', '08019', 'España', NULL, NULL, '+34 933 456 789', 'contact@barcapadel.es', NULL, 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=800', 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\", \"cafe\"]', 4.70, 189, 42.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37'),
-(3, 'Valencia Padel Club', 'valencia-padel-club', 'Premium outdoor courts with ocean views', 'Carrer de la Mar 89', 'Valencia', 'Valencia', '46001', 'España', NULL, NULL, '+34 963 567 890', 'hello@valenciapadel.es', NULL, 'https://images.unsplash.com/photo-1519505907962-0a6cb0167c73?w=800', 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=200&h=200&fit=crop', NULL, '[\"parking\", \"showers\", \"pro_shop\", \"cafe\"]', 4.90, 312, 40.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37'),
-(4, 'Sevilla Sports Complex', 'sevilla-sports-complex', 'Multi-sport facility with excellent padel courts', 'Avenida de la Constitución 56', 'Sevilla', 'Sevilla', '41001', 'España', NULL, NULL, '+34 954 678 901', 'info@sevillapadel.es', NULL, 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800', 'https://images.unsplash.com/photo-1519505907962-0a6cb0167c73?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\"]', 4.60, 156, 38.00, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37');
+INSERT INTO `clubs` (`id`, `name`, `slug`, `description`, `address`, `city`, `state`, `postal_code`, `country`, `latitude`, `longitude`, `phone`, `email`, `website`, `image_url`, `logo_url`, `gallery`, `amenities`, `rating`, `review_count`, `price_per_hour`, `default_booking_duration`, `currency`, `is_active`, `featured`, `created_at`, `updated_at`) VALUES
+(1, 'Club Elite Padel', 'club-elite-padel', 'Premier padel club in Madrid with state-of-the-art facilities', 'Calle del Deporte 45', 'Madrid', 'Madrid', '28001', 'España', NULL, NULL, '+34 912 345 678', 'info@elitepadel.es', NULL, 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800', 'https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\", \"pro_shop\", \"cafe\"]', 4.80, 234, 550.00, 60, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-30 23:25:38'),
+(2, 'Padel Barcelona Center', 'padel-barcelona-center', 'Modern padel facility in the heart of Barcelona', 'Avinguda Diagonal 123', 'Barcelona', 'Barcelona', '08019', 'España', NULL, NULL, '+34 933 456 789', 'contact@barcapadel.es', NULL, 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=800', 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\", \"cafe\"]', 4.70, 189, 42.00, 60, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37'),
+(3, 'Valencia Padel Club', 'valencia-padel-club', 'Premium outdoor courts with ocean views', 'Carrer de la Mar 89', 'Valencia', 'Valencia', '46001', 'España', NULL, NULL, '+34 963 567 890', 'hello@valenciapadel.es', NULL, 'https://images.unsplash.com/photo-1519505907962-0a6cb0167c73?w=800', 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=200&h=200&fit=crop', NULL, '[\"parking\", \"showers\", \"pro_shop\", \"cafe\"]', 4.90, 312, 40.00, 60, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37'),
+(4, 'Sevilla Sports Complex', 'sevilla-sports-complex', 'Multi-sport facility with excellent padel courts', 'Avenida de la Constitución 56', 'Sevilla', 'Sevilla', '41001', 'España', NULL, NULL, '+34 954 678 901', 'info@sevillapadel.es', NULL, 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800', 'https://images.unsplash.com/photo-1519505907962-0a6cb0167c73?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\"]', 4.60, 156, 38.00, 60, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37');
 
 -- --------------------------------------------------------
 
@@ -694,7 +696,8 @@ INSERT INTO `payment_transactions` (`id`, `transaction_number`, `user_id`, `club
 (31, 'TXN1767056050269610', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjrCQCDsJ3n85lg0H2PL8pq', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:54:10', '2025-12-30 00:54:10'),
 (32, 'TXN1767056267559482', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjrFvCDsJ3n85lg0M7z3I6D', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:57:47', '2025-12-30 00:57:47'),
 (33, 'CLS1767056442881230', 2, 1, 'private_class', NULL, NULL, NULL, NULL, 60.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjrIkCDsJ3n85lg04glcSte', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"class_date\": \"2026-01-05\", \"class_type\": \"individual\", \"start_time\": \"08:00\", \"instructor_id\": 1, \"duration_minutes\": 60, \"number_of_students\": 1}', '2025-12-30 01:00:43', '2025-12-30 01:00:43'),
-(34, 'CLS1767056543938677', 2, 1, 'private_class', NULL, NULL, NULL, 1, 60.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SjrKNCDsJ3n85lg1XmHWTTz', 'ch_3SjrKNCDsJ3n85lg14kkV4ZQ', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-30 01:02:53', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"class_date\": \"2026-01-05\", \"class_type\": \"individual\", \"start_time\": \"10:00\", \"instructor_id\": 1, \"duration_minutes\": 60, \"number_of_students\": 1}', '2025-12-30 01:02:24', '2025-12-30 01:02:53');
+(34, 'CLS1767056543938677', 2, 1, 'private_class', NULL, NULL, NULL, 1, 60.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SjrKNCDsJ3n85lg1XmHWTTz', 'ch_3SjrKNCDsJ3n85lg14kkV4ZQ', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-30 01:02:53', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"class_date\": \"2026-01-05\", \"class_type\": \"individual\", \"start_time\": \"10:00\", \"instructor_id\": 1, \"duration_minutes\": 60, \"number_of_students\": 1}', '2025-12-30 01:02:24', '2025-12-30 01:02:53'),
+(35, 'TXN1767062168025120', 2, 1, 'booking', 12, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sjsn6CDsJ3n85lg0ddSXbVk', 'ch_3Sjsn6CDsJ3n85lg0lKqZP6m', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-30 02:36:22', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"14:00\", \"start_time\": \"13:00\", \"booking_date\": \"2026-01-26\", \"duration_minutes\": 60}', '2025-12-30 02:36:08', '2025-12-30 02:36:22');
 
 -- --------------------------------------------------------
 
@@ -752,8 +755,8 @@ CREATE TABLE `price_rules` (
 --
 
 INSERT INTO `price_rules` (`id`, `club_id`, `court_id`, `rule_name`, `rule_type`, `start_time`, `end_time`, `days_of_week`, `start_date`, `end_date`, `price_per_hour`, `priority`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 1, NULL, 'Morning Rate', 'time_of_day', '08:00:00', '14:00:00', NULL, NULL, NULL, 35.00, 1, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(2, 1, NULL, 'Afternoon/Evening Rate', 'time_of_day', '14:00:00', '23:00:00', NULL, NULL, NULL, 45.00, 1, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
+(1, 1, NULL, 'Morning Rate', 'time_of_day', '08:00:00', '14:00:00', NULL, NULL, NULL, 250.00, 1, 1, '2025-12-22 22:29:49', '2025-12-30 23:24:52'),
+(2, 1, NULL, 'Afternoon/Evening Rate', 'time_of_day', '14:00:00', '23:00:00', NULL, NULL, NULL, 550.00, 1, 1, '2025-12-22 22:29:49', '2025-12-30 23:25:00'),
 (3, 2, NULL, 'Early Bird Special', 'time_of_day', '08:00:00', '12:00:00', NULL, NULL, NULL, 32.00, 1, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (4, 2, NULL, 'Prime Time', 'time_of_day', '18:00:00', '23:00:00', NULL, NULL, NULL, 48.00, 2, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
 
@@ -796,7 +799,8 @@ CREATE TABLE `private_classes` (
 --
 
 INSERT INTO `private_classes` (`id`, `booking_number`, `user_id`, `instructor_id`, `club_id`, `court_id`, `class_type`, `class_date`, `start_time`, `end_time`, `duration_minutes`, `number_of_students`, `total_price`, `status`, `payment_status`, `focus_areas`, `student_level`, `notes`, `instructor_notes`, `cancellation_reason`, `cancelled_at`, `confirmed_at`, `created_at`, `updated_at`, `created_by_admin_id`) VALUES
-(1, 'PCL1767056573154395', 2, 1, 1, 13, 'individual', '2026-01-05', '10:00:00', '11:00:00', 60, 1, 60.00, 'confirmed', 'paid', NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-30 01:02:53', '2025-12-30 01:02:53', '2025-12-30 01:02:53', NULL);
+(1, 'PCL1767056573154395', 2, 1, 1, 13, 'individual', '2026-01-05', '10:00:00', '11:00:00', 60, 1, 60.00, 'confirmed', 'paid', NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-30 01:02:53', '2025-12-30 01:02:53', '2025-12-30 01:02:53', NULL),
+(4, 'PCL17670620295126114', 3, 1, 1, 1, 'individual', '2026-01-26', '12:00:00', '13:00:00', 60, 1, 60.00, 'confirmed', 'paid', NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-30 02:33:49', '2025-12-30 02:33:49', '2025-12-30 02:33:49', 15);
 
 -- --------------------------------------------------------
 
@@ -889,7 +893,8 @@ INSERT INTO `time_slots` (`id`, `court_id`, `date`, `start_time`, `end_time`, `d
 (6, 13, '2026-01-06', '08:00:00', '09:00:00', 60, 0.00, 0, 'booked', '2025-12-27 22:06:26', '2025-12-27 22:06:26'),
 (7, 9, '2026-01-06', '09:00:00', '10:00:00', 60, 950.00, 0, 'booked', '2025-12-27 22:13:18', '2025-12-27 22:13:18'),
 (8, 5, '2025-12-28', '15:00:00', '16:00:00', 60, 550.00, 0, 'booked', '2025-12-28 21:32:33', '2025-12-28 21:32:33'),
-(9, 9, '2026-01-09', '08:00:00', '09:00:00', 60, 800.00, 0, 'booked', '2025-12-29 22:54:07', '2025-12-29 22:54:07');
+(9, 9, '2026-01-09', '08:00:00', '09:00:00', 60, 800.00, 0, 'booked', '2025-12-29 22:54:07', '2025-12-29 22:54:07'),
+(10, 13, '2026-01-26', '13:00:00', '14:00:00', 60, 45.00, 0, 'booked', '2025-12-30 02:36:21', '2025-12-30 02:36:21');
 
 -- --------------------------------------------------------
 
@@ -1326,7 +1331,7 @@ ALTER TABLE `blocked_slots`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `clubs`
@@ -1416,7 +1421,7 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `player_stats`
@@ -1434,7 +1439,7 @@ ALTER TABLE `price_rules`
 -- AUTO_INCREMENT for table `private_classes`
 --
 ALTER TABLE `private_classes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `stripe_webhook_events`
@@ -1452,7 +1457,7 @@ ALTER TABLE `subscription_plans`
 -- AUTO_INCREMENT for table `time_slots`
 --
 ALTER TABLE `time_slots`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -1612,7 +1617,6 @@ ALTER TABLE `price_rules`
 -- Constraints for table `private_classes`
 --
 ALTER TABLE `private_classes`
-  ADD CONSTRAINT `fk_private_classes_created_by_admin` FOREIGN KEY (`created_by_admin_id`) REFERENCES `admins` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `private_classes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `private_classes_ibfk_2` FOREIGN KEY (`instructor_id`) REFERENCES `instructors` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `private_classes_ibfk_3` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`id`) ON DELETE CASCADE,

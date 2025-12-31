@@ -114,6 +114,8 @@ export default function BookingWizard() {
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
   const [duration, setDuration] = useState<number>(60);
+  const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
+  const [isCalculating, setIsCalculating] = useState<boolean>(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showFailedModal, setShowFailedModal] = useState(false);
@@ -125,6 +127,13 @@ export default function BookingWizard() {
   useEffect(() => {
     dispatch(fetchClubs());
   }, [dispatch]);
+
+  // Load default duration when club is selected
+  useEffect(() => {
+    if (selectedClub && selectedClub.default_booking_duration) {
+      setDuration(selectedClub.default_booking_duration);
+    }
+  }, [selectedClub]);
 
   // Fetch instructors when club is selected or date changes
   useEffect(() => {
@@ -157,6 +166,55 @@ export default function BookingWizard() {
       }
     }
   }, [isAuthenticated, step, flowType]);
+
+  // Calculate price when date/time/duration changes
+  useEffect(() => {
+    if (
+      selectedClub &&
+      selectedDate &&
+      selectedTime &&
+      duration &&
+      selectedCourt
+    ) {
+      calculatePrice();
+    }
+  }, [selectedClub, selectedDate, selectedTime, duration, selectedCourt]);
+
+  const calculatePrice = async () => {
+    if (!selectedClub || !selectedDate || !selectedTime || !duration) return;
+
+    setIsCalculating(true);
+    try {
+      const response = await fetch("/api/calculate-price", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          club_id: selectedClub.id,
+          court_id: selectedCourt?.id,
+          booking_date: format(selectedDate, "yyyy-MM-dd"),
+          start_time: selectedTime,
+          duration_minutes: duration,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCalculatedPrice(data.data.total_price);
+      } else {
+        console.error("Failed to calculate price");
+        // Fallback to base price (fixed for duration block)
+        setCalculatedPrice(parseFloat(selectedClub.price_per_hour.toString()));
+      }
+    } catch (error) {
+      console.error("Error calculating price:", error);
+      // Fallback to base price (fixed for duration block)
+      setCalculatedPrice(parseFloat(selectedClub.price_per_hour.toString()));
+    } finally {
+      setIsCalculating(false);
+    }
+  };
 
   // Fetch availability for specific date when selected
   const handleDateSelect = (date: Date) => {
@@ -369,6 +427,12 @@ export default function BookingWizard() {
       return;
     }
 
+    // Use calculated price or fallback to base price (fixed for duration block)
+    const finalPrice =
+      calculatedPrice !== null
+        ? calculatedPrice
+        : parseFloat(selectedClub.price_per_hour.toString());
+
     const bookingData = {
       user_id: user.id,
       club_id: selectedClub.id,
@@ -377,7 +441,7 @@ export default function BookingWizard() {
       start_time: selectedTime,
       end_time: `${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1].padStart(2, "0")}`,
       duration_minutes: duration,
-      total_price: selectedClub.price_per_hour * (duration / 60),
+      total_price: finalPrice,
     };
 
     // Create payment intent
@@ -646,6 +710,8 @@ export default function BookingWizard() {
               loadingInstructors={loadingInstructors}
               selectedInstructor={selectedInstructorForUI}
               onInstructorSelect={setSelectedInstructorForUI}
+              duration={duration}
+              calculatedPrice={calculatedPrice}
             />
 
             {/* Duration & Price */}
@@ -659,23 +725,22 @@ export default function BookingWizard() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Duración</span>
-                    <select
-                      value={duration}
-                      onChange={(e) => setDuration(parseInt(e.target.value))}
-                      className="bg-background border border-border rounded-lg px-4 py-2 text-sm font-medium"
-                    >
-                      <option value={60}>1 Hora</option>
-                      <option value={90}>1.5 Horas</option>
-                      <option value={120}>2 Horas</option>
-                    </select>
+                    <span className="font-semibold">
+                      {duration === 60 && "1 Hora"}
+                      {duration === 90 && "1.5 Horas"}
+                      {duration === 120 && "2 Horas"}
+                      {duration !== 60 &&
+                        duration !== 90 &&
+                        duration !== 120 &&
+                        `${duration} min`}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center pt-4 border-t">
                     <span className="font-bold text-lg">Precio Total</span>
                     <span className="text-2xl font-bold text-primary">
-                      $
-                      {(selectedClub.price_per_hour * (duration / 60)).toFixed(
-                        2,
-                      )}
+                      {isCalculating
+                        ? "Calculando..."
+                        : `$${(calculatedPrice !== null ? calculatedPrice : parseFloat(selectedClub.price_per_hour.toString())).toFixed(2)}`}
                     </span>
                   </div>
                 </div>
@@ -765,7 +830,11 @@ export default function BookingWizard() {
                         end_time: `${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1].padStart(2, "0")}`,
                         duration_minutes: duration,
                         total_price:
-                          selectedClub.price_per_hour * (duration / 60),
+                          calculatedPrice !== null
+                            ? calculatedPrice
+                            : parseFloat(
+                                selectedClub.price_per_hour.toString(),
+                              ),
                       }}
                       onSuccess={handlePaymentSuccess}
                       onError={handlePaymentError}
@@ -804,7 +873,11 @@ export default function BookingWizard() {
                   startTime={selectedTime}
                   endTime={`${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1].padStart(2, "0")}`}
                   duration={duration}
-                  totalPrice={selectedClub.price_per_hour * (duration / 60)}
+                  totalPrice={
+                    calculatedPrice !== null
+                      ? calculatedPrice
+                      : parseFloat(selectedClub.price_per_hour.toString())
+                  }
                   onBack={goBack}
                 />
               </div>

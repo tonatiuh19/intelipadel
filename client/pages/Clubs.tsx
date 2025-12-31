@@ -16,6 +16,14 @@ export default function Clubs() {
     dispatch(fetchClubs());
   }, [dispatch]);
 
+  // Format duration for display in Mexican Spanish
+  const formatDuration = (minutes: number = 60) => {
+    if (minutes === 60) return "hora";
+    if (minutes === 90) return "hora y media";
+    if (minutes === 120) return "2 hrs";
+    return `${minutes} min`;
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -56,7 +64,7 @@ export default function Clubs() {
                 <Card className="overflow-hidden hover:shadow-xl transition-all">
                   <div className="aspect-video bg-muted overflow-hidden">
                     <img
-                      src={club.image}
+                      src={club.image_url}
                       alt={club.name}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
@@ -67,29 +75,36 @@ export default function Clubs() {
                     </h3>
                     <div className="flex items-center text-muted-foreground mb-3">
                       <MapPin className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{club.location}</span>
+                      <span className="text-sm">{club.city}</span>
                     </div>
                     <div className="flex items-center gap-2 mb-4">
                       <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                       <span className="font-semibold">{club.rating}</span>
                       <span className="text-sm text-muted-foreground">
-                        ({club.reviews} reseñas)
+                        ({club.review_count} reseñas)
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="text-sm text-muted-foreground">Desde</p>
+                        <p className="text-sm text-muted-foreground">Precio</p>
                         <p className="text-lg font-bold text-primary">
-                          ${club.pricePerHour}/hr
+                          ${club.price_per_hour}/
+                          {formatDuration(club.default_booking_duration)}
                         </p>
                       </div>
-                      <Button asChild>
-                        <Link to="/booking">
-                          Reservar
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                      </Button>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">Canchas</p>
+                        <p className="text-lg font-bold text-secondary">
+                          {club.court_count}
+                        </p>
+                      </div>
                     </div>
+                    <Button asChild className="w-full mt-4">
+                      <Link to="/booking">
+                        Reservar
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
                   </div>
                 </Card>
               </motion.div>

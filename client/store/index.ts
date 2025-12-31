@@ -17,6 +17,7 @@ import adminUsersReducer from "./slices/adminUsersSlice";
 import adminPoliciesReducer from "./slices/adminPoliciesSlice";
 import adminEventsReducer from "./slices/adminEventsSlice";
 import adminInstructorsReducer from "./slices/adminInstructorsSlice";
+import adminSettingsReducer from "./slices/adminSettingsSlice";
 import instructorsReducer from "./slices/instructorsSlice";
 
 export const store = configureStore({
@@ -39,6 +40,7 @@ export const store = configureStore({
     adminPolicies: adminPoliciesReducer,
     adminInstructors: adminInstructorsReducer,
     adminEvents: adminEventsReducer,
+    adminSettings: adminSettingsReducer,
     instructors: instructorsReducer,
   },
 });

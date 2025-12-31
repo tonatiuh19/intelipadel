@@ -46,6 +46,7 @@ export interface Club {
   rating: number;
   review_count: number;
   price_per_hour: number;
+  default_booking_duration?: number;
   currency?: string;
   is_active: boolean;
   featured: boolean;

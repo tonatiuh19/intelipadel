@@ -5841,6 +5841,582 @@ const handleUpdateClubPolicy: RequestHandler = async (req, res) => {
   }
 };
 
+// ==================== SETTINGS ROUTES ====================
+
+/**
+ * GET /api/admin/price-rules
+ * Get price rules for a club
+ */
+const handleGetPriceRules: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const clubId = admin.club_id || req.query.club_id;
+
+    if (!clubId) {
+      return res.status(400).json({
+        success: false,
+        message: "Club ID is required",
+      });
+    }
+
+    const [priceRules] = await pool.query(
+      `SELECT * FROM price_rules WHERE club_id = ? ORDER BY priority DESC, created_at DESC`,
+      [clubId],
+    );
+
+    // Parse JSON fields for each rule
+    const parsedRules = (priceRules as any[]).map((rule) => ({
+      ...rule,
+      days_of_week: rule.days_of_week
+        ? typeof rule.days_of_week === "string"
+          ? JSON.parse(rule.days_of_week)
+          : rule.days_of_week
+        : null,
+    }));
+
+    res.json({
+      success: true,
+      priceRules: parsedRules,
+    });
+  } catch (error) {
+    console.error("Error fetching price rules:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch price rules",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/admin/price-rules
+ * Create a new price rule
+ */
+const handleCreatePriceRule: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const {
+      club_id,
+      court_id,
+      rule_name,
+      rule_type,
+      start_time,
+      end_time,
+      days_of_week,
+      start_date,
+      end_date,
+      price_per_hour,
+      priority,
+      is_active,
+    } = req.body;
+
+    if (
+      admin.role === "club_admin" &&
+      admin.club_id &&
+      parseInt(club_id) !== admin.club_id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only create rules for your club",
+      });
+    }
+
+    const [result] = await pool.query(
+      `INSERT INTO price_rules 
+      (club_id, court_id, rule_name, rule_type, start_time, end_time, days_of_week, start_date, end_date, price_per_hour, priority, is_active) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        club_id,
+        court_id,
+        rule_name,
+        rule_type,
+        start_time,
+        end_time,
+        days_of_week ? JSON.stringify(days_of_week) : null,
+        start_date,
+        end_date,
+        price_per_hour,
+        priority || 0,
+        is_active !== undefined ? is_active : true,
+      ],
+    );
+
+    res.json({
+      success: true,
+      message: "Price rule created successfully",
+      ruleId: (result as any).insertId,
+    });
+  } catch (error) {
+    console.error("Error creating price rule:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create price rule",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * PUT /api/admin/price-rules/:id
+ * Update a price rule
+ */
+const handleUpdatePriceRule: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { id } = req.params;
+    const {
+      court_id,
+      rule_name,
+      rule_type,
+      start_time,
+      end_time,
+      days_of_week,
+      start_date,
+      end_date,
+      price_per_hour,
+      priority,
+      is_active,
+    } = req.body;
+
+    // Verify ownership
+    const [existing] = await pool.query(
+      `SELECT club_id FROM price_rules WHERE id = ?`,
+      [id],
+    );
+
+    if (!Array.isArray(existing) || existing.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Price rule not found",
+      });
+    }
+
+    const rule = existing[0] as any;
+    if (
+      admin.role === "club_admin" &&
+      admin.club_id &&
+      rule.club_id !== admin.club_id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only update rules for your club",
+      });
+    }
+
+    await pool.query(
+      `UPDATE price_rules 
+      SET court_id = ?, rule_name = ?, rule_type = ?, start_time = ?, end_time = ?, 
+          days_of_week = ?, start_date = ?, end_date = ?, price_per_hour = ?, priority = ?, is_active = ?
+      WHERE id = ?`,
+      [
+        court_id,
+        rule_name,
+        rule_type,
+        start_time,
+        end_time,
+        days_of_week ? JSON.stringify(days_of_week) : null,
+        start_date,
+        end_date,
+        price_per_hour,
+        priority,
+        is_active,
+        id,
+      ],
+    );
+
+    res.json({
+      success: true,
+      message: "Price rule updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating price rule:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update price rule",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * DELETE /api/admin/price-rules/:id
+ * Delete a price rule
+ */
+const handleDeletePriceRule: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { id } = req.params;
+
+    // Verify ownership
+    const [existing] = await pool.query(
+      `SELECT club_id FROM price_rules WHERE id = ?`,
+      [id],
+    );
+
+    if (!Array.isArray(existing) || existing.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Price rule not found",
+      });
+    }
+
+    const rule = existing[0] as any;
+    if (
+      admin.role === "club_admin" &&
+      admin.club_id &&
+      rule.club_id !== admin.club_id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only delete rules for your club",
+      });
+    }
+
+    await pool.query(`DELETE FROM price_rules WHERE id = ?`, [id]);
+
+    res.json({
+      success: true,
+      message: "Price rule deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting price rule:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete price rule",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/calculate-price
+ * Calculate price for a booking based on price rules
+ */
+const handleCalculatePrice: RequestHandler = async (req, res) => {
+  try {
+    const { club_id, court_id, booking_date, start_time, duration_minutes } =
+      req.body;
+
+    if (!club_id || !booking_date || !start_time || !duration_minutes) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Missing required fields: club_id, booking_date, start_time, duration_minutes",
+      });
+    }
+
+    // Get base price from club
+    const [clubRows] = await pool.query<any[]>(
+      `SELECT price_per_hour FROM clubs WHERE id = ?`,
+      [club_id],
+    );
+
+    if (clubRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Club not found",
+      });
+    }
+
+    let pricePerHour = parseFloat(clubRows[0].price_per_hour);
+
+    // Get active price rules for this club, ordered by priority (higher priority first)
+    const [rules] = await pool.query<any[]>(
+      `SELECT * FROM price_rules 
+       WHERE club_id = ? 
+       AND is_active = TRUE 
+       AND (court_id IS NULL OR court_id = ?)
+       ORDER BY priority DESC, created_at DESC`,
+      [club_id, court_id || null],
+    );
+
+    // Parse booking date and time
+    const bookingDateTime = new Date(`${booking_date}T${start_time}`);
+    const dayOfWeek = bookingDateTime.getDay(); // 0 = Sunday, 6 = Saturday
+    const timeString = start_time; // HH:MM format
+
+    console.log(
+      `[PRICE CALC] Booking: ${booking_date} ${start_time}, Day: ${dayOfWeek}, Rules found: ${rules.length}`,
+    );
+
+    // Find the first matching rule (highest priority)
+    for (const rule of rules) {
+      let matches = false;
+
+      // Parse days_of_week JSON if exists
+      let ruleDaysOfWeek: number[] | null = null;
+      if (rule.days_of_week) {
+        try {
+          ruleDaysOfWeek =
+            typeof rule.days_of_week === "string"
+              ? JSON.parse(rule.days_of_week)
+              : rule.days_of_week;
+        } catch (e) {
+          console.error("Failed to parse days_of_week:", e);
+        }
+      }
+
+      // Check rule type and conditions
+      switch (rule.rule_type) {
+        case "time_of_day":
+          // Match if time is within range
+          if (rule.start_time && rule.end_time) {
+            matches =
+              timeString >= rule.start_time && timeString < rule.end_time;
+          }
+          break;
+
+        case "day_of_week":
+          // Match if day is in the list
+          if (ruleDaysOfWeek && ruleDaysOfWeek.includes(dayOfWeek)) {
+            matches = true;
+          }
+          break;
+
+        case "seasonal":
+          // Match if date is within range
+          if (rule.start_date && rule.end_date) {
+            const ruleStartDate = new Date(rule.start_date);
+            const ruleEndDate = new Date(rule.end_date);
+            const bookingDateOnly = new Date(booking_date);
+            matches =
+              bookingDateOnly >= ruleStartDate &&
+              bookingDateOnly <= ruleEndDate;
+          }
+          break;
+
+        case "special_date":
+          // Match if date is within range AND time is within range
+          if (rule.start_date && rule.end_date) {
+            const ruleStartDate = new Date(rule.start_date);
+            const ruleEndDate = new Date(rule.end_date);
+            const bookingDateOnly = new Date(booking_date);
+            const dateMatches =
+              bookingDateOnly >= ruleStartDate &&
+              bookingDateOnly <= ruleEndDate;
+
+            let timeMatches = true;
+            if (rule.start_time && rule.end_time) {
+              timeMatches =
+                timeString >= rule.start_time && timeString < rule.end_time;
+            }
+
+            matches = dateMatches && timeMatches;
+          }
+          break;
+      }
+
+      // If rule matches, use its price and stop checking
+      if (matches) {
+        console.log(
+          `[PRICE CALC] ✓ Rule matched: ${rule.rule_name}, Price: ${rule.price_per_hour}`,
+        );
+        pricePerHour = parseFloat(rule.price_per_hour);
+        break;
+      }
+    }
+
+    console.log(
+      `[PRICE CALC] Final price: ${pricePerHour} for ${duration_minutes} minutes`,
+    );
+
+    // Price is fixed for the duration block, not per hour
+    const totalPrice = pricePerHour;
+
+    res.json({
+      success: true,
+      data: {
+        price_per_hour: pricePerHour,
+        duration_minutes: duration_minutes,
+        duration_hours: duration_minutes / 60,
+        total_price: totalPrice,
+      },
+    });
+  } catch (error) {
+    console.error("Error calculating price:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to calculate price",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/admin/schedules
+ * Get club schedules
+ */
+const handleGetSchedules: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const clubId = admin.club_id || req.query.club_id;
+
+    if (!clubId) {
+      return res.status(400).json({
+        success: false,
+        message: "Club ID is required",
+      });
+    }
+
+    const [schedules] = await pool.query(
+      `SELECT * FROM club_schedules WHERE club_id = ? ORDER BY day_of_week`,
+      [clubId],
+    );
+
+    res.json({
+      success: true,
+      schedules,
+    });
+  } catch (error) {
+    console.error("Error fetching schedules:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch schedules",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * PUT /api/admin/schedules/:id
+ * Update a club schedule
+ */
+const handleUpdateSchedule: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { id } = req.params;
+    const { opens_at, closes_at, is_closed } = req.body;
+
+    // Verify ownership
+    const [existing] = await pool.query(
+      `SELECT club_id FROM club_schedules WHERE id = ?`,
+      [id],
+    );
+
+    if (!Array.isArray(existing) || existing.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Schedule not found",
+      });
+    }
+
+    const schedule = existing[0] as any;
+    if (
+      admin.role === "club_admin" &&
+      admin.club_id &&
+      schedule.club_id !== admin.club_id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only update schedules for your club",
+      });
+    }
+
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (opens_at !== undefined) {
+      updates.push("opens_at = ?");
+      values.push(opens_at);
+    }
+    if (closes_at !== undefined) {
+      updates.push("closes_at = ?");
+      values.push(closes_at);
+    }
+    if (is_closed !== undefined) {
+      updates.push("is_closed = ?");
+      values.push(is_closed);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No updates provided",
+      });
+    }
+
+    values.push(id);
+    await pool.query(
+      `UPDATE club_schedules SET ${updates.join(", ")} WHERE id = ?`,
+      values,
+    );
+
+    res.json({
+      success: true,
+      message: "Schedule updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating schedule:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update schedule",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * PUT /api/admin/club-settings
+ * Update club settings (base price, etc.)
+ */
+const handleUpdateClubSettings: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { club_id, price_per_hour, default_booking_duration } = req.body;
+
+    if (
+      admin.role === "club_admin" &&
+      admin.club_id &&
+      parseInt(club_id) !== admin.club_id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only update settings for your club",
+      });
+    }
+
+    // Build dynamic UPDATE query based on provided fields
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (price_per_hour !== undefined) {
+      updates.push("price_per_hour = ?");
+      values.push(price_per_hour);
+    }
+
+    if (default_booking_duration !== undefined) {
+      updates.push("default_booking_duration = ?");
+      values.push(default_booking_duration);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No settings provided to update",
+      });
+    }
+
+    values.push(club_id);
+
+    await pool.query(
+      `UPDATE clubs SET ${updates.join(", ")} WHERE id = ?`,
+      values,
+    );
+
+    res.json({
+      success: true,
+      message: "Club settings updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating club settings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update club settings",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 // ==================== SERVER INITIALIZATION ====================
 
 // Create the Express app once (reused across invocations)
@@ -6052,6 +6628,46 @@ function createServer() {
     verifyAdminSession,
     handleUpdateClubPolicy,
   );
+
+  // Settings routes
+  expressApp.get(
+    "/api/admin/price-rules",
+    verifyAdminSession,
+    handleGetPriceRules,
+  );
+  expressApp.post(
+    "/api/admin/price-rules",
+    verifyAdminSession,
+    handleCreatePriceRule,
+  );
+  expressApp.put(
+    "/api/admin/price-rules/:id",
+    verifyAdminSession,
+    handleUpdatePriceRule,
+  );
+  expressApp.delete(
+    "/api/admin/price-rules/:id",
+    verifyAdminSession,
+    handleDeletePriceRule,
+  );
+  expressApp.get(
+    "/api/admin/schedules",
+    verifyAdminSession,
+    handleGetSchedules,
+  );
+  expressApp.put(
+    "/api/admin/schedules/:id",
+    verifyAdminSession,
+    handleUpdateSchedule,
+  );
+  expressApp.put(
+    "/api/admin/club-settings",
+    verifyAdminSession,
+    handleUpdateClubSettings,
+  );
+
+  // Price calculation
+  expressApp.post("/api/calculate-price", handleCalculatePrice);
 
   // Events routes
   expressApp.get("/api/admin/events", verifyAdminSession, handleGetAdminEvents);

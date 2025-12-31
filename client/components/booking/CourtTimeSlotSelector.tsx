@@ -49,6 +49,7 @@ interface Instructor {
 
 interface TimeSlot {
   time: string;
+  endTime?: string;
   available: boolean;
   courtId?: number;
   courtName?: string;
@@ -60,6 +61,8 @@ interface CourtTimeSlotSelectorProps {
   selectedCourt: Court | null;
   availability: AvailabilityData | null;
   loading: boolean;
+  duration: number;
+  calculatedPrice: number | null;
   onSelectTimeSlot: (court: Court, time: string) => void;
   onEventSelect?: (event: any) => void;
   onClassSelect?: (instructor: Instructor, time: string, court?: Court) => void;
@@ -76,6 +79,8 @@ export default function CourtTimeSlotSelector({
   selectedCourt,
   availability,
   loading,
+  duration,
+  calculatedPrice,
   onSelectTimeSlot,
   onEventSelect,
   onClassSelect,
@@ -192,19 +197,78 @@ export default function CourtTimeSlotSelector({
       );
     }
 
-    // Generate hourly slots from 8:00 to 22:00
-    for (let hour = 8; hour <= 22; hour++) {
-      const time = `${hour.toString().padStart(2, "0")}:00`;
+    // Helper function to calculate end time based on duration
+    const calculateEndTime = (
+      startTime: string,
+      durationMinutes: number,
+    ): string => {
+      const [hours, minutes] = startTime.split(":").map(Number);
+      const totalMinutes = hours * 60 + minutes + durationMinutes;
+      const endHours = Math.floor(totalMinutes / 60);
+      const endMinutes = totalMinutes % 60;
+      return `${endHours.toString().padStart(2, "0")}:${endMinutes.toString().padStart(2, "0")}`;
+    };
 
-      // Skip this time slot if instructor is selected and it's outside their availability
+    // Helper function to check if time range overlaps with another range
+    const timeRangesOverlap = (
+      start1: string,
+      end1: string,
+      start2: string,
+      end2: string,
+    ): boolean => {
+      return start1 < end2 && start2 < end1;
+    };
+
+    // Check club schedule for this day
+    const dayOfWeek = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
+    const clubSchedule = availability.schedules?.find(
+      (s: any) => s.day_of_week === dayOfWeek,
+    );
+
+    // Skip if club is closed on this day
+    if (clubSchedule && clubSchedule.is_closed) {
+      return [];
+    }
+
+    const opensAt = clubSchedule
+      ? clubSchedule.opens_at.substring(0, 5)
+      : "08:00";
+    const closesAt = clubSchedule
+      ? clubSchedule.closes_at.substring(0, 5)
+      : "23:00";
+
+    // Generate slots based on duration increment
+    // Start from opening time and create slots every 'duration' minutes
+    const startHour = parseInt(opensAt.split(":")[0]);
+    const startMinute = parseInt(opensAt.split(":")[1]);
+    let currentTimeMinutes = startHour * 60 + startMinute;
+
+    const closesAtMinutes =
+      parseInt(closesAt.split(":")[0]) * 60 + parseInt(closesAt.split(":")[1]);
+
+    while (currentTimeMinutes + duration <= closesAtMinutes) {
+      const hour = Math.floor(currentTimeMinutes / 60);
+      const minute = currentTimeMinutes % 60;
+      const time = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+      const endTime = calculateEndTime(time, duration);
+
+      // Skip if instructor is selected and this slot is outside their availability
       if (instructorStartTime && instructorEndTime) {
-        if (time < instructorStartTime || time >= instructorEndTime) {
-          continue; // Skip this hour entirely
+        if (
+          !timeRangesOverlap(
+            time,
+            endTime,
+            instructorStartTime,
+            instructorEndTime,
+          )
+        ) {
+          currentTimeMinutes += duration;
+          continue;
         }
       }
 
       availability.courts.forEach((court) => {
-        // Check if court is blocked at this time
+        // Check if court is blocked during this time slot
         const isBlocked = availability.blockedSlots.some((slot) => {
           const blockDate = slot.block_date.split("T")[0];
           if (blockDate !== dateStr) return false;
@@ -213,13 +277,18 @@ export default function CourtTimeSlotSelector({
           if (slot.is_all_day) return true;
 
           if (slot.start_time && slot.end_time) {
-            return time >= slot.start_time && time < slot.end_time;
+            return timeRangesOverlap(
+              time,
+              endTime,
+              slot.start_time,
+              slot.end_time,
+            );
           }
 
           return false;
         });
 
-        // Check if court is booked at this time
+        // Check if court is booked during this time slot
         const isBooked = availability.bookings.some((booking) => {
           const bookingDate = booking.booking_date.split("T")[0];
           if (booking.court_id !== court.id || bookingDate !== dateStr)
@@ -229,7 +298,12 @@ export default function CourtTimeSlotSelector({
           const bookingStartTime = booking.start_time.substring(0, 5);
           const bookingEndTime = booking.end_time.substring(0, 5);
 
-          return time >= bookingStartTime && time < bookingEndTime;
+          return timeRangesOverlap(
+            time,
+            endTime,
+            bookingStartTime,
+            bookingEndTime,
+          );
         });
 
         // Check if court is occupied by an event
@@ -252,19 +326,15 @@ export default function CourtTimeSlotSelector({
               if (scheduleDate !== dateStr || schedule.court_id !== court.id)
                 return false;
 
-              // Round start time down to the hour (15:30 -> 15:00)
-              const scheduleStartHour = schedule.start_time.substring(0, 2);
-              const roundedStart = `${scheduleStartHour}:00`;
+              const scheduleStart = schedule.start_time.substring(0, 5);
+              const scheduleEnd = schedule.end_time.substring(0, 5);
 
-              // Round end time up to the hour if it has minutes (15:30 -> 16:00, 17:00 -> 17:00)
-              const timeStr = schedule.end_time.substring(0, 5); // Get HH:MM only
-              const [endHour, endMin] = timeStr.split(":");
-              const roundedEnd =
-                endMin !== "00"
-                  ? `${(parseInt(endHour) + 1).toString().padStart(2, "0")}:00`
-                  : `${endHour}:00`;
-
-              return time >= roundedStart && time < roundedEnd;
+              return timeRangesOverlap(
+                time,
+                endTime,
+                scheduleStart,
+                scheduleEnd,
+              );
             }) || false
           : // Fall back to event's main times only if no granular schedule exists
             availability.events?.some((event) => {
@@ -279,18 +349,10 @@ export default function CourtTimeSlotSelector({
 
               if (!courtsUsed.includes(court.id)) return false;
 
-              // Round event times to full hours
-              const eventStartHour = event.start_time.substring(0, 2);
-              const roundedStart = `${eventStartHour}:00`;
+              const eventStart = event.start_time.substring(0, 5);
+              const eventEnd = event.end_time.substring(0, 5);
 
-              const timeStr = event.end_time.substring(0, 5); // Get HH:MM only
-              const [endHour, endMin] = timeStr.split(":");
-              const roundedEnd =
-                endMin !== "00"
-                  ? `${(parseInt(endHour) + 1).toString().padStart(2, "0")}:00`
-                  : `${endHour}:00`;
-
-              return time >= roundedStart && time < roundedEnd;
+              return timeRangesOverlap(time, endTime, eventStart, eventEnd);
             }) || false;
 
         // Check if court is occupied by a private class
@@ -304,11 +366,17 @@ export default function CourtTimeSlotSelector({
             const classStartTime = privateClass.start_time.substring(0, 5);
             const classEndTime = privateClass.end_time.substring(0, 5);
 
-            return time >= classStartTime && time < classEndTime;
+            return timeRangesOverlap(
+              time,
+              endTime,
+              classStartTime,
+              classEndTime,
+            );
           }) || false;
 
         slots.push({
           time,
+          endTime,
           available:
             !isBlocked &&
             !isBooked &&
@@ -317,24 +385,10 @@ export default function CourtTimeSlotSelector({
           courtId: court.id,
           courtName: court.name,
         });
-
-        // Debug: Log when a slot is marked unavailable due to event
-        if (
-          isEventOccupied &&
-          (time === "15:00" || time === "16:00" || time === "17:00")
-        ) {
-          console.log(`✓ Slot marked unavailable:`, {
-            court: court.name,
-            time,
-            isEventOccupied,
-            available:
-              !isBlocked &&
-              !isBooked &&
-              !isEventOccupied &&
-              !isPrivateClassOccupied,
-          });
-        }
       });
+
+      // Move to next slot based on duration
+      currentTimeMinutes += duration;
     }
 
     return slots;
@@ -607,11 +661,16 @@ export default function CourtTimeSlotSelector({
             >
               <div
                 className={cn(
-                  "font-semibold min-w-[60px]",
+                  "font-semibold min-w-[100px]",
                   selectedInstructor ? "text-green-900" : "text-foreground",
                 )}
               >
-                {time}
+                <div className="text-sm">{time}</div>
+                {slots[0]?.endTime && (
+                  <div className="text-xs text-muted-foreground">
+                    → {slots[0].endTime}
+                  </div>
+                )}
               </div>
               <div className="flex-1 flex gap-2 flex-wrap">
                 {slots.map((slot) => (
