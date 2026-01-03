@@ -4,6 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import {
   Select,
   SelectContent,
@@ -29,9 +31,18 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash2, Clock, DollarSign, Calendar } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Clock,
+  DollarSign,
+  Calendar,
+  Shield,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import FeeStructureTermsDialog from "../FeeStructureTermsDialog";
 import {
   getPriceRules,
   createPriceRule,
@@ -43,6 +54,8 @@ import {
   getCourts,
   setBasePrice,
   setDefaultDuration,
+  getFeeStructure,
+  updateFeeStructure,
 } from "@/store/slices/adminSettingsSlice";
 
 interface PriceRule {
@@ -108,6 +121,7 @@ export default function AdminSettings() {
     courts,
     basePrice,
     defaultDuration,
+    feeStructure,
     isLoading,
     isSubmitting,
   } = useAppSelector((state) => state.adminSettings);
@@ -118,6 +132,11 @@ export default function AdminSettings() {
     useState<number>(defaultDuration);
   const [priceDialogOpen, setPriceDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<PriceRule | null>(null);
+  const [termsDialogOpen, setTermsDialogOpen] = useState(false);
+  const [pendingFeeStructure, setPendingFeeStructure] = useState<{
+    fee_structure: "user_pays_fee" | "shared_fee" | "club_absorbs_fee";
+    service_fee_percentage: number;
+  } | null>(null);
 
   // Form states for price rule dialog
   const [ruleName, setRuleName] = useState("");
@@ -155,6 +174,7 @@ export default function AdminSettings() {
         dispatch(getPriceRules(admin.club_id)).unwrap(),
         dispatch(getSchedules(admin.club_id)).unwrap(),
         dispatch(getCourts(admin.club_id)).unwrap(),
+        dispatch(getFeeStructure()).unwrap(),
       ]);
 
       // Fetch club base settings
@@ -379,6 +399,10 @@ export default function AdminSettings() {
           <TabsTrigger value="schedules">
             <Clock className="h-4 w-4 mr-2" />
             Horarios
+          </TabsTrigger>
+          <TabsTrigger value="fee-structure">
+            <Shield className="h-4 w-4 mr-2" />
+            Estructura de Comisión
           </TabsTrigger>
         </TabsList>
 
@@ -809,7 +833,505 @@ export default function AdminSettings() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Fee Structure Tab */}
+        <TabsContent value="fee-structure">
+          <Card>
+            <CardHeader>
+              <CardTitle>Estructura de Comisión de InteliPadel</CardTitle>
+              <p className="text-sm text-gray-600 mt-2">
+                Define cómo se aplicará la comisión de servicio no reembolsable
+                de InteliPadel en las reservas de tu club.
+              </p>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <p className="text-center text-gray-500 py-8">
+                  Cargando configuración...
+                </p>
+              ) : (
+                <Formik
+                  initialValues={{
+                    fee_structure:
+                      feeStructure?.fee_structure || "user_pays_fee",
+                  }}
+                  enableReinitialize
+                  validationSchema={Yup.object({
+                    fee_structure: Yup.string()
+                      .oneOf([
+                        "user_pays_fee",
+                        "shared_fee",
+                        "club_absorbs_fee",
+                      ])
+                      .required("Selecciona una estructura de comisión"),
+                  })}
+                  onSubmit={async (values, { setSubmitting }) => {
+                    // Check if fee_structure changed - requires terms
+                    if (values.fee_structure !== feeStructure?.fee_structure) {
+                      // Show terms dialog
+                      setPendingFeeStructure({
+                        fee_structure: values.fee_structure as any,
+                        service_fee_percentage:
+                          feeStructure?.service_fee_percentage || 8.0,
+                      });
+                      setTermsDialogOpen(true);
+                      setSubmitting(false);
+                      return;
+                    }
+
+                    // Update directly (no changes, just re-confirm)
+                    try {
+                      await dispatch(
+                        updateFeeStructure({
+                          fee_structure: values.fee_structure as any,
+                        }),
+                      ).unwrap();
+
+                      toast({
+                        title: "Configuración actualizada",
+                        description:
+                          "La estructura de comisión se ha guardado correctamente",
+                      });
+                    } catch (error: any) {
+                      toast({
+                        title: "Error",
+                        description:
+                          error || "No se pudo actualizar la configuración",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setSubmitting(false);
+                    }
+                  }}
+                >
+                  {({
+                    values,
+                    setFieldValue,
+                    isSubmitting: formSubmitting,
+                  }) => {
+                    const serviceFeePercentage =
+                      feeStructure?.service_fee_percentage || 8.0;
+
+                    return (
+                      <Form className="space-y-6">
+                        {/* Current configuration summary */}
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+                          <p className="text-sm font-medium text-blue-900">
+                            Comisión de servicio InteliPadel:{" "}
+                            {serviceFeePercentage}%
+                          </p>
+                          <p className="text-xs text-blue-700">
+                            Este porcentaje es establecido por InteliPadel y no
+                            puede ser modificado.
+                          </p>
+                        </div>
+
+                        {feeStructure?.fee_terms_accepted_at && (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <p className="text-sm text-green-800">
+                              ✓ Términos aceptados el{" "}
+                              {new Date(
+                                feeStructure.fee_terms_accepted_at,
+                              ).toLocaleDateString("es-ES", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Fee Structure Options */}
+                        <div className="space-y-4">
+                          <Label className="text-base font-semibold">
+                            Tipo de Estructura *
+                          </Label>
+
+                          {/* Option 1: User Pays Fee */}
+                          <div
+                            className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                              values.fee_structure === "user_pays_fee"
+                                ? "border-orange-500 bg-orange-50"
+                                : "border-gray-200 hover:border-orange-300"
+                            }`}
+                            onClick={() =>
+                              setFieldValue("fee_structure", "user_pays_fee")
+                            }
+                          >
+                            <div className="flex items-start gap-3">
+                              <input
+                                type="radio"
+                                name="fee_structure"
+                                value="user_pays_fee"
+                                checked={
+                                  values.fee_structure === "user_pays_fee"
+                                }
+                                onChange={() =>
+                                  setFieldValue(
+                                    "fee_structure",
+                                    "user_pays_fee",
+                                  )
+                                }
+                                className="mt-1"
+                              />
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-900 mb-1">
+                                  Usuario Paga Comisión Completa
+                                </h4>
+                                <p className="text-sm text-gray-600 mb-2">
+                                  El usuario paga el precio de la reserva más la
+                                  comisión de servicio.
+                                </p>
+                                <div className="bg-white rounded p-3 text-sm border space-y-1">
+                                  <p className="font-medium text-gray-700">
+                                    Ejemplo:
+                                  </p>
+                                  <p>Precio de reserva: $750.00</p>
+                                  <p>
+                                    Comisión de servicio ({serviceFeePercentage}
+                                    %): $
+                                    {(
+                                      (750 * serviceFeePercentage) /
+                                      100
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p className="border-t pt-1 mt-1">
+                                    Subtotal: $
+                                    {(
+                                      750 +
+                                      (750 * serviceFeePercentage) / 100
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p>
+                                    IVA (16%): $
+                                    {(
+                                      (750 +
+                                        (750 * serviceFeePercentage) / 100) *
+                                      0.16
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p className="text-xs text-gray-500 ml-4">
+                                    └ IVA sobre reserva: $
+                                    {(750 * 0.16).toFixed(2)}
+                                    <br />└ IVA sobre comisión: $
+                                    {(
+                                      ((750 * serviceFeePercentage) / 100) *
+                                      0.16
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p className="font-semibold text-orange-600 border-t pt-1 mt-1">
+                                    Total a pagar: $
+                                    {(
+                                      (750 +
+                                        (750 * serviceFeePercentage) / 100) *
+                                      1.16
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p className="text-green-700 font-medium border-t pt-1 mt-1">
+                                    Club recibe: ${(750 * 1.16).toFixed(2)}
+                                  </p>
+                                  <p className="text-xs text-gray-500 ml-4">
+                                    ($750.00 + $120.00 IVA)
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Option 2: Shared Fee */}
+                          <div
+                            className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                              values.fee_structure === "shared_fee"
+                                ? "border-orange-500 bg-orange-50"
+                                : "border-gray-200 hover:border-orange-300"
+                            }`}
+                            onClick={() =>
+                              setFieldValue("fee_structure", "shared_fee")
+                            }
+                          >
+                            <div className="flex items-start gap-3">
+                              <input
+                                type="radio"
+                                name="fee_structure"
+                                value="shared_fee"
+                                checked={values.fee_structure === "shared_fee"}
+                                onChange={() =>
+                                  setFieldValue("fee_structure", "shared_fee")
+                                }
+                                className="mt-1"
+                              />
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-900 mb-1">
+                                  Comisión Compartida 50/50
+                                </h4>
+                                <p className="text-sm text-gray-600 mb-2">
+                                  El usuario y el club comparten la comisión al
+                                  50% cada uno.
+                                </p>
+                                <div className="bg-white rounded p-3 text-sm border space-y-1">
+                                  <p className="font-medium text-gray-700">
+                                    Ejemplo:
+                                  </p>
+                                  <p>Precio de reserva: $750.00</p>
+                                  <p>
+                                    Comisión total ({serviceFeePercentage}%): $
+                                    {(
+                                      (750 * serviceFeePercentage) /
+                                      100
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p className="text-xs text-gray-500 ml-4">
+                                    └ Usuario paga 50%: $
+                                    {(
+                                      (750 * serviceFeePercentage) /
+                                      100 /
+                                      2
+                                    ).toFixed(2)}
+                                    <br />└ Club paga 50%: $
+                                    {(
+                                      (750 * serviceFeePercentage) /
+                                      100 /
+                                      2
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p className="border-t pt-1 mt-1">
+                                    Subtotal: $
+                                    {(
+                                      750 +
+                                      (750 * serviceFeePercentage) / 100 / 2
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p>
+                                    IVA (16%): $
+                                    {(
+                                      (750 +
+                                        (750 * serviceFeePercentage) /
+                                          100 /
+                                          2) *
+                                      0.16
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p className="text-xs text-gray-500 ml-4">
+                                    └ IVA sobre reserva: $
+                                    {(750 * 0.16).toFixed(2)}
+                                    <br />└ IVA sobre comisión (50%): $
+                                    {(
+                                      ((750 * serviceFeePercentage) / 100 / 2) *
+                                      0.16
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p className="font-semibold text-orange-600 border-t pt-1 mt-1">
+                                    Total a pagar: $
+                                    {(
+                                      (750 +
+                                        (750 * serviceFeePercentage) /
+                                          100 /
+                                          2) *
+                                      1.16
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p className="text-green-700 font-medium border-t pt-1 mt-1">
+                                    Club recibe: $
+                                    {(
+                                      (750 -
+                                        (750 * serviceFeePercentage) /
+                                          100 /
+                                          2) *
+                                      1.16
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p className="text-xs text-gray-500 ml-4">
+                                    ($
+                                    {(
+                                      750 -
+                                      (750 * serviceFeePercentage) / 100 / 2
+                                    ).toFixed(2)}{" "}
+                                    + $
+                                    {(
+                                      (750 -
+                                        (750 * serviceFeePercentage) /
+                                          100 /
+                                          2) *
+                                      0.16
+                                    ).toFixed(2)}{" "}
+                                    IVA)
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Option 3: Club Absorbs Fee */}
+                          <div
+                            className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                              values.fee_structure === "club_absorbs_fee"
+                                ? "border-orange-500 bg-orange-50"
+                                : "border-gray-200 hover:border-orange-300"
+                            }`}
+                            onClick={() =>
+                              setFieldValue("fee_structure", "club_absorbs_fee")
+                            }
+                          >
+                            <div className="flex items-start gap-3">
+                              <input
+                                type="radio"
+                                name="fee_structure"
+                                value="club_absorbs_fee"
+                                checked={
+                                  values.fee_structure === "club_absorbs_fee"
+                                }
+                                onChange={() =>
+                                  setFieldValue(
+                                    "fee_structure",
+                                    "club_absorbs_fee",
+                                  )
+                                }
+                                className="mt-1"
+                              />
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-900 mb-1">
+                                  Club Absorbe Comisión (Predeterminado)
+                                </h4>
+                                <p className="text-sm text-gray-600 mb-2">
+                                  La comisión está incluida en el precio
+                                  mostrado. El club paga la comisión completa.
+                                </p>
+                                <div className="bg-white rounded p-3 text-sm border space-y-1">
+                                  <p className="font-medium text-gray-700">
+                                    Ejemplo:
+                                  </p>
+                                  <p>Precio mostrado: $750.00</p>
+                                  <p className="text-xs text-gray-500 ml-4">
+                                    (comisión incluida)
+                                  </p>
+                                  <p className="border-t pt-1 mt-1">
+                                    Subtotal: $750.00
+                                  </p>
+                                  <p>IVA (16%): ${(750 * 0.16).toFixed(2)}</p>
+                                  <p className="font-semibold text-orange-600 border-t pt-1 mt-1">
+                                    Total a pagar: ${(750 * 1.16).toFixed(2)}
+                                  </p>
+                                  <p className="text-green-700 font-medium border-t pt-1 mt-1">
+                                    Club recibe: $
+                                    {(
+                                      (750 -
+                                        (750 * serviceFeePercentage) / 100) *
+                                      1.16
+                                    ).toFixed(2)}
+                                  </p>
+                                  <p className="text-xs text-gray-500 ml-4">
+                                    ($
+                                    {(
+                                      750 -
+                                      (750 * serviceFeePercentage) / 100
+                                    ).toFixed(2)}{" "}
+                                    + $
+                                    {(
+                                      (750 -
+                                        (750 * serviceFeePercentage) / 100) *
+                                      0.16
+                                    ).toFixed(2)}{" "}
+                                    IVA)
+                                    <br />
+                                    Club paga comisión: $
+                                    {(
+                                      ((750 * serviceFeePercentage) / 100) *
+                                      1.16
+                                    ).toFixed(2)}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <ErrorMessage
+                            name="fee_structure"
+                            component="div"
+                            className="text-sm text-red-600"
+                          />
+                        </div>
+
+                        {/* Important notice */}
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <p className="text-sm text-yellow-900 font-medium mb-2">
+                            ⚠️ Información Importante
+                          </p>
+                          <ul className="text-sm text-yellow-800 space-y-1 list-disc list-inside">
+                            <li>
+                              La comisión de servicio es{" "}
+                              <strong>no reembolsable</strong>
+                            </li>
+                            <li>
+                              Cambiar la estructura de comisión requiere aceptar
+                              nuevamente los términos
+                            </li>
+                            <li>
+                              Los cambios afectan a todas las reservas futuras
+                            </li>
+                          </ul>
+                        </div>
+
+                        <Button
+                          type="submit"
+                          disabled={formSubmitting || isSubmitting}
+                          className="w-full"
+                        >
+                          {formSubmitting || isSubmitting
+                            ? "Guardando..."
+                            : "Guardar Configuración"}
+                        </Button>
+                      </Form>
+                    );
+                  }}
+                </Formik>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      {/* Terms Acceptance Dialog */}
+      {pendingFeeStructure && (
+        <FeeStructureTermsDialog
+          open={termsDialogOpen}
+          onOpenChange={(open) => {
+            setTermsDialogOpen(open);
+            if (!open) {
+              setPendingFeeStructure(null);
+            }
+          }}
+          onAccept={async () => {
+            try {
+              await dispatch(
+                updateFeeStructure({
+                  fee_structure: pendingFeeStructure.fee_structure,
+                  service_fee_percentage:
+                    pendingFeeStructure.service_fee_percentage,
+                  terms_accepted: true,
+                }),
+              ).unwrap();
+
+              toast({
+                title: "Configuración actualizada",
+                description:
+                  "La estructura de comisión se ha guardado correctamente",
+              });
+
+              setTermsDialogOpen(false);
+              setPendingFeeStructure(null);
+            } catch (error: any) {
+              toast({
+                title: "Error",
+                description: error || "No se pudo actualizar la configuración",
+                variant: "destructive",
+              });
+            }
+          }}
+          isLoading={isSubmitting}
+          feeStructure={pendingFeeStructure.fee_structure}
+          serviceFeePercentage={pendingFeeStructure.service_fee_percentage}
+        />
+      )}
     </div>
   );
 }

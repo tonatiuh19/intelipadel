@@ -2343,7 +2343,7 @@ const handleGetBookings: RequestHandler = async (req, res) => {
 
 /**
  * POST /api/auth/check-user
- * Check if a user exists by email (and optionally club_id)
+ * Check if a user exists by email and return all clubs they belong to
  */
 const handleCheckUser: RequestHandler = async (req, res) => {
   try {
@@ -2355,20 +2355,73 @@ const handleCheckUser: RequestHandler = async (req, res) => {
         .json({ success: false, message: "Email is required" });
     }
 
-    // Check for user with club_id if provided, otherwise check without club scope
-    const query = club_id
-      ? `SELECT id, club_id, email, name, phone, avatar_url, stripe_customer_id, is_active, created_at, updated_at, last_login_at
-         FROM users WHERE email = ? AND club_id = ?`
-      : `SELECT id, club_id, email, name, phone, avatar_url, stripe_customer_id, is_active, created_at, updated_at, last_login_at
-         FROM users WHERE email = ? AND club_id IS NULL`;
+    // Find all user accounts with this email
+    const query = `
+      SELECT u.id, u.club_id, u.email, u.name, u.phone, u.avatar_url, 
+             u.stripe_customer_id, u.is_active, u.created_at, u.updated_at, u.last_login_at,
+             c.name as club_name, c.logo_url as club_logo
+      FROM users u
+      LEFT JOIN clubs c ON u.club_id = c.id
+      WHERE u.email = ?
+      ORDER BY u.created_at DESC
+    `;
 
-    const params = club_id ? [email, club_id] : [email];
-    const [rows] = await pool.query<any[]>(query, params);
+    const [rows] = await pool.query<any[]>(query, [email]);
 
     if (rows.length > 0) {
-      res.json({ success: true, exists: true, patient: rows[0] });
+      // Check if any account is inactive
+      const inactiveAccounts = rows.filter((r) => !r.is_active);
+      if (inactiveAccounts.length === rows.length) {
+        return res.json({
+          success: true,
+          exists: true,
+          clubs: [],
+          error:
+            "Tu cuenta ha sido desactivada. Por favor, contacta a soporte.",
+        });
+      }
+
+      // If club_id is provided (booking flow), prioritize that club
+      if (club_id) {
+        const matchingClub = rows.find(
+          (r) => r.club_id === club_id && r.is_active,
+        );
+        if (matchingClub) {
+          // User belongs to the requested club - return that user
+          return res.json({
+            success: true,
+            exists: true,
+            patient: matchingClub,
+            clubs: [
+              {
+                id: matchingClub.club_id,
+                name: matchingClub.club_name,
+                logo_url: matchingClub.club_logo,
+                user_id: matchingClub.id,
+              },
+            ],
+          });
+        }
+      }
+
+      // Return all active clubs the user belongs to
+      const activeUsers = rows.filter((r) => r.is_active);
+      const clubs = activeUsers.map((user) => ({
+        id: user.club_id,
+        name: user.club_name,
+        logo_url: user.club_logo,
+        user_id: user.id,
+      }));
+
+      res.json({
+        success: true,
+        exists: true,
+        clubs,
+        // If only one club, auto-select it
+        patient: clubs.length === 1 ? activeUsers[0] : undefined,
+      });
     } else {
-      res.json({ success: true, exists: false });
+      res.json({ success: true, exists: false, clubs: [] });
     }
   } catch (error) {
     console.error("Error checking user:", error);
@@ -2679,6 +2732,22 @@ const handleCreateBooking: RequestHandler = async (req, res) => {
       });
     }
 
+    // Check if user's club_id is NULL and update it with the booking's club_id
+    const [userRows] = await pool.query<any[]>(
+      "SELECT club_id FROM users WHERE id = ?",
+      [user_id],
+    );
+
+    if (userRows.length > 0 && userRows[0].club_id === null) {
+      console.log(
+        `🏢 Assigning club_id ${club_id} to user ${user_id} on first booking`,
+      );
+      await pool.query("UPDATE users SET club_id = ? WHERE id = ?", [
+        club_id,
+        user_id,
+      ]);
+    }
+
     // Generate booking number
     const bookingNumber = `BK${Date.now()}`;
 
@@ -2811,6 +2880,22 @@ const handleCreateManualBooking: RequestHandler = async (req, res) => {
         new Date(`2000-01-01 ${start_time}`).getTime()) /
         (1000 * 60),
     );
+
+    // Check if user's club_id is NULL and update it with the booking's club_id
+    const [userRows] = await pool.query<any[]>(
+      "SELECT club_id FROM users WHERE id = ?",
+      [user_id],
+    );
+
+    if (userRows.length > 0 && userRows[0].club_id === null) {
+      console.log(
+        `🏢 Assigning club_id ${club_id} to user ${user_id} on manual booking creation`,
+      );
+      await pool.query("UPDATE users SET club_id = ? WHERE id = ?", [
+        club_id,
+        user_id,
+      ]);
+    }
 
     // Use transaction to create both time_slot and booking
     const connection = await pool.getConnection();
@@ -3309,6 +3394,22 @@ const handleConfirmPayment: RequestHandler = async (req, res) => {
         success: false,
         message: "Payment has not been completed",
       });
+    }
+
+    // Check if user's club_id is NULL and update it with the booking's club_id
+    const [userRows] = await pool.query<any[]>(
+      "SELECT club_id FROM users WHERE id = ?",
+      [user_id],
+    );
+
+    if (userRows.length > 0 && userRows[0].club_id === null) {
+      console.log(
+        `🏢 Assigning club_id ${club_id} to user ${user_id} on first booking (payment flow)`,
+      );
+      await pool.query("UPDATE users SET club_id = ? WHERE id = ?", [
+        club_id,
+        user_id,
+      ]);
     }
 
     // Generate booking number
@@ -7929,9 +8030,9 @@ const handleCalculatePrice: RequestHandler = async (req, res) => {
       });
     }
 
-    // Get base price from club
+    // Get base price and fee structure from club
     const [clubRows] = await pool.query<any[]>(
-      `SELECT price_per_hour FROM clubs WHERE id = ?`,
+      `SELECT price_per_hour, fee_structure, service_fee_percentage FROM clubs WHERE id = ?`,
       [club_id],
     );
 
@@ -7943,6 +8044,10 @@ const handleCalculatePrice: RequestHandler = async (req, res) => {
     }
 
     let pricePerHour = parseFloat(clubRows[0].price_per_hour);
+    const feeStructure = clubRows[0].fee_structure || "user_pays_fee";
+    const serviceFeePercentage = parseFloat(
+      clubRows[0].service_fee_percentage || "8.0",
+    );
 
     // Get active price rules for this club, ordered by priority (higher priority first)
     const [rules] = await pool.query<any[]>(
@@ -8083,13 +8188,81 @@ const handleCalculatePrice: RequestHandler = async (req, res) => {
       }
     }
 
+    // Calculate service fee and IVA based on fee structure
+    const IVA_RATE = 0.16; // 16% Mexican tax
+    let bookingPrice = totalPrice;
+    let serviceFee = 0;
+    let clubReceives = 0;
+
+    // Calculate service fee based on structure
+    serviceFee = bookingPrice * (serviceFeePercentage / 100);
+
+    let subtotal = 0;
+    let userPaysServiceFee = 0;
+    let clubPaysServiceFee = 0;
+
+    switch (feeStructure) {
+      case "user_pays_fee":
+        // User pays booking + full service fee
+        userPaysServiceFee = serviceFee;
+        clubPaysServiceFee = 0;
+        subtotal = bookingPrice + serviceFee;
+        clubReceives = bookingPrice;
+        break;
+
+      case "shared_fee":
+        // User pays booking + 50% service fee, Club pays 50%
+        userPaysServiceFee = serviceFee / 2;
+        clubPaysServiceFee = serviceFee / 2;
+        subtotal = bookingPrice + userPaysServiceFee;
+        clubReceives = bookingPrice - clubPaysServiceFee;
+        break;
+
+      case "club_absorbs_fee":
+        // User only pays booking price (fee included)
+        userPaysServiceFee = 0;
+        clubPaysServiceFee = serviceFee;
+        subtotal = bookingPrice;
+        clubReceives = bookingPrice - serviceFee;
+        break;
+
+      default:
+        // Default to user_pays_fee
+        userPaysServiceFee = serviceFee;
+        clubPaysServiceFee = 0;
+        subtotal = bookingPrice + serviceFee;
+        clubReceives = bookingPrice;
+    }
+
+    // Calculate IVA on subtotal
+    const iva = subtotal * IVA_RATE;
+    const totalWithIVA = subtotal + iva;
+
+    // IVA breakdown for transparency
+    const bookingIVA = bookingPrice * IVA_RATE;
+    const serviceFeeIVA = userPaysServiceFee * IVA_RATE;
+
     res.json({
       success: true,
       data: {
         price_per_hour: pricePerHour,
         duration_minutes: duration_minutes,
         duration_hours: duration_minutes / 60,
-        total_price: parseFloat(totalPrice.toFixed(2)),
+        booking_price: parseFloat(bookingPrice.toFixed(2)),
+        service_fee: parseFloat(serviceFee.toFixed(2)),
+        user_pays_service_fee: parseFloat(userPaysServiceFee.toFixed(2)),
+        club_pays_service_fee: parseFloat(clubPaysServiceFee.toFixed(2)),
+        fee_structure: feeStructure,
+        service_fee_percentage: serviceFeePercentage,
+        subtotal: parseFloat(subtotal.toFixed(2)),
+        iva_rate: IVA_RATE,
+        iva: parseFloat(iva.toFixed(2)),
+        booking_iva: parseFloat(bookingIVA.toFixed(2)),
+        service_fee_iva: parseFloat(serviceFeeIVA.toFixed(2)),
+        total_with_iva: parseFloat(totalWithIVA.toFixed(2)),
+        club_receives: parseFloat(clubReceives.toFixed(2)),
+        // Legacy compatibility
+        total_price: parseFloat(totalWithIVA.toFixed(2)),
         has_discount: subscriptionDiscount > 0,
         subscription_discount: subscriptionDiscount,
       },
@@ -8274,6 +8447,153 @@ const handleUpdateClubSettings: RequestHandler = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to update club settings",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/admin/fee-structure
+ * Get fee structure configuration for a club
+ */
+const handleGetFeeStructure: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { club_id } = admin;
+
+    const [rows] = await pool.query<any[]>(
+      `SELECT fee_structure, service_fee_percentage, fee_terms_accepted_at 
+       FROM clubs 
+       WHERE id = ?`,
+      [club_id],
+    );
+
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Club not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        fee_structure: rows[0].fee_structure || "user_pays_fee",
+        service_fee_percentage:
+          parseFloat(rows[0].service_fee_percentage) || 8.0,
+        fee_terms_accepted_at: rows[0].fee_terms_accepted_at,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching fee structure:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch fee structure",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * PUT /api/admin/fee-structure
+ * Update fee structure configuration for a club
+ * Requires terms acceptance if fee_structure is changed
+ */
+const handleUpdateFeeStructure: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const { club_id } = admin;
+    const { fee_structure, service_fee_percentage, terms_accepted } = req.body;
+
+    // Validate fee_structure
+    const validFeeStructures = [
+      "user_pays_fee",
+      "shared_fee",
+      "club_absorbs_fee",
+    ];
+    if (!validFeeStructures.includes(fee_structure)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid fee structure. Must be one of: user_pays_fee, shared_fee, club_absorbs_fee",
+      });
+    }
+
+    // Validate service_fee_percentage
+    if (service_fee_percentage !== undefined) {
+      const feePercent = parseFloat(service_fee_percentage);
+      if (isNaN(feePercent) || feePercent < 0 || feePercent > 100) {
+        return res.status(400).json({
+          success: false,
+          message: "Service fee percentage must be between 0 and 100",
+        });
+      }
+    }
+
+    // Check if fee structure is being changed
+    const [currentRows] = await pool.query<any[]>(
+      `SELECT fee_structure FROM clubs WHERE id = ?`,
+      [club_id],
+    );
+
+    const currentFeeStructure =
+      currentRows[0]?.fee_structure || "user_pays_fee";
+    const isFeeStructureChanged = fee_structure !== currentFeeStructure;
+
+    // If fee structure is being changed, require terms acceptance
+    if (isFeeStructureChanged && !terms_accepted) {
+      return res.status(400).json({
+        success: false,
+        message: "Terms acceptance required when changing fee structure",
+        requires_terms_acceptance: true,
+      });
+    }
+
+    // Build UPDATE query
+    const updates: string[] = ["fee_structure = ?"];
+    const values: any[] = [fee_structure];
+
+    if (service_fee_percentage !== undefined) {
+      updates.push("service_fee_percentage = ?");
+      values.push(parseFloat(service_fee_percentage));
+    }
+
+    // If terms accepted and fee structure changed, update acceptance timestamp
+    if (isFeeStructureChanged && terms_accepted) {
+      updates.push("fee_terms_accepted_at = NOW()");
+    }
+
+    values.push(club_id);
+
+    await pool.query(
+      `UPDATE clubs SET ${updates.join(", ")} WHERE id = ?`,
+      values,
+    );
+
+    // Fetch updated data
+    const [updatedRows] = await pool.query<any[]>(
+      `SELECT fee_structure, service_fee_percentage, fee_terms_accepted_at 
+       FROM clubs 
+       WHERE id = ?`,
+      [club_id],
+    );
+
+    res.json({
+      success: true,
+      message: "Fee structure updated successfully",
+      data: {
+        fee_structure: updatedRows[0].fee_structure,
+        service_fee_percentage: parseFloat(
+          updatedRows[0].service_fee_percentage,
+        ),
+        fee_terms_accepted_at: updatedRows[0].fee_terms_accepted_at,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating fee structure:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update fee structure",
       error: error instanceof Error ? error.message : "Unknown error",
     });
   }
@@ -9008,6 +9328,18 @@ function createServer() {
     "/api/admin/club-settings",
     verifyAdminSession,
     handleUpdateClubSettings,
+  );
+
+  // Fee structure routes
+  expressApp.get(
+    "/api/admin/fee-structure",
+    verifyAdminSession,
+    handleGetFeeStructure,
+  );
+  expressApp.put(
+    "/api/admin/fee-structure",
+    verifyAdminSession,
+    handleUpdateFeeStructure,
   );
 
   // Price calculation

@@ -138,12 +138,29 @@ export default function BookingWizard() {
   const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
   const [duration, setDuration] = useState<number>(60);
   const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
+  const [priceBreakdown, setPriceBreakdown] = useState<{
+    bookingPrice: number;
+    serviceFee: number;
+    userPaysServiceFee: number;
+    feeStructure: string;
+    subtotal: number;
+    iva: number;
+    totalWithIVA: number;
+  } | null>(null);
   const [calculatedEventPrice, setCalculatedEventPrice] = useState<
     number | null
   >(null);
+  const [
+    calculatedEventPriceWithFeesAndIVA,
+    setCalculatedEventPriceWithFeesAndIVA,
+  ] = useState<number | null>(null);
   const [calculatedClassPrice, setCalculatedClassPrice] = useState<
     number | null
   >(null);
+  const [
+    calculatedClassPriceWithFeesAndIVA,
+    setCalculatedClassPriceWithFeesAndIVA,
+  ] = useState<number | null>(null);
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -250,7 +267,20 @@ export default function BookingWizard() {
 
       if (response.ok) {
         const data = await response.json();
-        setCalculatedPrice(data.data.total_price);
+        setCalculatedPrice(data.data.total_with_iva || data.data.total_price);
+
+        // Store the breakdown for display
+        if (data.data.booking_price !== undefined) {
+          setPriceBreakdown({
+            bookingPrice: data.data.booking_price,
+            serviceFee: data.data.service_fee,
+            userPaysServiceFee: data.data.user_pays_service_fee,
+            feeStructure: data.data.fee_structure,
+            subtotal: data.data.subtotal,
+            iva: data.data.iva,
+            totalWithIVA: data.data.total_with_iva,
+          });
+        }
       } else {
         console.error("Failed to calculate price");
         // Fallback to base price (fixed for duration block)
@@ -499,22 +529,50 @@ export default function BookingWizard() {
   ) => {
     const eventToUse = event || selectedEvent;
 
-    if (!eventToUse || !user) {
-      console.error("❌ Missing event or user:", { eventToUse, user });
+    if (!eventToUse || !user || !selectedClub) {
+      console.error("❌ Missing event, user, or club:", {
+        eventToUse,
+        user,
+        selectedClub,
+      });
       return;
     }
 
     // IMPORTANT: Use passed price (from calculation), state, or original price
-    const finalPrice =
+    const basePrice =
       priceOverride !== undefined
         ? priceOverride
         : calculatedEventPrice !== null
           ? calculatedEventPrice
           : Number(eventToUse.registration_fee);
 
-    console.log("💰💰💰 PAYMENT INTENT CREATION 💰💰💰");
+    // Calculate service fees based on fee structure
+    const feeStructure = selectedClub.fee_structure || "club_absorbs_fee";
+    const serviceFeePercentage = selectedClub.service_fee_percentage || 8;
+    const serviceFee = basePrice * (serviceFeePercentage / 100);
+    let userPaysServiceFee = 0;
+
+    if (feeStructure === "user_pays_fee") {
+      userPaysServiceFee = serviceFee;
+    } else if (feeStructure === "shared_fee") {
+      userPaysServiceFee = serviceFee / 2;
+    }
+    // club_absorbs_fee: userPaysServiceFee = 0
+
+    const subtotal = basePrice + userPaysServiceFee;
+    const iva = subtotal * 0.16;
+    const finalPrice = subtotal + iva;
+
+    // Store the final price for Stripe form
+    setCalculatedEventPriceWithFeesAndIVA(finalPrice);
+
+    console.log("💰💰💰 EVENT PAYMENT INTENT CREATION 💰💰💰");
     console.log("Original Event Price:", eventToUse.registration_fee);
-    console.log("Calculated Discounted Price:", calculatedEventPrice);
+    console.log("Base Price (after discount):", basePrice);
+    console.log("Service Fee:", serviceFee);
+    console.log("User Pays Service Fee:", userPaysServiceFee);
+    console.log("Subtotal:", subtotal);
+    console.log("IVA (16%):", iva);
     console.log("Final Price Being Sent:", finalPrice);
     console.log("User Subscription:", userSubscription?.status);
     console.log(
@@ -577,12 +635,36 @@ export default function BookingWizard() {
 
     // IMPORTANT: Use calculated price (includes subscription discount) or calculate from hourly rate
     const basePrice = selectedInstructor.hourly_rate * (duration / 60);
-    const finalPrice =
+    const discountedPrice =
       calculatedClassPrice !== null ? calculatedClassPrice : basePrice;
 
+    // Calculate service fees based on fee structure
+    const feeStructure = selectedClub.fee_structure || "club_absorbs_fee";
+    const serviceFeePercentage = selectedClub.service_fee_percentage || 8;
+    const serviceFee = discountedPrice * (serviceFeePercentage / 100);
+    let userPaysServiceFee = 0;
+
+    if (feeStructure === "user_pays_fee") {
+      userPaysServiceFee = serviceFee;
+    } else if (feeStructure === "shared_fee") {
+      userPaysServiceFee = serviceFee / 2;
+    }
+    // club_absorbs_fee: userPaysServiceFee = 0
+
+    const subtotal = discountedPrice + userPaysServiceFee;
+    const iva = subtotal * 0.16;
+    const finalPrice = subtotal + iva;
+
+    // Store the final price for Stripe form
+    setCalculatedClassPriceWithFeesAndIVA(finalPrice);
+
     console.log("💰💰💰 CLASS PAYMENT INTENT CREATION 💰💰💰");
-    console.log("Base Price:", basePrice);
-    console.log("Calculated Discounted Price:", calculatedClassPrice);
+    console.log("Base Hourly Price:", basePrice);
+    console.log("Discounted Price:", discountedPrice);
+    console.log("Service Fee:", serviceFee);
+    console.log("User Pays Service Fee:", userPaysServiceFee);
+    console.log("Subtotal:", subtotal);
+    console.log("IVA (16%):", iva);
     console.log("Final Price Being Sent:", finalPrice);
     console.log("User Subscription:", userSubscription?.status);
     console.log(
@@ -1034,11 +1116,11 @@ export default function BookingWizard() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-4 border-t">
-                    <span className="font-bold text-lg">Precio Total</span>
+                    <span className="font-bold text-lg">Precio</span>
                     <span className="text-2xl font-bold text-primary">
                       {isCalculating
                         ? "Calculando..."
-                        : `$${(calculatedPrice !== null ? calculatedPrice : parseFloat(selectedClub.price_per_hour.toString())).toFixed(2)}`}
+                        : `$${(priceBreakdown?.bookingPrice ?? parseFloat(selectedClub.price_per_hour.toString())).toFixed(2)}`}
                     </span>
                   </div>
                 </div>
@@ -1251,6 +1333,13 @@ export default function BookingWizard() {
                       ? calculatedPrice
                       : parseFloat(selectedClub.price_per_hour.toString())
                   }
+                  bookingPrice={priceBreakdown?.bookingPrice}
+                  serviceFee={priceBreakdown?.serviceFee}
+                  userPaysServiceFee={priceBreakdown?.userPaysServiceFee}
+                  feeStructure={priceBreakdown?.feeStructure}
+                  subtotal={priceBreakdown?.subtotal}
+                  iva={priceBreakdown?.iva}
+                  totalWithIVA={priceBreakdown?.totalWithIVA}
                   onBack={goBack}
                 />
               </div>
@@ -1265,62 +1354,104 @@ export default function BookingWizard() {
           user && (
             <div
               className={cn(
-                "max-w-2xl mx-auto transition-all duration-500 transform",
+                "grid lg:grid-cols-2 gap-8 transition-all duration-500 transform",
                 "animate-in fade-in slide-in-from-right-4",
               )}
             >
-              {eventClientSecret && (
-                <Elements
-                  stripe={stripePromise}
-                  options={{
-                    clientSecret: eventClientSecret,
-                    locale: "es",
-                    appearance: {
-                      theme: "stripe",
-                    },
-                  }}
-                >
-                  <StripePaymentForm
-                    eventData={{
-                      user_id: user.id,
-                      event_id: selectedEvent.id,
-                      registration_fee:
-                        calculatedEventPrice !== null
-                          ? calculatedEventPrice
-                          : Number(selectedEvent.registration_fee),
+              {/* Left: Payment Form */}
+              <div className="space-y-6">
+                {eventClientSecret && (
+                  <Elements
+                    stripe={stripePromise}
+                    options={{
+                      clientSecret: eventClientSecret,
+                      locale: "es",
+                      appearance: {
+                        theme: "stripe",
+                      },
                     }}
-                    clubId={selectedClub.id}
-                    clubName={selectedClub.name}
-                    event={selectedEvent}
-                    onSuccess={handlePaymentSuccess}
-                    onError={handlePaymentError}
-                    isEventPayment={true}
-                    eventDiscountPercent={0}
-                    originalEventPrice={Number(selectedEvent.registration_fee)}
-                  />
-                </Elements>
-              )}
+                  >
+                    <StripePaymentForm
+                      eventData={{
+                        user_id: user.id,
+                        event_id: selectedEvent.id,
+                        registration_fee:
+                          calculatedEventPriceWithFeesAndIVA !== null
+                            ? calculatedEventPriceWithFeesAndIVA
+                            : calculatedEventPrice !== null
+                              ? calculatedEventPrice
+                              : Number(selectedEvent.registration_fee),
+                      }}
+                      clubId={selectedClub.id}
+                      clubName={selectedClub.name}
+                      event={selectedEvent}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                      isEventPayment={true}
+                      eventDiscountPercent={0}
+                      originalEventPrice={Number(
+                        selectedEvent.registration_fee,
+                      )}
+                    />
+                  </Elements>
+                )}
 
-              {!eventClientSecret && eventPaymentLoading && (
-                <Card className="p-8">
-                  <div className="text-center">
-                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-orange-600 border-r-transparent"></div>
-                    <p className="mt-4 text-muted-foreground">
-                      Preparando inscripción...
-                    </p>
-                  </div>
-                </Card>
-              )}
+                {!eventClientSecret && eventPaymentLoading && (
+                  <Card className="p-8">
+                    <div className="text-center">
+                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-orange-600 border-r-transparent"></div>
+                      <p className="mt-4 text-muted-foreground">
+                        Preparando inscripción...
+                      </p>
+                    </div>
+                  </Card>
+                )}
 
-              <Button
-                variant="outline"
-                onClick={goBack}
-                className="w-full mt-6"
-                size="lg"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver a Selección
-              </Button>
+                <Button
+                  variant="outline"
+                  onClick={goBack}
+                  className="w-full"
+                  size="lg"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Volver a Selección
+                </Button>
+              </div>
+
+              {/* Right: Event Summary */}
+              <div>
+                <EventRegistrationSummary
+                  event={selectedEvent}
+                  clubName={selectedClub.name}
+                  clubImage={selectedClub.image_url}
+                  totalPrice={
+                    calculatedEventPrice !== null
+                      ? calculatedEventPrice
+                      : Number(selectedEvent.registration_fee)
+                  }
+                  originalPrice={
+                    calculatedEventPrice !== null &&
+                    calculatedEventPrice <
+                      Number(selectedEvent.registration_fee)
+                      ? Number(selectedEvent.registration_fee)
+                      : undefined
+                  }
+                  discountApplied={
+                    calculatedEventPrice !== null &&
+                    calculatedEventPrice <
+                      Number(selectedEvent.registration_fee)
+                      ? Number(selectedEvent.registration_fee) -
+                        calculatedEventPrice
+                      : undefined
+                  }
+                  feeStructure={
+                    selectedClub.fee_structure || "club_absorbs_fee"
+                  }
+                  serviceFeePercentage={
+                    selectedClub.service_fee_percentage || 8
+                  }
+                />
+              </div>
             </div>
           )}
 
@@ -1334,72 +1465,103 @@ export default function BookingWizard() {
           user && (
             <div
               className={cn(
-                "max-w-2xl mx-auto transition-all duration-500 transform",
+                "grid lg:grid-cols-2 gap-8 transition-all duration-500 transform",
                 "animate-in fade-in slide-in-from-right-4",
               )}
             >
-              {classClientSecret && (
-                <Elements
-                  stripe={stripePromise}
-                  options={{
-                    clientSecret: classClientSecret,
-                    locale: "es",
-                    appearance: {
-                      theme: "stripe",
-                    },
-                  }}
-                >
-                  <StripePaymentForm
-                    classData={{
-                      user_id: user.id,
-                      instructor_id: selectedInstructor.id,
-                      club_id: selectedClub.id,
-                      court_id: selectedCourt?.id,
-                      class_type: classType,
-                      class_date: format(selectedDate, "yyyy-MM-dd"),
-                      start_time: selectedTime,
-                      end_time: `${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1].padStart(2, "0")}`,
-                      duration_minutes: duration,
-                      number_of_students: numberOfStudents,
-                      total_price:
-                        calculatedClassPrice !== null
-                          ? calculatedClassPrice
-                          : selectedInstructor.hourly_rate * (duration / 60),
+              {/* Left: Payment Form */}
+              <div className="space-y-6">
+                {classClientSecret && (
+                  <Elements
+                    stripe={stripePromise}
+                    options={{
+                      clientSecret: classClientSecret,
+                      locale: "es",
+                      appearance: {
+                        theme: "stripe",
+                      },
                     }}
-                    clubId={selectedClub.id}
-                    clubName={selectedClub.name}
-                    instructor={selectedInstructor}
-                    onSuccess={handlePaymentSuccess}
-                    onError={handlePaymentError}
-                    isClassPayment={true}
-                    classDiscountPercent={0}
-                    originalClassPrice={
-                      selectedInstructor.hourly_rate * (duration / 60)
-                    }
-                  />
-                </Elements>
-              )}
+                  >
+                    <StripePaymentForm
+                      classData={{
+                        user_id: user.id,
+                        instructor_id: selectedInstructor.id,
+                        club_id: selectedClub.id,
+                        court_id: selectedCourt?.id,
+                        class_type: classType,
+                        class_date: format(selectedDate, "yyyy-MM-dd"),
+                        start_time: selectedTime,
+                        end_time: `${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1].padStart(2, "0")}`,
+                        duration_minutes: duration,
+                        number_of_students: numberOfStudents,
+                        total_price:
+                          calculatedClassPriceWithFeesAndIVA !== null
+                            ? calculatedClassPriceWithFeesAndIVA
+                            : calculatedClassPrice !== null
+                              ? calculatedClassPrice
+                              : selectedInstructor.hourly_rate *
+                                (duration / 60),
+                      }}
+                      clubId={selectedClub.id}
+                      clubName={selectedClub.name}
+                      instructor={selectedInstructor}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                      isClassPayment={true}
+                      classDiscountPercent={0}
+                      originalClassPrice={
+                        selectedInstructor.hourly_rate * (duration / 60)
+                      }
+                    />
+                  </Elements>
+                )}
 
-              {!classClientSecret && classPaymentLoading && (
-                <Card className="p-8">
-                  <div className="text-center">
-                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-green-600 border-r-transparent"></div>
-                    <p className="mt-4 text-muted-foreground">
-                      Preparando reserva de clase...
-                    </p>
-                  </div>
-                </Card>
-              )}
+                {!classClientSecret && classPaymentLoading && (
+                  <Card className="p-8">
+                    <div className="text-center">
+                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-green-600 border-r-transparent"></div>
+                      <p className="mt-4 text-muted-foreground">
+                        Preparando reserva de clase...
+                      </p>
+                    </div>
+                  </Card>
+                )}
 
-              <Button
-                variant="outline"
-                onClick={goBack}
-                className="w-full mt-6"
-                size="lg"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver a Selección
-              </Button>
+                <Button
+                  variant="outline"
+                  onClick={goBack}
+                  className="w-full"
+                  size="lg"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Volver a Selección
+                </Button>
+              </div>
+
+              {/* Right: Class Summary */}
+              <div>
+                <ClassRegistrationSummary
+                  instructor={selectedInstructor}
+                  clubName={selectedClub.name}
+                  clubImage={selectedClub.image_url}
+                  classType={classType}
+                  classDate={format(selectedDate, "yyyy-MM-dd")}
+                  startTime={selectedTime}
+                  endTime={`${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1].padStart(2, "0")}`}
+                  numberOfStudents={numberOfStudents}
+                  totalPrice={
+                    calculatedClassPrice !== null
+                      ? calculatedClassPrice
+                      : selectedInstructor.hourly_rate * (duration / 60)
+                  }
+                  feeStructure={
+                    selectedClub.fee_structure || "club_absorbs_fee"
+                  }
+                  serviceFeePercentage={
+                    selectedClub.service_fee_percentage || 8
+                  }
+                />
+              </div>
             </div>
           )}
 

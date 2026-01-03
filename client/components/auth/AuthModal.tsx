@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import EmailStep from "./EmailStep";
+import ClubSelectionStep from "./ClubSelectionStep";
 import CreateUserStep from "./CreateUserStep";
 import CodeVerificationStep from "./CodeVerificationStep";
 
@@ -54,6 +55,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             ? `Ingresa tu correo para continuar en ${selectedClubName}`
             : "Ingresa tu correo electrónico para comenzar",
         };
+      case "select-club":
+        return {
+          title: "Selecciona tu club 🎾",
+          description:
+            "Tienes cuentas en múltiples clubes. ¿A cuál deseas acceder?",
+        };
       case "create-user":
         return {
           title: "Completa tu perfil 🎾",
@@ -90,6 +97,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
         <div className="mt-4">
           {authStep === "email" && <EmailStep />}
+          {authStep === "select-club" && <ClubSelectionStep />}
           {authStep === "create-user" && <CreateUserStep />}
           {authStep === "verify-code" && <CodeVerificationStep />}
         </div>

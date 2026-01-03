@@ -69,7 +69,6 @@ const navigationItems = [
   { id: "players" as Section, label: "Jugadores", icon: Users },
   { id: "courts" as Section, label: "Gestión de Canchas", icon: Building2 },
   { id: "admin-users" as Section, label: "Usuarios Admin", icon: Shield },
-  { id: "settings" as Section, label: "Configuración", icon: Settings },
   {
     id: "blocked-dates" as Section,
     label: "Fechas Bloqueadas",
@@ -80,6 +79,7 @@ const navigationItems = [
   { id: "subscriptions" as Section, label: "Suscripciones", icon: Crown },
   { id: "payments" as Section, label: "Pagos", icon: CreditCard },
   { id: "policies" as Section, label: "Términos y Políticas", icon: FileText },
+  { id: "settings" as Section, label: "Configuración", icon: Settings },
 ];
 
 export default function AdminLayout() {
@@ -181,8 +181,6 @@ export default function AdminLayout() {
         return <AdminCourts />;
       case "admin-users":
         return <AdminUsers />;
-      case "settings":
-        return <AdminSettings />;
       case "blocked-dates":
         return <AdminBlockedDates />;
       case "events":
@@ -195,6 +193,8 @@ export default function AdminLayout() {
         return <AdminPayments />;
       case "policies":
         return <AdminPolicies />;
+      case "settings":
+        return <AdminSettings />;
       default:
         return <AdminDashboard />;
     }

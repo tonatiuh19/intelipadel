@@ -52,6 +52,8 @@ export interface Club {
   featured: boolean;
   court_count?: number;
   has_subscriptions?: boolean;
+  fee_structure?: "user_pays_fee" | "shared_fee" | "club_absorbs_fee";
+  service_fee_percentage?: number;
   created_at?: string;
   updated_at?: string;
 }

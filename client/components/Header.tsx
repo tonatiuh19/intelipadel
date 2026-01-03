@@ -166,6 +166,13 @@ export default function Header() {
                     Iniciar Sesión
                   </Button>
                   <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAuthModalOpen(true)}
+                  >
+                    Crear Cuenta
+                  </Button>
+                  <Button
                     variant="default"
                     size="sm"
                     className="shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300"

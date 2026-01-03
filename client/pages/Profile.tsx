@@ -321,15 +321,15 @@ export default function Profile() {
                           {userSubscription.subscription?.currency}/mes
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
-                          Se renueva el{" "}
-                          {userSubscription.next_billing_date &&
-                            format(
-                              new Date(userSubscription.next_billing_date),
-                              "dd 'de' MMMM, yyyy",
-                              {
-                                locale: es,
-                              },
-                            )}
+                          {userSubscription.next_billing_date
+                            ? `Se renueva el ${format(
+                                new Date(userSubscription.next_billing_date),
+                                "dd 'de' MMMM, yyyy",
+                                {
+                                  locale: es,
+                                },
+                              )}`
+                            : "Renovación automática activa"}
                         </p>
                       </div>
                       <Badge

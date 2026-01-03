@@ -32,6 +32,8 @@ interface ClassRegistrationSummaryProps {
   totalPrice: number;
   focusAreas?: string[];
   studentLevel?: "beginner" | "intermediate" | "advanced" | "expert" | null;
+  feeStructure?: "user_pays_fee" | "shared_fee" | "club_absorbs_fee";
+  serviceFeePercentage?: number;
 }
 
 export default function ClassRegistrationSummary({
@@ -46,7 +48,25 @@ export default function ClassRegistrationSummary({
   totalPrice,
   focusAreas,
   studentLevel,
+  feeStructure = "club_absorbs_fee",
+  serviceFeePercentage = 8,
 }: ClassRegistrationSummaryProps) {
+  // Calculate service fees based on fee structure
+  const serviceFee = totalPrice * (serviceFeePercentage / 100);
+  let userPaysServiceFee = 0;
+  let basePrice = totalPrice;
+
+  if (feeStructure === "user_pays_fee") {
+    userPaysServiceFee = serviceFee;
+  } else if (feeStructure === "shared_fee") {
+    userPaysServiceFee = serviceFee / 2;
+  }
+  // club_absorbs_fee: userPaysServiceFee = 0
+
+  const subtotal = basePrice + userPaysServiceFee;
+  const iva = subtotal * 0.16;
+  const totalWithIVA = subtotal + iva;
+
   const classTypeLabels: Record<string, string> = {
     individual: "Clase Individual",
     group: "Clase Grupal",
@@ -202,14 +222,48 @@ export default function ClassRegistrationSummary({
         </div>
 
         {/* Price */}
-        <div className="pt-4 border-t">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Total</span>
+        <div className="pt-4 border-t space-y-2">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">Tarifa de Clase</span>
+            <span className="font-medium">${basePrice.toFixed(2)}</span>
+          </div>
+
+          {/* Service Fee (only if user pays) */}
+          {userPaysServiceFee > 0 && (
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">
+                Cargo por Servicio ({serviceFeePercentage}%
+                {feeStructure === "shared_fee" ? " ÷ 2" : ""})
+              </span>
+              <span className="font-medium">
+                ${userPaysServiceFee.toFixed(2)}
+              </span>
+            </div>
+          )}
+
+          {feeStructure === "club_absorbs_fee" && (
+            <div className="flex justify-between items-center text-xs text-muted-foreground italic">
+              <span>Cargo por Servicio</span>
+              <span>Incluido</span>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center text-sm pt-2 border-t">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="font-medium">${subtotal.toFixed(2)}</span>
+          </div>
+
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">IVA (16%)</span>
+            <span className="font-medium">${iva.toFixed(2)}</span>
+          </div>
+
+          <div className="flex justify-between items-center pt-2 border-t">
+            <span className="font-bold">Total a Pagar</span>
             <span className="text-2xl font-bold text-green-600">
-              ${totalPrice.toFixed(2)}
+              ${totalWithIVA.toFixed(2)}
             </span>
           </div>
-          <p className="text-xs text-muted-foreground text-right mt-1">MXN</p>
         </div>
 
         {/* Info Box */}

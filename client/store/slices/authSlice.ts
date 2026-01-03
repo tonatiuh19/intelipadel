@@ -2,17 +2,30 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 import { User } from "@shared/types";
 
+interface ClubOption {
+  id: number;
+  name: string;
+  logo_url: string | null;
+  user_id: number;
+}
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
   // For multi-step auth flow
-  authStep: "email" | "create-user" | "verify-code" | "complete";
+  authStep:
+    | "email"
+    | "select-club"
+    | "create-user"
+    | "verify-code"
+    | "complete";
   tempEmail: string | null;
   tempUserId: number | null;
   tempClubId: number | null; // Store club_id during auth flow
   userExists: boolean | null;
+  availableClubs: ClubOption[]; // Clubs user belongs to
 }
 
 const initialState: AuthState = {
@@ -25,6 +38,7 @@ const initialState: AuthState = {
   tempUserId: null,
   tempClubId: null, // Initialize club_id
   userExists: null,
+  availableClubs: [],
 };
 
 // Load user from localStorage on init
@@ -175,6 +189,7 @@ const authSlice = createSlice({
       state.tempUserId = null;
       state.tempClubId = null;
       state.userExists = null;
+      state.availableClubs = [];
       state.error = null;
       localStorage.removeItem("intelipadel_user");
     },
@@ -184,11 +199,20 @@ const authSlice = createSlice({
       state.tempUserId = null;
       state.tempClubId = null;
       state.userExists = null;
+      state.availableClubs = [];
       state.error = null;
       state.loading = false;
     },
     setTempClubId: (state, action: PayloadAction<number | null>) => {
       state.tempClubId = action.payload;
+    },
+    selectClub: (
+      state,
+      action: PayloadAction<{ clubId: number; userId: number }>,
+    ) => {
+      state.tempClubId = action.payload.clubId;
+      state.tempUserId = action.payload.userId;
+      // Proceed to send code
     },
     clearError: (state) => {
       state.error = null;
@@ -203,27 +227,41 @@ const authSlice = createSlice({
       })
       .addCase(checkUser.fulfilled, (state, action) => {
         state.loading = false;
-        const { exists, patient } = action.payload;
+        const { exists, patient, clubs, error } = action.payload;
 
-        if (exists && patient) {
-          state.tempEmail = patient.email;
-          state.tempUserId = patient.id;
-          state.tempClubId = patient.club_id || null; // Store club_id from user
+        if (error) {
+          state.authStep = "email";
+          state.error = error;
+          return;
+        }
+
+        if (exists) {
+          state.tempEmail = action.meta.arg.email;
+          state.availableClubs = clubs || [];
           state.userExists = true;
 
-          // Check if user is active
-          if (!patient.is_active) {
-            state.authStep = "email"; // Keep on email step
-            state.error =
-              "Tu cuenta ha sido desactivada. Por favor, contacta a soporte para más información.";
-          } else {
-            // Stay on email step, let sendCode be triggered by useEffect
-            // authStep will be updated after sendCode succeeds
+          // If patient is provided (single club or club_id match), auto-select
+          if (patient) {
+            state.tempUserId = patient.id;
+            state.tempClubId = patient.club_id || null;
+            // Stay on email step, sendCode will be triggered by useEffect
             state.authStep = "email";
+          } else if (clubs && clubs.length > 1) {
+            // Multiple clubs - show selection
+            state.authStep = "select-club";
+          } else if (clubs && clubs.length === 1) {
+            // Single club - auto-select
+            state.tempUserId = clubs[0].user_id;
+            state.tempClubId = clubs[0].id;
+            state.authStep = "email";
+          } else {
+            // No clubs found
+            state.authStep = "email";
+            state.error = "No se encontraron cuentas activas.";
           }
         } else {
           state.tempEmail = action.meta.arg.email;
-          state.tempClubId = action.meta.arg.club_id || null; // Store club_id from check request
+          state.tempClubId = action.meta.arg.club_id || null;
           state.userExists = false;
           state.authStep = "create-user";
         }
@@ -309,6 +347,8 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, resetAuthFlow, setTempClubId, clearError } =
+export const { logout, resetAuthFlow, setTempClubId, selectClub, clearError } =
   authSlice.actions;
 export default authSlice.reducer;
+
+export type { ClubOption };

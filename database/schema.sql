@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 02, 2026 at 09:31 PM
+-- Generation Time: Jan 03, 2026 at 05:01 PM
 -- Server version: 5.7.23-23
 -- PHP Version: 8.1.34
 
@@ -69,7 +69,7 @@ CREATE TABLE `admin_sessions` (
 --
 
 INSERT INTO `admin_sessions` (`id`, `admin_id`, `session_token`, `expires_at`, `created_at`, `last_activity_at`, `ip_address`, `user_agent`) VALUES
-(1, 1, '6404c666b78b68bc399e21cbe8496ca4fe8e883de70f40620de1f5f4f5ef0791', '2026-01-03 03:30:57', '2025-12-26 21:52:50', '2026-01-03 03:30:57', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
+(1, 1, '6404c666b78b68bc399e21cbe8496ca4fe8e883de70f40620de1f5f4f5ef0791', '2026-01-03 22:59:33', '2025-12-26 21:52:50', '2026-01-03 22:59:33', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (2, 1, '2dc28ed3e9c2a7ec0e6aa71af0095a677e1f54b8fcb9449fc07750c164cc9a3f', '2025-12-26 22:01:26', '2025-12-26 22:01:25', '2025-12-26 22:01:26', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (3, 1, '4ef8174216bf77b586b0015d273d7442a3065e340e7c543fd4934c2b937f1a5d', '2025-12-26 22:09:28', '2025-12-26 22:09:27', '2025-12-26 22:09:28', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
 (4, 1, '06e26c9f8dde368e65faa84a76e67939afd6501870718b525bbe512fec4721f8', '2025-12-26 22:12:13', '2025-12-26 22:12:12', '2025-12-26 22:12:13', '::1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'),
@@ -97,13 +97,6 @@ CREATE TABLE `auth_codes` (
   `is_used` tinyint(1) DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `auth_codes`
---
-
-INSERT INTO `auth_codes` (`id`, `email`, `code`, `user_type`, `expires_at`, `is_used`, `created_at`) VALUES
-(23, 'axgoomez@gmail.com', '130136', 'admin', '2026-01-03 02:59:41', 1, '2026-01-03 02:59:21');
 
 -- --------------------------------------------------------
 
@@ -133,8 +126,7 @@ CREATE TABLE `blocked_slots` (
 
 INSERT INTO `blocked_slots` (`id`, `club_id`, `court_id`, `block_type`, `block_date`, `start_time`, `end_time`, `is_all_day`, `reason`, `notes`, `created_by_admin_id`, `created_at`, `updated_at`) VALUES
 (1, 1, 5, 'maintenance', '2026-02-25', '09:00:00', '13:00:00', 0, 'Court resurfacing', NULL, NULL, '2025-12-22 22:29:49', '2025-12-26 19:09:22'),
-(2, 1, NULL, 'holiday', '2026-01-01', NULL, NULL, 1, 'New Year - Club Closed', NULL, NULL, '2025-12-22 22:29:49', '2025-12-26 18:52:27'),
-(3, 2, 2, 'maintenance', '2026-01-06', '08:00:00', '12:00:00', 0, 'Glass panel replacement', NULL, NULL, '2025-12-22 22:29:49', '2025-12-26 19:06:36');
+(2, 1, NULL, 'holiday', '2026-01-01', NULL, NULL, 1, 'New Year - Club Closed', NULL, NULL, '2025-12-22 22:29:49', '2025-12-26 18:52:27');
 
 -- --------------------------------------------------------
 
@@ -177,20 +169,9 @@ CREATE TABLE `bookings` (
 --
 
 INSERT INTO `bookings` (`id`, `booking_number`, `user_id`, `club_id`, `court_id`, `time_slot_id`, `booking_date`, `start_time`, `end_time`, `duration_minutes`, `total_price`, `status`, `payment_status`, `payment_method`, `stripe_payment_intent_id`, `booking_type`, `is_recurring`, `notes`, `factura_requested`, `factura_requested_at`, `factura_sent_at`, `cancellation_reason`, `cancelled_at`, `confirmed_at`, `created_at`, `updated_at`, `created_by_admin_id`) VALUES
-(3, 'BK1766778360951457', 2, 1, 13, 2, '2025-12-28', '10:00:00', '11:00:00', 60, 45.00, 'confirmed', 'paid', 'card', NULL, 'single', 0, NULL, 1, '2025-12-26 20:07:59', NULL, NULL, NULL, '2025-12-26 19:46:01', '2025-12-26 19:46:01', '2025-12-26 20:07:59', NULL),
-(4, 'BK1766778754513559', 2, 1, 5, 3, '2025-12-28', '09:00:00', '10:00:00', 60, 45.00, 'confirmed', 'paid', 'card', 'pi_3Sih3VCDsJ3n85lg0zGGh6PU', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-26 19:52:34', '2025-12-26 19:52:34', '2025-12-26 19:52:34', NULL),
-(5, 'BK1766781405527755', 2, 1, 13, 4, '2025-12-28', '22:00:00', '23:00:00', 60, 45.00, 'confirmed', 'paid', 'card', 'pi_3SihkQCDsJ3n85lg0c7KlutU', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-26 20:36:45', '2025-12-26 20:36:45', '2025-12-26 20:36:45', NULL),
-(8, 'BK1766873186483', 3, 1, 13, 6, '2026-01-06', '08:00:00', '09:00:00', 60, 0.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-27 22:06:26', '2025-12-27 22:06:26', '2025-12-29 22:47:44', 1),
-(9, 'BK1766873598308', 3, 1, 9, 7, '2026-01-06', '09:00:00', '10:00:00', 60, 950.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-27 22:13:18', '2025-12-27 22:13:18', '2025-12-27 22:13:18', 1),
-(10, 'BK1766957552996', 2, 1, 5, 8, '2025-12-28', '15:00:00', '16:00:00', 60, 550.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-28 21:32:33', '2025-12-28 21:32:33', '2025-12-28 21:32:33', 1),
-(11, 'BK1767048846907', 3, 1, 9, 9, '2026-01-09', '08:00:00', '09:00:00', 60, 800.00, 'confirmed', 'paid', 'manual', NULL, 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-29 22:54:07', '2025-12-29 22:54:07', '2025-12-29 22:54:07', 1),
-(12, 'BK1767062181447102', 2, 1, 13, 10, '2026-01-26', '13:00:00', '14:00:00', 60, 45.00, 'confirmed', 'paid', 'card', 'pi_3Sjsn6CDsJ3n85lg0ddSXbVk', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-30 02:36:22', '2025-12-30 02:36:22', '2025-12-30 02:36:22', NULL),
-(13, 'BK1767139894270372', 2, 1, 13, 11, '2025-12-31', '09:30:00', '10:30:00', 90, 250.00, 'confirmed', 'paid', 'card', 'pi_3SkD0VCDsJ3n85lg0gjaVP9M', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-31 00:11:34', '2025-12-31 00:11:34', '2025-12-31 00:11:34', NULL),
-(14, 'BK1767140947599628', 2, 1, 5, 12, '2025-12-31', '18:30:00', '19:30:00', 90, 550.00, 'confirmed', 'paid', 'card', 'pi_3SkDHTCDsJ3n85lg1jOwMh8W', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-31 00:29:08', '2025-12-31 00:29:08', '2025-12-31 00:29:08', NULL),
-(15, 'BK1767385090479690', 2, 1, 1, 13, '2026-01-09', '08:00:00', '09:00:00', 90, 230.00, 'confirmed', 'paid', 'card', 'pi_3SlEnNCDsJ3n85lg0BSbN1Dr', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2026-01-02 20:18:11', '2026-01-02 20:18:11', '2026-01-02 20:18:11', NULL),
-(16, 'BK1767385153304479', 2, 1, 13, 14, '2026-01-09', '18:30:00', '19:30:00', 90, 506.00, 'confirmed', 'paid', 'card', 'pi_3SlEoECDsJ3n85lg0ivYV1cW', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2026-01-02 20:19:13', '2026-01-02 20:19:13', '2026-01-02 20:19:13', NULL),
-(17, 'BK1767385653414168', 2, 1, 9, 15, '2026-01-07', '17:00:00', '18:00:00', 90, 506.00, 'confirmed', 'paid', 'card', 'pi_3SlEwRCDsJ3n85lg1jKdJAwR', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2026-01-02 20:27:33', '2026-01-02 20:27:33', '2026-01-02 20:27:33', NULL),
-(18, 'BK176738601857843', 2, 1, 1, 16, '2026-01-07', '21:30:00', '22:30:00', 90, 506.00, 'confirmed', 'paid', 'card', 'pi_3SlF2ACDsJ3n85lg0xu63vM0', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2026-01-02 20:33:39', '2026-01-02 20:33:39', '2026-01-02 20:33:39', NULL);
+(20, 'BK1767415796767919', 2, 1, 13, 18, '2026-01-18', '18:30:00', '19:30:00', 90, 506.00, 'confirmed', 'paid', 'card', 'pi_3SlMmeCDsJ3n85lg1qCzfNp1', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2026-01-03 04:49:57', '2026-01-03 04:49:57', '2026-01-03 04:49:57', NULL),
+(21, 'BK1767477538013394', 2, 1, 13, 19, '2026-01-14', '11:00:00', '12:00:00', 90, 266.80, 'confirmed', 'paid', 'card', 'pi_3SlcqJCDsJ3n85lg1mPr7pvc', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2026-01-03 21:58:58', '2026-01-03 21:58:58', '2026-01-03 21:58:58', NULL),
+(23, 'BK1767481139517438', 6, 1, 5, 21, '2026-01-23', '18:30:00', '19:30:00', 90, 638.00, 'confirmed', 'paid', 'card', 'pi_3SldmTCDsJ3n85lg00QXI9P3', 'single', 0, NULL, 0, NULL, NULL, NULL, NULL, '2026-01-03 22:58:59', '2026-01-03 22:58:59', '2026-01-03 22:58:59', NULL);
 
 -- --------------------------------------------------------
 
@@ -226,18 +207,18 @@ CREATE TABLE `clubs` (
   `featured` tinyint(1) DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `has_subscriptions` tinyint(1) DEFAULT '0' COMMENT 'Quick lookup if club offers subscriptions'
+  `has_subscriptions` tinyint(1) DEFAULT '0' COMMENT 'Quick lookup if club offers subscriptions',
+  `fee_structure` enum('user_pays_fee','shared_fee','club_absorbs_fee') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'club_absorbs_fee' COMMENT 'Fee structure: user_pays_fee = user pays full fee on top, shared_fee = 50/50 split, club_absorbs_fee = club pays fee from booking amount (DEFAULT)',
+  `service_fee_percentage` decimal(5,2) NOT NULL DEFAULT '8.00' COMMENT 'Service fee percentage charged by InteliPadel (e.g., 8.00 for 8%)',
+  `fee_terms_accepted_at` timestamp NULL DEFAULT NULL COMMENT 'When admin last accepted terms after changing fee structure'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `clubs`
 --
 
-INSERT INTO `clubs` (`id`, `name`, `slug`, `description`, `address`, `city`, `state`, `postal_code`, `country`, `latitude`, `longitude`, `phone`, `email`, `website`, `image_url`, `logo_url`, `gallery`, `amenities`, `rating`, `review_count`, `price_per_hour`, `default_booking_duration`, `currency`, `is_active`, `featured`, `created_at`, `updated_at`, `has_subscriptions`) VALUES
-(1, 'Club Elite Padel', 'club-elite-padel', 'Premier padel club in Madrid with state-of-the-art facilities', 'Calle del Deporte 45', 'Madrid', 'Madrid', '28001', 'España', NULL, NULL, '+34 912 345 678', 'info@elitepadel.es', NULL, 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800', 'https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\", \"pro_shop\", \"cafe\"]', 4.80, 234, 550.00, 90, 'EUR', 1, 0, '2025-12-22 22:29:49', '2026-01-01 23:19:35', 1),
-(2, 'Padel Barcelona Center', 'padel-barcelona-center', 'Modern padel facility in the heart of Barcelona', 'Avinguda Diagonal 123', 'Barcelona', 'Barcelona', '08019', 'España', NULL, NULL, '+34 933 456 789', 'contact@barcapadel.es', NULL, 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=800', 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\", \"cafe\"]', 4.70, 189, 42.00, 60, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37', 0),
-(3, 'Valencia Padel Club', 'valencia-padel-club', 'Premium outdoor courts with ocean views', 'Carrer de la Mar 89', 'Valencia', 'Valencia', '46001', 'España', NULL, NULL, '+34 963 567 890', 'hello@valenciapadel.es', NULL, 'https://images.unsplash.com/photo-1519505907962-0a6cb0167c73?w=800', 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=200&h=200&fit=crop', NULL, '[\"parking\", \"showers\", \"pro_shop\", \"cafe\"]', 4.90, 312, 40.00, 60, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37', 0),
-(4, 'Sevilla Sports Complex', 'sevilla-sports-complex', 'Multi-sport facility with excellent padel courts', 'Avenida de la Constitución 56', 'Sevilla', 'Sevilla', '41001', 'España', NULL, NULL, '+34 954 678 901', 'info@sevillapadel.es', NULL, 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800', 'https://images.unsplash.com/photo-1519505907962-0a6cb0167c73?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\"]', 4.60, 156, 38.00, 60, 'EUR', 1, 0, '2025-12-22 22:29:49', '2025-12-26 21:36:37', 0);
+INSERT INTO `clubs` (`id`, `name`, `slug`, `description`, `address`, `city`, `state`, `postal_code`, `country`, `latitude`, `longitude`, `phone`, `email`, `website`, `image_url`, `logo_url`, `gallery`, `amenities`, `rating`, `review_count`, `price_per_hour`, `default_booking_duration`, `currency`, `is_active`, `featured`, `created_at`, `updated_at`, `has_subscriptions`, `fee_structure`, `service_fee_percentage`, `fee_terms_accepted_at`) VALUES
+(1, 'Club Elite Padel', 'club-elite-padel', 'Premier padel club in Madrid with state-of-the-art facilities', 'Calle del Deporte 45', 'Madrid', 'Madrid', '28001', 'España', NULL, NULL, '+34 912 345 678', 'info@elitepadel.es', NULL, 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800', 'https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=200&h=200&fit=crop', NULL, '[\"parking\", \"lockers\", \"showers\", \"pro_shop\", \"cafe\"]', 4.80, 234, 550.00, 90, 'MXN', 1, 0, '2025-12-22 22:29:49', '2026-01-03 20:46:41', 1, 'club_absorbs_fee', 8.00, NULL);
 
 -- --------------------------------------------------------
 
@@ -263,8 +244,7 @@ CREATE TABLE `club_cancellation_policy` (
 --
 
 INSERT INTO `club_cancellation_policy` (`id`, `club_id`, `version`, `content`, `hours_before_cancellation`, `refund_percentage`, `effective_date`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 1, '1.0', '<h2>Política de Cancelación de Pádel Club Premium123</h2><h3>Cancelaciones con Reembolso Completo</h3><p>Recibirá un reembolso del 100% si cancela con al menos 24 horas de anticipación.</p><h3>Cancelaciones Tardías</h3><p>Cancelaciones con menos de 24 horas no son elegibles para reembolso.</p><h3>Proceso de Reembolso</h3><p>Los reembolsos se procesan en 5-7 días hábiles a su método de pago original.</p>', 24, 100.00, '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-31 00:28:38'),
-(2, 2, '1.0', '<h2>Política de Cancelación de Pádel Arena</h2>\r\n<h3>Términos de Cancelación</h3>\r\n<ul>\r\n  <li>Más de 24 horas: Reembolso completo</li>\r\n  <li>12-24 horas: Reembolso del 50%</li>\r\n  <li>Menos de 12 horas: Sin reembolso</li>\r\n</ul>\r\n<h3>Cómo Cancelar</h3>\r\n<p>Puede cancelar desde su cuenta en la sección \"Mis Reservas\".</p>', 24, 100.00, '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-26 20:49:30');
+(1, 1, '1.0', '<h2>Política de Cancelación de Pádel Club Premium123</h2><h3>Cancelaciones con Reembolso Completo</h3><p>Recibirá un reembolso del 100% si cancela con al menos 24 horas de anticipación.</p><h3>Cancelaciones Tardías</h3><p>Cancelaciones con menos de 24 horas no son elegibles para reembolso.</p><h3>Proceso de Reembolso</h3><p>Los reembolsos se procesan en 5-7 días hábiles a su método de pago original.</p>', 24, 100.00, '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-31 00:28:38');
 
 -- --------------------------------------------------------
 
@@ -288,8 +268,7 @@ CREATE TABLE `club_privacy_policy` (
 --
 
 INSERT INTO `club_privacy_policy` (`id`, `club_id`, `version`, `content`, `effective_date`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 1, '1.0', '<h2>Política de Privacidad de Pádel Club Premium123</h2><h3>Recopilación de Datos</h3><p>Recopilamos la siguiente información personal:</p><ul><li>Nombre y apellidos</li><li>Correo electrónico</li><li>Número de teléfono</li><li>Información de pago (procesada de forma segura por Stripe)</li></ul><h3>Uso de la Información</h3><p>Utilizamos su información para:</p><ul><li>Procesar sus reservas</li><li>Enviar confirmaciones y recordatorios</li><li>Mejorar nuestros servicios</li><li>Comunicaciones de marketing (con su consentimiento)</li></ul><h3>Protección de Datos</h3><p>Sus datos están protegidos según la LFPDPPP mexicana. No compartimos su información con terceros sin su consentimiento.</p>', '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-31 00:25:59'),
-(2, 2, '1.0', '<h2>Política de Privacidad de Pádel Arena</h2>\r\n<h3>Información que Recopilamos</h3>\r\n<p>Recopilamos datos necesarios para brindar nuestros servicios:</p>\r\n<ul>\r\n  <li>Datos de contacto (nombre, email, teléfono)</li>\r\n  <li>Historial de reservas</li>\r\n  <li>Preferencias de juego</li>\r\n</ul>\r\n<h3>Derechos del Usuario</h3>\r\n<p>Usted tiene derecho a:</p>\r\n<ul>\r\n  <li>Acceder a sus datos personales</li>\r\n  <li>Rectificar información incorrecta</li>\r\n  <li>Solicitar la eliminación de sus datos</li>\r\n  <li>Oponerse al procesamiento de sus datos</li>\r\n</ul>\r\n<h3>Contacto</h3>\r\n<p>Para ejercer sus derechos, contáctenos en privacy@padelarena.com</p>', '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-26 20:49:30');
+(1, 1, '1.0', '<h2>Política de Privacidad de Pádel Club Premium123</h2><h3>Recopilación de Datos</h3><p>Recopilamos la siguiente información personal:</p><ul><li>Nombre y apellidos</li><li>Correo electrónico</li><li>Número de teléfono</li><li>Información de pago (procesada de forma segura por Stripe)</li></ul><h3>Uso de la Información</h3><p>Utilizamos su información para:</p><ul><li>Procesar sus reservas</li><li>Enviar confirmaciones y recordatorios</li><li>Mejorar nuestros servicios</li><li>Comunicaciones de marketing (con su consentimiento)</li></ul><h3>Protección de Datos</h3><p>Sus datos están protegidos según la LFPDPPP mexicana. No compartimos su información con terceros sin su consentimiento.</p>', '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-31 00:25:59');
 
 -- --------------------------------------------------------
 
@@ -312,33 +291,12 @@ CREATE TABLE `club_schedules` (
 
 INSERT INTO `club_schedules` (`id`, `club_id`, `day_of_week`, `opens_at`, `closes_at`, `is_closed`) VALUES
 (1, 1, 0, '08:00:00', '23:00:00', 0),
-(2, 2, 0, '08:00:00', '23:00:00', 0),
-(3, 3, 0, '08:00:00', '23:00:00', 0),
-(4, 4, 0, '08:00:00', '23:00:00', 0),
 (5, 1, 1, '08:00:00', '23:00:00', 0),
-(6, 2, 1, '08:00:00', '23:00:00', 0),
-(7, 3, 1, '08:00:00', '23:00:00', 0),
-(8, 4, 1, '08:00:00', '23:00:00', 0),
 (9, 1, 2, '08:00:00', '23:00:00', 0),
-(10, 2, 2, '08:00:00', '23:00:00', 0),
-(11, 3, 2, '08:00:00', '23:00:00', 0),
-(12, 4, 2, '08:00:00', '23:00:00', 0),
 (13, 1, 3, '08:00:00', '23:00:00', 0),
-(14, 2, 3, '08:00:00', '23:00:00', 0),
-(15, 3, 3, '08:00:00', '23:00:00', 0),
-(16, 4, 3, '08:00:00', '23:00:00', 0),
 (17, 1, 4, '08:00:00', '23:00:00', 0),
-(18, 2, 4, '08:00:00', '23:00:00', 0),
-(19, 3, 4, '08:00:00', '23:00:00', 0),
-(20, 4, 4, '08:00:00', '23:00:00', 0),
 (21, 1, 5, '08:00:00', '23:00:00', 0),
-(22, 2, 5, '08:00:00', '23:00:00', 0),
-(23, 3, 5, '08:00:00', '23:00:00', 0),
-(24, 4, 5, '08:00:00', '23:00:00', 0),
-(25, 1, 6, '08:00:00', '23:00:00', 0),
-(26, 2, 6, '08:00:00', '23:00:00', 0),
-(27, 3, 6, '08:00:00', '23:00:00', 0),
-(28, 4, 6, '08:00:00', '23:00:00', 0);
+(25, 1, 6, '08:00:00', '23:00:00', 0);
 
 -- --------------------------------------------------------
 
@@ -446,8 +404,7 @@ CREATE TABLE `club_terms_conditions` (
 --
 
 INSERT INTO `club_terms_conditions` (`id`, `club_id`, `version`, `content`, `effective_date`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 1, '1.0', '<h2>Términos y Condiciones de Pádel Club Premium321</h2><p>Bienvenido a Pádel Club Premium. Al realizar una reserva, usted acepta los siguientes términos y condiciones:</p><h3>1. Reservas</h3><ul><li>Las reservas deben realizarse con al menos 1 hora de anticipación</li><li>El pago debe completarse al momento de la reserva</li><li>Las reservas no utilizadas no serán reembolsadas sin previo aviso</li></ul><h3>2. Cancelaciones</h3><ul><li>Cancelaciones con más de 24 horas: reembolso completo</li><li>Cancelaciones con menos de 24 horas: sin reembolso</li></ul><h3>3. Normas del Club</h3><ul><li>El uso de calzado deportivo adecuado es obligatorio</li><li>Respete los horarios de inicio y fin de su reserva</li><li>Mantenga las instalaciones limpias</li></ul>', '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-31 00:26:06'),
-(2, 2, '1.0', '<h2>Términos y Condiciones de Pádel Arena</h2>\r\n<p>Al utilizar las instalaciones de Pádel Arena, usted acepta cumplir con estos términos:</p>\r\n<h3>1. Uso de Instalaciones</h3>\r\n<ul>\r\n  <li>Las canchas deben ser reservadas con anticipación</li>\r\n  <li>El tiempo de juego incluye el tiempo de preparación</li>\r\n  <li>No se permite el ingreso de mascotas</li>\r\n</ul>\r\n<h3>2. Responsabilidad</h3>\r\n<ul>\r\n  <li>Los usuarios son responsables de su propia seguridad</li>\r\n  <li>El club no se hace responsable por objetos personales perdidos</li>\r\n</ul>', '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-26 20:49:30');
+(1, 1, '1.0', '<h2>Términos y Condiciones de Pádel Club Premium321</h2><p>Bienvenido a Pádel Club Premium. Al realizar una reserva, usted acepta los siguientes términos y condiciones:</p><h3>1. Reservas</h3><ul><li>Las reservas deben realizarse con al menos 1 hora de anticipación</li><li>El pago debe completarse al momento de la reserva</li><li>Las reservas no utilizadas no serán reembolsadas sin previo aviso</li></ul><h3>2. Cancelaciones</h3><ul><li>Cancelaciones con más de 24 horas: reembolso completo</li><li>Cancelaciones con menos de 24 horas: sin reembolso</li></ul><h3>3. Normas del Club</h3><ul><li>El uso de calzado deportivo adecuado es obligatorio</li><li>Respete los horarios de inicio y fin de su reserva</li><li>Mantenga las instalaciones limpias</li></ul>', '2025-12-26', 1, '2025-12-26 20:49:30', '2025-12-31 00:26:06');
 
 -- --------------------------------------------------------
 
@@ -474,21 +431,9 @@ CREATE TABLE `courts` (
 
 INSERT INTO `courts` (`id`, `club_id`, `name`, `court_type`, `surface_type`, `has_lighting`, `is_active`, `display_order`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Cancha 1 \"Yeti\"', 'covered', 'glass', 1, 1, 1, '2025-12-22 22:29:49', '2025-12-27 00:39:02'),
-(2, 2, 'Court 1', 'indoor', 'glass', 1, 1, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(3, 3, 'Court 1', 'indoor', 'glass', 1, 1, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(4, 4, 'Court 1', 'indoor', 'glass', 1, 1, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (5, 1, 'Cancha 3 \"Nestle\"', 'outdoor', 'glass', 1, 1, 2, '2025-12-22 22:29:49', '2025-12-27 00:38:01'),
-(6, 2, 'Court 2', 'indoor', 'glass', 1, 1, 2, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(7, 3, 'Court 2', 'indoor', 'glass', 1, 1, 2, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(8, 4, 'Court 2', 'indoor', 'glass', 1, 1, 2, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (9, 1, 'Cancha 3 \"Tesla\"', 'indoor', 'glass', 1, 1, 3, '2025-12-22 22:29:49', '2025-12-27 00:32:11'),
-(10, 2, 'Court 3', 'outdoor', 'glass', 1, 1, 3, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(11, 3, 'Court 3', 'outdoor', 'glass', 1, 1, 3, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(12, 4, 'Court 3', 'outdoor', 'glass', 1, 1, 3, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(13, 1, 'Cancha 4', 'indoor', 'glass', 1, 1, 4, '2025-12-22 22:29:49', '2025-12-27 00:29:17'),
-(14, 2, 'Court 4', 'outdoor', 'glass', 1, 1, 4, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(15, 3, 'Court 4', 'outdoor', 'glass', 1, 1, 4, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(16, 4, 'Court 4', 'outdoor', 'glass', 1, 1, 4, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
+(13, 1, 'Cancha 4', 'indoor', 'glass', 1, 1, 4, '2025-12-22 22:29:49', '2025-12-27 00:29:17');
 
 -- --------------------------------------------------------
 
@@ -525,10 +470,10 @@ CREATE TABLE `events` (
 --
 
 INSERT INTO `events` (`id`, `club_id`, `event_type`, `title`, `description`, `event_date`, `start_time`, `end_time`, `max_participants`, `current_participants`, `registration_fee`, `prize_pool`, `skill_level`, `status`, `courts_used`, `image_url`, `rules`, `organizer_name`, `organizer_email`, `created_at`, `updated_at`) VALUES
-(1, 1, 'tournament', 'New Year Championship 2026', 'Competitive doubles tournament for all skill levels', '2026-01-10', '09:00:00', '18:00:00', 32, 1, 50.00, 1000.00, 'all', 'open', '[1, 2, 3, 4]', NULL, NULL, NULL, NULL, '2025-12-22 22:29:49', '2025-12-27 19:24:45'),
-(2, 2, 'clinic', 'Advanced Tactics Clinic', 'Learn advanced strategies from professional coaches', '2026-01-15', '10:00:00', '13:00:00', 16, 0, 35.00, 0.00, 'advanced', 'open', '[1, 2]', NULL, NULL, NULL, NULL, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(3, 1, 'tournament', 'Torneo de Reyes', 'El mejor torneo para partir la rosca', '2026-01-06', '15:30:00', '23:00:00', 120, 2, 320.00, 3500.00, 'intermediate', 'open', '[5, 13]', NULL, NULL, NULL, NULL, '2025-12-27 19:51:03', '2025-12-27 22:42:12'),
-(4, 1, 'tournament', 'Torneo del Rey', 'Ven a vivir este gran torneo', '2026-01-17', '18:00:00', '23:00:00', 45, 1, 750.00, 35000.00, 'all', 'open', '[1, 5, 13]', NULL, NULL, NULL, NULL, '2026-01-02 20:43:13', '2026-01-02 22:17:05');
+(1, 1, 'tournament', 'New Year Championship 2026', 'Competitive doubles tournament for all skill levels', '2026-01-10', '09:00:00', '18:00:00', 32, 2, 50.00, 1000.00, 'all', 'open', '[1, 2, 3, 4]', NULL, NULL, NULL, NULL, '2025-12-22 22:29:49', '2026-01-03 04:13:10'),
+(3, 1, 'tournament', 'Torneo de Reyes', 'El mejor torneo para partir la rosca', '2026-01-06', '15:30:00', '23:00:00', 120, 3, 320.00, 3500.00, 'intermediate', 'open', '[5, 13]', NULL, NULL, NULL, NULL, '2025-12-27 19:51:03', '2026-01-03 22:18:08'),
+(4, 1, 'tournament', 'Torneo del Rey', 'Ven a vivir este gran torneo', '2026-01-17', '18:00:00', '23:00:00', 45, 2, 750.00, 35000.00, 'all', 'open', '[1, 5, 13]', NULL, NULL, NULL, NULL, '2026-01-02 20:43:13', '2026-01-03 04:48:26'),
+(5, 1, 'tournament', 'Torneo de la Amistad', 'El mejor evento para ahcer amigos jugando padel', '2026-02-14', '18:00:00', '23:00:00', 80, 0, 850.00, 850000.00, 'all', 'open', '[1, 5]', NULL, NULL, NULL, NULL, '2026-01-03 22:26:20', '2026-01-03 22:26:20');
 
 -- --------------------------------------------------------
 
@@ -580,10 +525,9 @@ CREATE TABLE `event_participants` (
 --
 
 INSERT INTO `event_participants` (`id`, `event_id`, `user_id`, `registration_date`, `payment_status`, `team_name`, `partner_user_id`, `status`, `notes`) VALUES
-(1, 1, 2, '2025-12-27 19:24:45', 'paid', NULL, NULL, 'confirmed', NULL),
-(2, 3, 3, '2025-12-27 20:30:14', 'paid', NULL, NULL, 'confirmed', NULL),
-(4, 3, 2, '2025-12-27 22:42:12', 'paid', NULL, NULL, 'confirmed', NULL),
-(5, 4, 2, '2026-01-02 22:17:04', 'paid', NULL, NULL, 'confirmed', NULL);
+(6, 1, 2, '2026-01-03 04:13:09', 'paid', NULL, NULL, 'confirmed', NULL),
+(7, 4, 2, '2026-01-03 04:48:25', 'paid', NULL, NULL, 'confirmed', NULL),
+(8, 3, 2, '2026-01-03 22:18:08', 'paid', NULL, NULL, 'confirmed', NULL);
 
 -- --------------------------------------------------------
 
@@ -614,8 +558,7 @@ CREATE TABLE `instructors` (
 
 INSERT INTO `instructors` (`id`, `club_id`, `name`, `email`, `phone`, `bio`, `specialties`, `hourly_rate`, `avatar_url`, `rating`, `review_count`, `is_active`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Carlos Rodríguez', 'carlos@elitepadel.es', '+34 612 345 678', 'Professional padel coach with 10+ years experience', '[\"advanced\", \"tactics\", \"tournament_prep\"]', 60.00, NULL, 4.90, 45, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(2, 1, 'María González', 'maria@elitepadel.es', '+34 623 456 789', 'Specialized in teaching beginners and intermediate players', '[\"beginner\", \"intermediate\", \"fitness\"]', 50.00, NULL, 4.80, 38, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(3, 2, 'Juan Martínez', 'juan@barcapadel.es', '+34 634 567 890', 'Former professional player, expert in advanced techniques', '[\"advanced\", \"expert\", \"tactics\"]', 65.00, NULL, 4.90, 52, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
+(2, 1, 'María González', 'maria@elitepadel.es', '+34 623 456 789', 'Specialized in teaching beginners and intermediate players', '[\"beginner\", \"intermediate\", \"fitness\"]', 50.00, NULL, 4.80, 38, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
 
 -- --------------------------------------------------------
 
@@ -763,72 +706,29 @@ CREATE TABLE `payment_transactions` (
 --
 
 INSERT INTO `payment_transactions` (`id`, `transaction_number`, `user_id`, `club_id`, `transaction_type`, `booking_id`, `subscription_id`, `event_participant_id`, `private_class_id`, `amount`, `currency`, `status`, `payment_method_id`, `payment_provider`, `stripe_payment_intent_id`, `stripe_charge_id`, `stripe_invoice_id`, `stripe_refund_id`, `provider_transaction_id`, `provider_response`, `refund_amount`, `refund_reason`, `refunded_at`, `paid_at`, `failed_at`, `failure_reason`, `failure_code`, `metadata`, `created_at`, `updated_at`) VALUES
-(1, 'TXN20251201001', 1, 1, 'subscription', NULL, NULL, NULL, NULL, 59.99, 'EUR', 'completed', 1, 'stripe', NULL, NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-01 16:05:00', NULL, NULL, NULL, NULL, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(2, 'TXN1766777691976659', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'EUR', 'pending', NULL, 'stripe', 'pi_3SigmlCDsJ3n85lg04VtoJYD', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:34:52', '2025-12-26 19:34:52'),
-(3, 'TXN176677773994135', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'EUR', 'pending', NULL, 'stripe', 'pi_3SignXCDsJ3n85lg0cwVGVYs', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:35:40', '2025-12-26 19:35:40'),
-(4, 'TXN1766777884014930', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'EUR', 'pending', NULL, 'stripe', 'pi_3SigprCDsJ3n85lg1SnOd7um', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"12:00\", \"start_time\": \"11:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:38:04', '2025-12-26 19:38:04'),
-(5, 'TXN1766778228543403', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'EUR', 'pending', NULL, 'stripe', 'pi_3SigvQCDsJ3n85lg05dWZp2Q', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:43:48', '2025-12-26 19:43:48'),
-(6, 'TXN1766778345200606', 2, 1, 'booking', 3, NULL, NULL, NULL, 45.00, 'EUR', 'completed', NULL, 'stripe', 'pi_3SigxJCDsJ3n85lg1dWU5kO5', 'ch_3SigxJCDsJ3n85lg1JfleqEN', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 19:46:01', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:45:45', '2025-12-26 19:46:01'),
-(7, 'TXN1766778729944755', 2, 1, 'booking', 4, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sih3VCDsJ3n85lg0zGGh6PU', 'ch_3Sih3VCDsJ3n85lg0BhnRHIS', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 19:52:35', NULL, NULL, NULL, '{\"court_id\": 5, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 19:52:10', '2025-12-26 19:52:35'),
-(8, 'TXN1766781390788962', 2, 1, 'booking', 5, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SihkQCDsJ3n85lg0c7KlutU', 'ch_3SihkQCDsJ3n85lg0p2mxQOB', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-26 20:36:46', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"23:00\", \"start_time\": \"22:00\", \"booking_date\": \"2025-12-28\", \"duration_minutes\": 60}', '2025-12-26 20:36:30', '2025-12-26 20:36:46'),
-(9, 'TXN1766782271707626', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SihydCDsJ3n85lg13n4XNNm', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"13:00\", \"start_time\": \"12:00\", \"booking_date\": \"2025-12-31\", \"duration_minutes\": 60}', '2025-12-26 20:51:11', '2025-12-26 20:51:11'),
-(10, 'EVT1766799776726884', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SimWyCDsJ3n85lg10LvYCng', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 01:42:56', '2025-12-27 01:42:56'),
-(11, 'EVT1766799873421468', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SimYXCDsJ3n85lg0ZuD82NF', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 01:44:33', '2025-12-27 01:44:33'),
-(12, 'EVT1766799873174694', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SimYXCDsJ3n85lg0h9o87yv', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 01:44:34', '2025-12-27 01:44:34'),
-(13, 'EVT1766799874624798', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SimYXCDsJ3n85lg0lQ7NwS6', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 01:44:34', '2025-12-27 01:44:34'),
-(14, 'EVT1766799874703704', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SimYXCDsJ3n85lg1laRAPB9', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 01:44:34', '2025-12-27 01:44:34'),
-(15, 'EVT1766863214034152', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sj32ACDsJ3n85lg1mygzKeT', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 19:20:14', '2025-12-27 19:20:14'),
-(16, 'EVT1766863214281979', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sj32ACDsJ3n85lg0IxC8Lac', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 19:20:14', '2025-12-27 19:20:14'),
-(17, 'EVT1766863214285878', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sj32ACDsJ3n85lg1xmYARaX', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 19:20:14', '2025-12-27 19:20:14'),
-(18, 'EVT176686321462075', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sj32ACDsJ3n85lg0TJbxIwU', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 19:20:14', '2025-12-27 19:20:14'),
-(19, 'EVT1766863371030992', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sj34gCDsJ3n85lg0uHTxZX0', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\"}', '2025-12-27 19:22:51', '2025-12-27 19:22:51'),
-(20, 'EVT1766863467759478', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sj36FCDsJ3n85lg0CmXbDay', 'ch_3Sj36FCDsJ3n85lg0hPUuEk9', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-27 19:24:46', NULL, NULL, NULL, '{\"event_id\": 1, \"event_date\": \"2026-01-10T07:00:00.000Z\", \"event_title\": \"New Year Championship 2026\", \"participant_id\": 1}', '2025-12-27 19:24:28', '2025-12-27 19:24:46'),
-(21, 'EVT176686739407294', 3, 1, '', NULL, NULL, NULL, NULL, 320.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sj47aCDsJ3n85lg1oiFMaGO', 'ch_3Sj47aCDsJ3n85lg1cfNxu2j', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-27 20:30:14', NULL, NULL, NULL, '{\"event_id\": 3, \"event_date\": \"2026-01-06T07:00:00.000Z\", \"event_title\": \"Torneo de Reyes\", \"participant_id\": 2}', '2025-12-27 20:29:54', '2025-12-27 20:30:14'),
-(22, 'TXN1766875332855', 2, 1, 'event', NULL, NULL, 4, NULL, 320.00, 'mxn', 'completed', NULL, 'manual', NULL, NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-27 22:42:13', NULL, NULL, NULL, '{\"type\": \"event_registration\", \"notes\": null, \"event_id\": \"3\", \"admin_name\": \"Felix Gomez\", \"event_title\": \"Torneo de Reyes\", \"participant_id\": 4, \"created_by_admin_id\": 1}', '2025-12-27 22:42:13', '2025-12-27 22:42:13'),
-(23, 'TXN1767051843370762', 3, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sjq6ZCDsJ3n85lg1Jl5hPAj', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-04\", \"duration_minutes\": 60}', '2025-12-29 23:44:03', '2025-12-29 23:44:03'),
-(24, 'CLS176705449249311', 2, 1, 'private_class', NULL, NULL, NULL, NULL, 60.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjqnICDsJ3n85lg0j484SLc', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"end_time\": \"9:00\", \"class_date\": \"2026-01-05\", \"class_type\": \"individual\", \"start_time\": \"08:00\", \"instructor_id\": 1, \"duration_minutes\": 60, \"number_of_students\": 1}', '2025-12-30 00:28:12', '2025-12-30 00:28:12'),
-(25, 'CLS1767054911664241', 2, 1, 'private_class', NULL, NULL, NULL, NULL, 60.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sjqu3CDsJ3n85lg1L0EtO8F', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:00\", \"class_date\": \"2026-01-05\", \"class_type\": \"individual\", \"start_time\": \"09:00\", \"instructor_id\": 1, \"duration_minutes\": 60, \"number_of_students\": 1}', '2025-12-30 00:35:11', '2025-12-30 00:35:11'),
-(26, 'TXN1767055123696153', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjqxTCDsJ3n85lg0MOnydJV', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:38:43', '2025-12-30 00:38:43'),
-(27, 'TXN1767055309693773', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sjr0TCDsJ3n85lg1XMYTL7Q', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:41:49', '2025-12-30 00:41:49'),
-(28, 'TXN1767055511032893', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sjr3iCDsJ3n85lg0f5NCmED', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:00\", \"start_time\": \"09:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:45:11', '2025-12-30 00:45:11'),
-(29, 'TXN1767055644716152', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sjr5sCDsJ3n85lg0IYMdj1Q', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:47:25', '2025-12-30 00:47:25'),
-(30, 'TXN1767055737196375', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sjr7NCDsJ3n85lg13qjuVzM', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:48:57', '2025-12-30 00:48:57'),
-(31, 'TXN1767056050269610', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjrCQCDsJ3n85lg0H2PL8pq', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:54:10', '2025-12-30 00:54:10'),
-(32, 'TXN1767056267559482', 2, 1, 'booking', NULL, NULL, NULL, NULL, 45.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjrFvCDsJ3n85lg0M7z3I6D', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"start_time\": \"10:00\", \"booking_date\": \"2026-01-05\", \"duration_minutes\": 60}', '2025-12-30 00:57:47', '2025-12-30 00:57:47'),
-(33, 'CLS1767056442881230', 2, 1, 'private_class', NULL, NULL, NULL, NULL, 60.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SjrIkCDsJ3n85lg04glcSte', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"class_date\": \"2026-01-05\", \"class_type\": \"individual\", \"start_time\": \"08:00\", \"instructor_id\": 1, \"duration_minutes\": 60, \"number_of_students\": 1}', '2025-12-30 01:00:43', '2025-12-30 01:00:43'),
-(34, 'CLS1767056543938677', 2, 1, 'private_class', NULL, NULL, NULL, 1, 60.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SjrKNCDsJ3n85lg1XmHWTTz', 'ch_3SjrKNCDsJ3n85lg14kkV4ZQ', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-30 01:02:53', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"11:00\", \"class_date\": \"2026-01-05\", \"class_type\": \"individual\", \"start_time\": \"10:00\", \"instructor_id\": 1, \"duration_minutes\": 60, \"number_of_students\": 1}', '2025-12-30 01:02:24', '2025-12-30 01:02:53'),
-(35, 'TXN1767062168025120', 2, 1, 'booking', 12, NULL, NULL, NULL, 45.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sjsn6CDsJ3n85lg0ddSXbVk', 'ch_3Sjsn6CDsJ3n85lg0lKqZP6m', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-30 02:36:22', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"14:00\", \"start_time\": \"13:00\", \"booking_date\": \"2026-01-26\", \"duration_minutes\": 60}', '2025-12-30 02:36:08', '2025-12-30 02:36:22'),
-(36, 'TXN1767139879240108', 2, 1, 'booking', 13, NULL, NULL, NULL, 250.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SkD0VCDsJ3n85lg0gjaVP9M', 'ch_3SkD0VCDsJ3n85lg0ee2IOaa', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-31 00:11:34', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:30\", \"start_time\": \"09:30\", \"booking_date\": \"2025-12-31\", \"duration_minutes\": 90}', '2025-12-31 00:11:19', '2025-12-31 00:11:34'),
-(37, 'TXN1767140783595702', 2, 1, 'booking', NULL, NULL, NULL, NULL, 250.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SkDF5CDsJ3n85lg0OxU82va', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 5, \"end_time\": \"15:00\", \"start_time\": \"14:00\", \"booking_date\": \"2025-12-31\", \"duration_minutes\": 90}', '2025-12-31 00:26:23', '2025-12-31 00:26:23'),
-(38, 'TXN1767140931287917', 2, 1, 'booking', 14, NULL, NULL, NULL, 550.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SkDHTCDsJ3n85lg1jOwMh8W', 'ch_3SkDHTCDsJ3n85lg1p2Vws9X', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2025-12-31 00:29:08', NULL, NULL, NULL, '{\"court_id\": 5, \"end_time\": \"19:30\", \"start_time\": \"18:30\", \"booking_date\": \"2025-12-31\", \"duration_minutes\": 90}', '2025-12-31 00:28:51', '2025-12-31 00:29:08'),
-(39, 'TXN1767381345251743', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlDp7CDsJ3n85lg0c26n3wM', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-24\", \"duration_minutes\": 90}', '2026-01-02 19:15:45', '2026-01-02 19:15:45'),
-(40, 'TXN1767381782382658', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlDw9CDsJ3n85lg0Ex6BivL', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 9, \"end_time\": \"10:30\", \"start_time\": \"09:30\", \"booking_date\": \"2026-01-17\", \"duration_minutes\": 90}', '2026-01-02 19:23:02', '2026-01-02 19:23:02'),
-(41, 'TXN1767382520279675', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlE84CDsJ3n85lg061FflyG', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"12:00\", \"start_time\": \"11:00\", \"booking_date\": \"2026-01-31\", \"duration_minutes\": 90}', '2026-01-02 19:35:20', '2026-01-02 19:35:20'),
-(42, 'TXN1767382604708420', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlE9QCDsJ3n85lg19O8ra9f', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:30\", \"start_time\": \"09:30\", \"booking_date\": \"2026-01-10\", \"duration_minutes\": 90}', '2026-01-02 19:36:45', '2026-01-02 19:36:45'),
-(43, 'TXN1767382728331868', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlEBQCDsJ3n85lg0Rcgp5y6', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:30\", \"start_time\": \"09:30\", \"booking_date\": \"2026-01-10\", \"duration_minutes\": 90}', '2026-01-02 19:38:48', '2026-01-02 19:38:48'),
-(44, 'TXN1767382836431788', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlEDACDsJ3n85lg0hyA31Tv', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"12:00\", \"start_time\": \"11:00\", \"booking_date\": \"2026-01-10\", \"duration_minutes\": 90}', '2026-01-02 19:40:36', '2026-01-02 19:40:36'),
-(45, 'TXN1767382956040821', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlEF6CDsJ3n85lg0UmXz5sQ', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"10:30\", \"start_time\": \"09:30\", \"booking_date\": \"2026-01-09\", \"duration_minutes\": 90}', '2026-01-02 19:42:36', '2026-01-02 19:42:36'),
-(46, 'TXN1767383715337893', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlERLCDsJ3n85lg11YtuBcg', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-09\", \"duration_minutes\": 90}', '2026-01-02 19:55:15', '2026-01-02 19:55:15'),
-(47, 'TXN1767383732956558', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlERcCDsJ3n85lg0AbG9jHr', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-09\", \"duration_minutes\": 90}', '2026-01-02 19:55:33', '2026-01-02 19:55:33'),
-(48, 'TXN1767383960781223', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlEVICDsJ3n85lg0SYAty87', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-09\", \"duration_minutes\": 90}', '2026-01-02 19:59:21', '2026-01-02 19:59:21'),
-(49, 'TXN1767384071104333', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlEX5CDsJ3n85lg0jchW0RQ', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-09\", \"duration_minutes\": 90}', '2026-01-02 20:01:11', '2026-01-02 20:01:11'),
-(50, 'TXN1767384272336412', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlEaKCDsJ3n85lg1ksd98sf', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-09\", \"duration_minutes\": 90}', '2026-01-02 20:04:32', '2026-01-02 20:04:32'),
-(51, 'TXN176738445324013', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlEdFCDsJ3n85lg0QbLXmVA', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-09\", \"duration_minutes\": 90}', '2026-01-02 20:07:33', '2026-01-02 20:07:33'),
-(52, 'TXN1767384579123950', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlEfHCDsJ3n85lg0joXQtL3', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-09\", \"duration_minutes\": 90}', '2026-01-02 20:09:39', '2026-01-02 20:09:39'),
-(53, 'TXN1767384895894346', 2, 1, 'booking', NULL, NULL, NULL, NULL, 230.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlEkNCDsJ3n85lg1iFBO755', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-09\", \"duration_minutes\": 90}', '2026-01-02 20:14:56', '2026-01-02 20:14:56'),
-(54, 'TXN1767385081137261', 2, 1, 'booking', 15, NULL, NULL, NULL, 230.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SlEnNCDsJ3n85lg0BSbN1Dr', 'ch_3SlEnNCDsJ3n85lg0WWKefvU', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-02 20:18:11', NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-09\", \"duration_minutes\": 90}', '2026-01-02 20:18:01', '2026-01-02 20:18:11'),
-(55, 'TXN1767385134410632', 2, 1, 'booking', 16, NULL, NULL, NULL, 506.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SlEoECDsJ3n85lg0ivYV1cW', 'ch_3SlEoECDsJ3n85lg0L7Okzkf', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-02 20:19:13', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"19:30\", \"start_time\": \"18:30\", \"booking_date\": \"2026-01-09\", \"duration_minutes\": 90}', '2026-01-02 20:18:54', '2026-01-02 20:19:13'),
-(56, 'TXN1767385487307130', 2, 1, 'booking', NULL, NULL, NULL, NULL, 506.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlEtvCDsJ3n85lg0yrvbA57', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 5, \"end_time\": \"18:00\", \"start_time\": \"17:00\", \"booking_date\": \"2026-01-09\", \"duration_minutes\": 90}', '2026-01-02 20:24:47', '2026-01-02 20:24:47'),
-(57, 'TXN1767385643917605', 2, 1, 'booking', 17, NULL, NULL, NULL, 506.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SlEwRCDsJ3n85lg1jKdJAwR', 'ch_3SlEwRCDsJ3n85lg1yYUgnhw', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-02 20:27:34', NULL, NULL, NULL, '{\"court_id\": 9, \"end_time\": \"18:00\", \"start_time\": \"17:00\", \"booking_date\": \"2026-01-07\", \"duration_minutes\": 90}', '2026-01-02 20:27:24', '2026-01-02 20:27:34'),
-(58, 'TXN1767385672601288', 2, 1, 'booking', NULL, NULL, NULL, NULL, 506.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlEwuCDsJ3n85lg0fNP14Eh', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"18:00\", \"start_time\": \"17:00\", \"booking_date\": \"2026-01-07\", \"duration_minutes\": 90}', '2026-01-02 20:27:52', '2026-01-02 20:27:52'),
-(59, 'TXN1767385998904484', 2, 1, 'booking', 18, NULL, NULL, NULL, 506.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SlF2ACDsJ3n85lg0xu63vM0', 'ch_3SlF2ACDsJ3n85lg0DMaERzF', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-02 20:33:39', NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"22:30\", \"start_time\": \"21:30\", \"booking_date\": \"2026-01-07\", \"duration_minutes\": 90}', '2026-01-02 20:33:19', '2026-01-02 20:33:39'),
-(60, 'EVT1767392209162936', 2, 1, '', NULL, NULL, NULL, NULL, 750.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SlGeLCDsJ3n85lg0KjSIAyh', 'ch_3SlGeLCDsJ3n85lg02rm1CYD', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-02 22:17:05', NULL, NULL, NULL, '{\"event_id\": 4, \"event_date\": \"2026-01-17T06:00:00.000Z\", \"event_title\": \"Torneo del Rey\", \"participant_id\": 5}', '2026-01-02 22:16:49', '2026-01-02 22:17:05'),
-(61, 'CLS1767392292306879', 2, 1, 'private_class', NULL, NULL, NULL, 5, 88.20, 'MXN', 'completed', NULL, 'stripe', 'pi_3SlGfgCDsJ3n85lg1HOx6big', 'ch_3SlGfgCDsJ3n85lg1XxrxR5H', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-02 22:18:33', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"15:00\", \"class_date\": \"2026-01-12\", \"class_type\": \"individual\", \"start_time\": \"14:00\", \"instructor_id\": 1, \"duration_minutes\": 90, \"number_of_students\": 1}', '2026-01-02 22:18:12', '2026-01-02 22:18:33'),
-(62, 'TXN1767404599042570', 2, 1, 'booking', NULL, NULL, NULL, NULL, 250.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlJsBCDsJ3n85lg1fEbkQYS', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-30\", \"duration_minutes\": 90}', '2026-01-03 01:43:19', '2026-01-03 01:43:19'),
-(63, 'TXN1767405211737984', 3, 1, 'booking', NULL, NULL, NULL, NULL, 550.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlK23CDsJ3n85lg1nqiZ1Zf', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"18:00\", \"start_time\": \"17:00\", \"booking_date\": \"2026-01-31\", \"duration_minutes\": 90}', '2026-01-03 01:53:32', '2026-01-03 01:53:32'),
-(64, 'TXN1767405351863861', 3, 1, 'booking', NULL, NULL, NULL, NULL, 550.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlK4JCDsJ3n85lg05Qwhqsl', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"21:00\", \"start_time\": \"20:00\", \"booking_date\": \"2026-01-31\", \"duration_minutes\": 90}', '2026-01-03 01:55:52', '2026-01-03 01:55:52'),
-(65, 'TXN1767405481675663', 3, 1, 'booking', NULL, NULL, NULL, NULL, 550.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlK6PCDsJ3n85lg082wvcz4', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"22:30\", \"start_time\": \"21:30\", \"booking_date\": \"2026-01-31\", \"duration_minutes\": 90}', '2026-01-03 01:58:02', '2026-01-03 01:58:02'),
-(66, 'TXN1767405554497285', 3, 1, 'booking', NULL, NULL, NULL, NULL, 550.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlK7aCDsJ3n85lg0hg94dYf', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"22:30\", \"start_time\": \"21:30\", \"booking_date\": \"2026-01-31\", \"duration_minutes\": 90}', '2026-01-03 01:59:14', '2026-01-03 01:59:14');
+(69, 'EVT1767413577692134', 2, 1, '', NULL, NULL, NULL, NULL, 50.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SlMCzCDsJ3n85lg1WXLLVJW', 'ch_3SlMCzCDsJ3n85lg11FCdN40', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-03 04:13:52', NULL, NULL, NULL, '{\"event_id\": 1, \"last_sync\": \"2026-01-02 22:13:52.000000\", \"event_date\": \"2026-01-10T06:00:00.000Z\", \"event_title\": \"New Year Championship 2026\", \"stripe_status\": \"succeeded\", \"participant_id\": 6}', '2026-01-03 04:12:57', '2026-01-03 04:13:52'),
+(70, 'EVT176741417731193', 2, 1, 'event', NULL, NULL, NULL, NULL, 750.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlMMfCDsJ3n85lg0QOw2okb', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 4, \"event_date\": \"2026-01-17T06:00:00.000Z\", \"event_title\": \"Torneo del Rey\"}', '2026-01-03 04:22:57', '2026-01-03 04:22:57'),
+(71, 'EVT1767414424299703', 2, 1, 'event', NULL, NULL, NULL, NULL, 750.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlMQeCDsJ3n85lg0kt5iBQX', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 4, \"event_date\": \"2026-01-17T06:00:00.000Z\", \"event_title\": \"Torneo del Rey\"}', '2026-01-03 04:27:04', '2026-01-03 04:27:04'),
+(72, 'EVT1767414734320265', 2, 1, 'event', NULL, NULL, NULL, NULL, 750.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlMVeCDsJ3n85lg16DHpqL4', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 4, \"event_date\": \"2026-01-17T06:00:00.000Z\", \"event_title\": \"Torneo del Rey\"}', '2026-01-03 04:32:14', '2026-01-03 04:32:14'),
+(73, 'EVT1767414978426461', 2, 1, 'event', NULL, NULL, NULL, NULL, 690.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlMZaCDsJ3n85lg0KlNrPro', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 4, \"event_date\": \"2026-01-17T06:00:00.000Z\", \"event_title\": \"Torneo del Rey\"}', '2026-01-03 04:36:18', '2026-01-03 04:36:18'),
+(74, 'EVT1767415237920562', 2, 1, 'event', NULL, NULL, NULL, NULL, 690.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlMdlCDsJ3n85lg1DrBQz7X', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 4, \"event_date\": \"2026-01-17T06:00:00.000Z\", \"event_title\": \"Torneo del Rey\"}', '2026-01-03 04:40:38', '2026-01-03 04:40:38'),
+(75, 'EVT1767415317804920', 2, 1, 'event', NULL, NULL, NULL, NULL, 690.00, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlMf3CDsJ3n85lg1fHUAh1p', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 4, \"event_date\": \"2026-01-17T06:00:00.000Z\", \"event_title\": \"Torneo del Rey\"}', '2026-01-03 04:41:58', '2026-01-03 04:41:58'),
+(76, 'EVT1767415696610357', 2, 1, 'event', NULL, NULL, NULL, NULL, 690.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SlMlACDsJ3n85lg0T35It7w', 'ch_3SlMlACDsJ3n85lg081cGrC5', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-03 04:48:26', NULL, NULL, NULL, '{\"event_id\": 4, \"event_date\": \"2026-01-17T06:00:00.000Z\", \"event_title\": \"Torneo del Rey\", \"participant_id\": 7}', '2026-01-03 04:48:16', '2026-01-03 04:48:26'),
+(77, 'TXN1767415788090678', 2, 1, 'booking', 20, NULL, NULL, NULL, 506.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SlMmeCDsJ3n85lg1qCzfNp1', 'ch_3SlMmeCDsJ3n85lg1bbcB35q', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-03 04:49:57', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"19:30\", \"start_time\": \"18:30\", \"booking_date\": \"2026-01-18\", \"duration_minutes\": 90}', '2026-01-03 04:49:48', '2026-01-03 04:49:57'),
+(78, 'CLS1767416211280942', 2, 1, 'private_class', NULL, NULL, NULL, 6, 88.20, 'MXN', 'completed', NULL, 'stripe', 'pi_3SlMtTCDsJ3n85lg1cFIeXtA', 'ch_3SlMtTCDsJ3n85lg1DKyVxGa', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-03 04:57:02', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"16:30\", \"class_date\": \"2026-01-19\", \"class_type\": \"individual\", \"start_time\": \"15:30\", \"instructor_id\": 1, \"duration_minutes\": 90, \"number_of_students\": 1}', '2026-01-03 04:56:51', '2026-01-03 04:57:02'),
+(79, 'TXN1767473361289536', 2, 1, 'booking', NULL, NULL, NULL, NULL, 266.80, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlblFCDsJ3n85lg0z6tcBXq', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:30\", \"start_time\": \"09:30\", \"booking_date\": \"2026-01-11\", \"duration_minutes\": 90}', '2026-01-03 20:49:21', '2026-01-03 20:49:21'),
+(80, 'TXN176747376128272', 2, 1, 'booking', NULL, NULL, NULL, NULL, 266.80, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlbrhCDsJ3n85lg1sSAwJkj', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"9:00\", \"start_time\": \"08:00\", \"booking_date\": \"2026-01-11\", \"duration_minutes\": 90}', '2026-01-03 20:56:01', '2026-01-03 20:56:01'),
+(81, 'TXN1767473984718696', 2, 1, 'booking', NULL, NULL, NULL, NULL, 266.80, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlbvICDsJ3n85lg1jLPiFAB', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 9, \"end_time\": \"10:30\", \"start_time\": \"09:30\", \"booking_date\": \"2026-01-31\", \"duration_minutes\": 90}', '2026-01-03 20:59:44', '2026-01-03 20:59:44'),
+(82, 'CLS1767474083893116', 2, 1, 'private_class', NULL, NULL, NULL, NULL, 88.20, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlbwtCDsJ3n85lg0QIDA1mL', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"13:30\", \"class_date\": \"2026-01-19\", \"class_type\": \"individual\", \"start_time\": \"12:30\", \"instructor_id\": 1, \"duration_minutes\": 90, \"number_of_students\": 1}', '2026-01-03 21:01:24', '2026-01-03 21:01:24'),
+(83, 'EVT1767474118305496', 2, 1, 'event', NULL, NULL, NULL, NULL, 294.40, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlbxSCDsJ3n85lg03JFoTgo', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 3, \"event_date\": \"2026-01-06T06:00:00.000Z\", \"event_title\": \"Torneo de Reyes\"}', '2026-01-03 21:01:58', '2026-01-03 21:01:58'),
+(84, 'TXN1767477519630922', 2, 1, 'booking', 21, NULL, NULL, NULL, 266.80, 'MXN', 'completed', NULL, 'stripe', 'pi_3SlcqJCDsJ3n85lg1mPr7pvc', 'ch_3SlcqJCDsJ3n85lg16ZFpvdZ', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-03 21:58:58', NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"12:00\", \"start_time\": \"11:00\", \"booking_date\": \"2026-01-14\", \"duration_minutes\": 90}', '2026-01-03 21:58:39', '2026-01-03 21:58:58'),
+(85, 'EVT1767477928588321', 2, 1, 'event', NULL, NULL, NULL, NULL, 294.40, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlcwuCDsJ3n85lg0CdW0OoP', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 3, \"event_date\": \"2026-01-06T06:00:00.000Z\", \"event_title\": \"Torneo de Reyes\"}', '2026-01-03 22:05:28', '2026-01-03 22:05:28'),
+(86, 'CLS1767477984270717', 2, 1, 'private_class', NULL, NULL, NULL, NULL, 88.20, 'MXN', 'pending', NULL, 'stripe', 'pi_3SlcxoCDsJ3n85lg0LjifNUK', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"court_id\": 13, \"end_time\": \"10:30\", \"class_date\": \"2026-01-12\", \"class_type\": \"individual\", \"start_time\": \"09:30\", \"instructor_id\": 1, \"duration_minutes\": 90, \"number_of_students\": 1}', '2026-01-03 22:06:24', '2026-01-03 22:06:24'),
+(87, 'EVT1767478402092422', 2, 1, 'event', NULL, NULL, NULL, NULL, 294.40, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sld4YCDsJ3n85lg0QtSXCm2', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 3, \"event_date\": \"2026-01-06T06:00:00.000Z\", \"event_title\": \"Torneo de Reyes\"}', '2026-01-03 22:13:22', '2026-01-03 22:13:22'),
+(88, 'EVT1767478534964786', 2, 1, 'event', NULL, NULL, NULL, NULL, 341.50, 'MXN', 'pending', NULL, 'stripe', 'pi_3Sld6gCDsJ3n85lg1ECCERLt', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '{\"event_id\": 3, \"event_date\": \"2026-01-06T06:00:00.000Z\", \"event_title\": \"Torneo de Reyes\"}', '2026-01-03 22:15:35', '2026-01-03 22:15:35'),
+(89, 'EVT1767478681229152', 2, 1, 'event', NULL, NULL, NULL, NULL, 341.50, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sld93CDsJ3n85lg0Cr1wuR0', 'ch_3Sld93CDsJ3n85lg0K65gpl7', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-03 22:18:09', NULL, NULL, NULL, '{\"event_id\": 3, \"event_date\": \"2026-01-06T06:00:00.000Z\", \"event_title\": \"Torneo de Reyes\", \"participant_id\": 8}', '2026-01-03 22:18:01', '2026-01-03 22:18:09'),
+(90, 'CLS1767478715541689', 2, 1, 'private_class', NULL, NULL, NULL, 7, 102.31, 'MXN', 'completed', NULL, 'stripe', 'pi_3Sld9bCDsJ3n85lg03ha2D4T', 'ch_3Sld9bCDsJ3n85lg0CEdPK1g', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-03 22:18:48', NULL, NULL, NULL, '{\"court_id\": 1, \"end_time\": \"15:00\", \"class_date\": \"2026-01-19\", \"class_type\": \"individual\", \"start_time\": \"14:00\", \"instructor_id\": 1, \"duration_minutes\": 90, \"number_of_students\": 1}', '2026-01-03 22:18:35', '2026-01-03 22:18:48'),
+(92, 'TXN176748112542428', 6, 1, 'booking', 23, NULL, NULL, NULL, 638.00, 'MXN', 'completed', NULL, 'stripe', 'pi_3SldmTCDsJ3n85lg00QXI9P3', 'ch_3SldmTCDsJ3n85lg0cQNUJXV', NULL, NULL, NULL, NULL, 0.00, NULL, NULL, '2026-01-03 22:59:00', NULL, NULL, NULL, '{\"court_id\": 5, \"end_time\": \"19:30\", \"start_time\": \"18:30\", \"booking_date\": \"2026-01-23\", \"duration_minutes\": 90}', '2026-01-03 22:58:45', '2026-01-03 22:59:00');
 
 -- --------------------------------------------------------
 
@@ -887,9 +787,7 @@ CREATE TABLE `price_rules` (
 
 INSERT INTO `price_rules` (`id`, `club_id`, `court_id`, `rule_name`, `rule_type`, `start_time`, `end_time`, `days_of_week`, `start_date`, `end_date`, `price_per_hour`, `priority`, `is_active`, `created_at`, `updated_at`) VALUES
 (1, 1, NULL, 'Morning Rate', 'time_of_day', '08:00:00', '14:00:00', NULL, NULL, NULL, 250.00, 1, 1, '2025-12-22 22:29:49', '2025-12-30 23:24:52'),
-(2, 1, NULL, 'Afternoon/Evening Rate', 'time_of_day', '14:00:00', '23:00:00', NULL, NULL, NULL, 550.00, 1, 1, '2025-12-22 22:29:49', '2025-12-30 23:25:00'),
-(3, 2, NULL, 'Early Bird Special', 'time_of_day', '08:00:00', '12:00:00', NULL, NULL, NULL, 32.00, 1, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(4, 2, NULL, 'Prime Time', 'time_of_day', '18:00:00', '23:00:00', NULL, NULL, NULL, 48.00, 2, 1, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
+(2, 1, NULL, 'Afternoon/Evening Rate', 'time_of_day', '14:00:00', '23:00:00', NULL, NULL, NULL, 550.00, 1, 1, '2025-12-22 22:29:49', '2025-12-30 23:25:00');
 
 -- --------------------------------------------------------
 
@@ -930,9 +828,8 @@ CREATE TABLE `private_classes` (
 --
 
 INSERT INTO `private_classes` (`id`, `booking_number`, `user_id`, `instructor_id`, `club_id`, `court_id`, `class_type`, `class_date`, `start_time`, `end_time`, `duration_minutes`, `number_of_students`, `total_price`, `status`, `payment_status`, `focus_areas`, `student_level`, `notes`, `instructor_notes`, `cancellation_reason`, `cancelled_at`, `confirmed_at`, `created_at`, `updated_at`, `created_by_admin_id`) VALUES
-(1, 'PCL1767056573154395', 2, 1, 1, 13, 'individual', '2026-01-05', '10:00:00', '11:00:00', 60, 1, 60.00, 'confirmed', 'paid', NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-30 01:02:53', '2025-12-30 01:02:53', '2025-12-30 01:02:53', NULL),
-(4, 'PCL17670620295126114', 3, 1, 1, 1, 'individual', '2026-01-26', '12:00:00', '13:00:00', 60, 1, 60.00, 'confirmed', 'paid', NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-30 02:33:49', '2025-12-30 02:33:49', '2025-12-30 02:33:49', 15),
-(5, 'PCL176739231273729', 2, 1, 1, 13, 'individual', '2026-01-12', '14:00:00', '15:00:00', 90, 1, 88.20, 'confirmed', 'paid', NULL, NULL, NULL, NULL, NULL, NULL, '2026-01-02 22:18:32', '2026-01-02 22:18:32', '2026-01-02 22:18:32', NULL);
+(6, 'PCL1767416222187934', 2, 1, 1, 13, 'individual', '2026-01-19', '15:30:00', '16:30:00', 90, 1, 88.20, 'confirmed', 'paid', NULL, NULL, NULL, NULL, NULL, NULL, '2026-01-03 04:57:02', '2026-01-03 04:57:02', '2026-01-03 04:57:02', NULL),
+(7, 'PCL1767478728064883', 2, 1, 1, 1, 'individual', '2026-01-19', '14:00:00', '15:00:00', 90, 1, 102.31, 'confirmed', 'paid', NULL, NULL, NULL, NULL, NULL, NULL, '2026-01-03 22:18:48', '2026-01-03 22:18:48', '2026-01-03 22:18:48', NULL);
 
 -- --------------------------------------------------------
 
@@ -990,9 +887,7 @@ CREATE TABLE `subscription_plans` (
 INSERT INTO `subscription_plans` (`id`, `club_id`, `plan_name`, `plan_slug`, `description`, `price`, `currency`, `billing_cycle`, `trial_days`, `stripe_price_id`, `stripe_product_id`, `features`, `max_monthly_bookings`, `booking_discount_percent`, `priority_booking_hours`, `guest_passes_per_month`, `is_active`, `display_order`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Basic Monthly', 'basic-monthly', 'Perfect for casual players', 29.99, 'EUR', 'monthly', 7, NULL, NULL, '[\"8_bookings_per_month\", \"5%_discount\", \"Online_booking\"]', 8, 5.00, 0, 0, 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
 (2, 1, 'Premium Monthly', 'premium-monthly', 'Best for regular players', 59.99, 'EUR', 'monthly', 14, NULL, NULL, '[\"Unlimited_bookings\", \"10%_discount\", \"Priority_booking\", \"2_guest_passes\"]', NULL, 10.00, 24, 2, 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(3, 1, 'VIP Annual', 'vip-annual', 'Ultimate membership experience', 599.99, 'EUR', 'yearly', 0, NULL, NULL, '[\"Unlimited_bookings\", \"15%_discount\", \"Priority_booking\", \"5_guest_passes\", \"Free_equipment\"]', NULL, 15.00, 48, 5, 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(4, 2, 'Weekend Warrior', 'weekend-warrior', 'Play every weekend', 39.99, 'EUR', 'monthly', 7, NULL, NULL, '[\"10_bookings_per_month\", \"Weekend_priority\"]', 10, 8.00, 12, 1, 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49'),
-(5, 2, 'Pro Player', 'pro-player', 'For serious competitors', 79.99, 'EUR', 'monthly', 0, NULL, NULL, '[\"Unlimited_bookings\", \"12%_discount\", \"Tournament_entry\"]', NULL, 12.00, 48, 3, 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
+(3, 1, 'VIP Annual', 'vip-annual', 'Ultimate membership experience', 599.99, 'EUR', 'yearly', 0, NULL, NULL, '[\"Unlimited_bookings\", \"15%_discount\", \"Priority_booking\", \"5_guest_passes\", \"Free_equipment\"]', NULL, 15.00, 48, 5, 1, 0, '2025-12-22 22:29:49', '2025-12-22 22:29:49');
 
 -- --------------------------------------------------------
 
@@ -1019,20 +914,10 @@ CREATE TABLE `time_slots` (
 --
 
 INSERT INTO `time_slots` (`id`, `court_id`, `date`, `start_time`, `end_time`, `duration_minutes`, `price`, `is_available`, `availability_status`, `created_at`, `updated_at`) VALUES
-(2, 13, '2025-12-28', '10:00:00', '11:00:00', 60, 45.00, 0, 'booked', '2025-12-26 19:46:01', '2025-12-26 19:46:01'),
-(3, 5, '2025-12-28', '09:00:00', '10:00:00', 60, 45.00, 0, 'booked', '2025-12-26 19:52:34', '2025-12-26 19:52:34'),
-(4, 13, '2025-12-28', '22:00:00', '23:00:00', 60, 45.00, 0, 'booked', '2025-12-26 20:36:45', '2025-12-26 20:36:45'),
-(6, 13, '2026-01-06', '08:00:00', '09:00:00', 60, 0.00, 0, 'booked', '2025-12-27 22:06:26', '2025-12-27 22:06:26'),
-(7, 9, '2026-01-06', '09:00:00', '10:00:00', 60, 950.00, 0, 'booked', '2025-12-27 22:13:18', '2025-12-27 22:13:18'),
-(8, 5, '2025-12-28', '15:00:00', '16:00:00', 60, 550.00, 0, 'booked', '2025-12-28 21:32:33', '2025-12-28 21:32:33'),
-(9, 9, '2026-01-09', '08:00:00', '09:00:00', 60, 800.00, 0, 'booked', '2025-12-29 22:54:07', '2025-12-29 22:54:07'),
-(10, 13, '2026-01-26', '13:00:00', '14:00:00', 60, 45.00, 0, 'booked', '2025-12-30 02:36:21', '2025-12-30 02:36:21'),
-(11, 13, '2025-12-31', '09:30:00', '10:30:00', 90, 250.00, 0, 'booked', '2025-12-31 00:11:34', '2025-12-31 00:11:34'),
-(12, 5, '2025-12-31', '18:30:00', '19:30:00', 90, 550.00, 0, 'booked', '2025-12-31 00:29:07', '2025-12-31 00:29:07'),
-(13, 1, '2026-01-09', '08:00:00', '09:00:00', 90, 230.00, 0, 'booked', '2026-01-02 20:18:10', '2026-01-02 20:18:10'),
-(14, 13, '2026-01-09', '18:30:00', '19:30:00', 90, 506.00, 0, 'booked', '2026-01-02 20:19:13', '2026-01-02 20:19:13'),
-(15, 9, '2026-01-07', '17:00:00', '18:00:00', 90, 506.00, 0, 'booked', '2026-01-02 20:27:33', '2026-01-02 20:27:33'),
-(16, 1, '2026-01-07', '21:30:00', '22:30:00', 90, 506.00, 0, 'booked', '2026-01-02 20:33:39', '2026-01-02 20:33:39');
+(18, 13, '2026-01-18', '18:30:00', '19:30:00', 90, 506.00, 0, 'booked', '2026-01-03 04:49:57', '2026-01-03 04:49:57'),
+(19, 13, '2026-01-14', '11:00:00', '12:00:00', 90, 266.80, 0, 'booked', '2026-01-03 21:58:58', '2026-01-03 21:58:58'),
+(20, 13, '2026-01-22', '18:30:00', '19:30:00', 90, 638.00, 0, 'booked', '2026-01-03 22:51:06', '2026-01-03 22:51:06'),
+(21, 5, '2026-01-23', '18:30:00', '19:30:00', 90, 638.00, 0, 'booked', '2026-01-03 22:58:59', '2026-01-03 22:58:59');
 
 -- --------------------------------------------------------
 
@@ -1060,9 +945,8 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `club_id`, `email`, `name`, `phone`, `avatar_url`, `stripe_customer_id`, `is_active`, `created_at`, `updated_at`, `last_login_at`) VALUES
 (1, 1, 'user@example.com', 'John Doe', NULL, NULL, NULL, 1, '2025-12-22 22:29:49', '2025-12-29 22:34:25', NULL),
-(2, 1, 'axgoomez@gmail.com', 'Felix Gomez', '4741400363', NULL, 'cus_TiSdl7SUCeWxvo', 1, '2025-12-23 18:23:11', '2026-01-03 01:43:18', '2026-01-03 01:43:18'),
-(3, 1, 'tonatiuh.gom@gmail.com', 'Alex Gomez', '4741400363', NULL, NULL, 1, '2025-12-27 20:29:29', '2026-01-03 01:59:13', '2026-01-03 01:59:13'),
-(4, 2, 'lesliegcardona@gmail.com', 'Leslie Gonzalez', NULL, NULL, NULL, 1, '2025-12-27 22:21:45', '2025-12-29 22:35:47', NULL);
+(2, 1, 'axgoomez@gmail.com', 'Felix Gomez', '4741400363', NULL, 'cus_TiSdl7SUCeWxvo', 1, '2025-12-23 18:23:11', '2026-01-03 22:40:15', '2026-01-03 22:40:15'),
+(6, NULL, 'tonatiuh.gom@gmail.com', 'Alex Gomez', '4741400363', NULL, NULL, 1, '2026-01-03 22:58:07', '2026-01-03 22:58:25', '2026-01-03 22:58:25');
 
 -- --------------------------------------------------------
 
@@ -1087,8 +971,8 @@ CREATE TABLE `users_sessions` (
 --
 
 INSERT INTO `users_sessions` (`id`, `user_id`, `session_code`, `user_session`, `user_session_date_start`, `created_at`, `expires_at`, `ip_address`, `user_agent`) VALUES
-(10, 2, 609041, 1, '2026-01-03 01:43:05', '2026-01-03 01:43:05', NULL, NULL, NULL),
-(14, 3, 683302, 1, '2026-01-03 01:59:02', '2026-01-03 01:59:02', NULL, NULL, NULL);
+(18, 2, 966419, 1, '2026-01-03 22:40:02', '2026-01-03 22:40:02', NULL, NULL, NULL),
+(21, 6, 925443, 1, '2026-01-03 22:58:08', '2026-01-03 22:58:08', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1482,7 +1366,7 @@ ALTER TABLE `blocked_slots`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `clubs`
@@ -1530,7 +1414,7 @@ ALTER TABLE `courts`
 -- AUTO_INCREMENT for table `events`
 --
 ALTER TABLE `events`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `event_court_schedules`
@@ -1542,7 +1426,7 @@ ALTER TABLE `event_court_schedules`
 -- AUTO_INCREMENT for table `event_participants`
 --
 ALTER TABLE `event_participants`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `instructors`
@@ -1578,7 +1462,7 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
 
 --
 -- AUTO_INCREMENT for table `player_stats`
@@ -1596,7 +1480,7 @@ ALTER TABLE `price_rules`
 -- AUTO_INCREMENT for table `private_classes`
 --
 ALTER TABLE `private_classes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `stripe_webhook_events`
@@ -1614,19 +1498,19 @@ ALTER TABLE `subscription_plans`
 -- AUTO_INCREMENT for table `time_slots`
 --
 ALTER TABLE `time_slots`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `users_sessions`
 --
 ALTER TABLE `users_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `user_subscriptions`

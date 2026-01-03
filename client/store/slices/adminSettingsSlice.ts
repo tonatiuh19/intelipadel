@@ -32,12 +32,19 @@ interface Court {
   club_id: number;
 }
 
+interface FeeStructure {
+  fee_structure: "user_pays_fee" | "shared_fee" | "club_absorbs_fee";
+  service_fee_percentage: number;
+  fee_terms_accepted_at: string | null;
+}
+
 interface AdminSettingsState {
   priceRules: PriceRule[];
   schedules: ClubSchedule[];
   courts: Court[];
   basePrice: number;
   defaultDuration: number;
+  feeStructure: FeeStructure | null;
   isLoading: boolean;
   isSubmitting: boolean;
   error: string | null;
@@ -49,6 +56,7 @@ const initialState: AdminSettingsState = {
   courts: [],
   basePrice: 45,
   defaultDuration: 60,
+  feeStructure: null,
   isLoading: false,
   isSubmitting: false,
   error: null,
@@ -237,6 +245,63 @@ export const getCourts = createAsyncThunk(
   },
 );
 
+// Fee Structure async thunks
+export const getFeeStructure = createAsyncThunk(
+  "adminSettings/getFeeStructure",
+  async (_, { rejectWithValue }) => {
+    try {
+      const sessionToken = localStorage.getItem("adminSessionToken");
+      const response = await axios.get("/api/admin/fee-structure", {
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch fee structure",
+      );
+    }
+  },
+);
+
+export const updateFeeStructure = createAsyncThunk(
+  "adminSettings/updateFeeStructure",
+  async (
+    {
+      fee_structure,
+      service_fee_percentage,
+      terms_accepted,
+    }: {
+      fee_structure: "user_pays_fee" | "shared_fee" | "club_absorbs_fee";
+      service_fee_percentage?: number;
+      terms_accepted?: boolean;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      const sessionToken = localStorage.getItem("adminSessionToken");
+      const response = await axios.put(
+        "/api/admin/fee-structure",
+        { fee_structure, service_fee_percentage, terms_accepted },
+        {
+          headers: { Authorization: `Bearer ${sessionToken}` },
+        },
+      );
+      return response.data.data;
+    } catch (error: any) {
+      // Check if terms acceptance is required
+      if (error.response?.data?.requires_terms_acceptance) {
+        return rejectWithValue({
+          message: error.response.data.message,
+          requires_terms_acceptance: true,
+        });
+      }
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update fee structure",
+      );
+    }
+  },
+);
+
 const adminSettingsSlice = createSlice({
   name: "adminSettings",
   initialState,
@@ -378,6 +443,36 @@ const adminSettingsSlice = createSlice({
       })
       .addCase(getCourts.rejected, (state, action) => {
         state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Get Fee Structure
+    builder
+      .addCase(getFeeStructure.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getFeeStructure.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.feeStructure = action.payload;
+      })
+      .addCase(getFeeStructure.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Update Fee Structure
+    builder
+      .addCase(updateFeeStructure.pending, (state) => {
+        state.isSubmitting = true;
+        state.error = null;
+      })
+      .addCase(updateFeeStructure.fulfilled, (state, action) => {
+        state.isSubmitting = false;
+        state.feeStructure = action.payload;
+      })
+      .addCase(updateFeeStructure.rejected, (state, action) => {
+        state.isSubmitting = false;
         state.error = action.payload as string;
       });
   },

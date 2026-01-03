@@ -19,6 +19,8 @@ interface EventRegistrationSummaryProps {
   totalPrice: number;
   originalPrice?: number;
   discountApplied?: number;
+  feeStructure?: "user_pays_fee" | "shared_fee" | "club_absorbs_fee";
+  serviceFeePercentage?: number;
 }
 
 export default function EventRegistrationSummary({
@@ -28,7 +30,25 @@ export default function EventRegistrationSummary({
   totalPrice,
   originalPrice,
   discountApplied,
+  feeStructure = "club_absorbs_fee",
+  serviceFeePercentage = 8,
 }: EventRegistrationSummaryProps) {
+  // Calculate service fees based on fee structure
+  const serviceFee = totalPrice * (serviceFeePercentage / 100);
+  let userPaysServiceFee = 0;
+  let basePrice = totalPrice;
+
+  if (feeStructure === "user_pays_fee") {
+    userPaysServiceFee = serviceFee;
+  } else if (feeStructure === "shared_fee") {
+    userPaysServiceFee = serviceFee / 2;
+  }
+  // club_absorbs_fee: userPaysServiceFee = 0
+
+  const subtotal = basePrice + userPaysServiceFee;
+  const iva = subtotal * 0.16;
+  const totalWithIVA = subtotal + iva;
+
   const eventTypeLabels: Record<string, string> = {
     tournament: "Torneo",
     league: "Liga",
@@ -176,7 +196,7 @@ export default function EventRegistrationSummary({
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground">Cuota Original</span>
                 <span className="text-muted-foreground line-through">
-                  ${originalPrice.toFixed(2)} MXN
+                  ${originalPrice.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">
@@ -184,7 +204,7 @@ export default function EventRegistrationSummary({
                   Cuota con Descuento
                 </span>
                 <span className="font-medium text-green-600">
-                  ${totalPrice.toFixed(2)} MXN
+                  ${totalPrice.toFixed(2)}
                 </span>
               </div>
             </>
@@ -194,15 +214,51 @@ export default function EventRegistrationSummary({
                 Cuota de Inscripción
               </span>
               <span className="text-sm font-medium">
-                ${totalPrice.toFixed(2)} MXN
+                ${totalPrice.toFixed(2)}
               </span>
             </div>
           )}
 
+          {/* Price Breakdown */}
+          <div className="flex justify-between items-center text-sm pt-2 border-t">
+            <span className="text-muted-foreground">Cuota de Inscripción</span>
+            <span className="font-medium">${basePrice.toFixed(2)}</span>
+          </div>
+
+          {/* Service Fee (only if user pays) */}
+          {userPaysServiceFee > 0 && (
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">
+                Cargo por Servicio ({serviceFeePercentage}%
+                {feeStructure === "shared_fee" ? " ÷ 2" : ""})
+              </span>
+              <span className="font-medium">
+                ${userPaysServiceFee.toFixed(2)}
+              </span>
+            </div>
+          )}
+
+          {feeStructure === "club_absorbs_fee" && (
+            <div className="flex justify-between items-center text-xs text-muted-foreground italic">
+              <span>Cargo por Servicio</span>
+              <span>Incluido</span>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center text-sm pt-2 border-t">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="font-medium">${subtotal.toFixed(2)}</span>
+          </div>
+
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">IVA (16%)</span>
+            <span className="font-medium">${iva.toFixed(2)}</span>
+          </div>
+
           <div className="flex justify-between items-center pt-2 border-t">
             <span className="font-bold">Total a Pagar</span>
             <span className="text-2xl font-bold text-orange-600">
-              ${totalPrice.toFixed(2)}
+              ${totalWithIVA.toFixed(2)}
             </span>
           </div>
         </div>

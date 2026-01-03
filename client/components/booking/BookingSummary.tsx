@@ -19,6 +19,13 @@ interface BookingSummaryProps {
   endTime: string;
   duration: number;
   totalPrice: number;
+  bookingPrice?: number;
+  serviceFee?: number;
+  userPaysServiceFee?: number;
+  feeStructure?: string;
+  subtotal?: number;
+  iva?: number;
+  totalWithIVA?: number;
   onBack?: () => void;
 }
 
@@ -30,8 +37,29 @@ export default function BookingSummary({
   endTime,
   duration,
   totalPrice,
+  bookingPrice,
+  serviceFee,
+  userPaysServiceFee,
+  feeStructure,
+  subtotal,
+  iva,
+  totalWithIVA,
   onBack,
 }: BookingSummaryProps) {
+  // Helper function to get fee structure label
+  const getFeeStructureLabel = () => {
+    switch (feeStructure) {
+      case "shared_fee":
+        return "Comisión compartida 50/50";
+      case "club_absorbs_fee":
+        return "Incluida en el precio";
+      case "user_pays_fee":
+      default:
+        return "Comisión de servicio";
+    }
+  };
+
+  const displayTotal = totalWithIVA ?? totalPrice;
   return (
     <Card className="p-6 sticky top-4">
       <div className="flex items-center justify-between mb-6">
@@ -112,20 +140,78 @@ export default function BookingSummary({
 
       {/* Price Breakdown */}
       <div className="pt-6 border-t space-y-3">
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Precio por hora</span>
-          <span className="font-medium">
-            ${Number(club.price_per_hour).toFixed(2)}
-          </span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Duración</span>
-          <span className="font-medium">{duration / 60}h</span>
-        </div>
-        <div className="flex justify-between text-lg font-bold pt-3 border-t">
-          <span>Total</span>
-          <span className="text-primary">${Number(totalPrice).toFixed(2)}</span>
-        </div>
+        {bookingPrice !== undefined ? (
+          <>
+            {/* New detailed breakdown with IVA */}
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Precio de reserva</span>
+              <span className="font-medium">
+                ${Number(bookingPrice).toFixed(2)}
+              </span>
+            </div>
+
+            {userPaysServiceFee !== undefined && userPaysServiceFee > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {getFeeStructureLabel()}
+                </span>
+                <span className="font-medium">
+                  ${Number(userPaysServiceFee).toFixed(2)}
+                </span>
+              </div>
+            )}
+
+            {feeStructure === "club_absorbs_fee" && (
+              <div className="flex justify-between text-xs text-green-600 -mt-1">
+                <span>✓ Comisión incluida</span>
+                <span></span>
+              </div>
+            )}
+
+            {subtotal !== undefined && (
+              <div className="flex justify-between text-sm pt-2 border-t">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="font-medium">
+                  ${Number(subtotal).toFixed(2)}
+                </span>
+              </div>
+            )}
+
+            {iva !== undefined && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">IVA (16%)</span>
+                <span className="font-medium">${Number(iva).toFixed(2)}</span>
+              </div>
+            )}
+
+            <div className="flex justify-between text-lg font-bold pt-3 border-t">
+              <span>Total a pagar</span>
+              <span className="text-primary">
+                ${Number(displayTotal).toFixed(2)}
+              </span>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Legacy simple breakdown */}
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Precio por hora</span>
+              <span className="font-medium">
+                ${Number(club.price_per_hour).toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Duración</span>
+              <span className="font-medium">{duration / 60}h</span>
+            </div>
+            <div className="flex justify-between text-lg font-bold pt-3 border-t">
+              <span>Total</span>
+              <span className="text-primary">
+                ${Number(totalPrice).toFixed(2)}
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </Card>
   );
