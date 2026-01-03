@@ -386,7 +386,7 @@ export default function BookingWizard() {
       const discount = (finalPrice * discountPercent) / 100;
       finalPrice = finalPrice - discount;
       console.log(`🎯 Discount Applied: ${discountPercent}% = $${discount}`);
-      console.log(`🎯 Final Price: $${finalPrice}`);
+      console.log(`🎯 Final Price After Discount: $${finalPrice}`);
     } else {
       console.log(
         "🎯 No discount applied - subscription status:",
@@ -397,6 +397,8 @@ export default function BookingWizard() {
         userSubscription?.subscription?.event_discount_percent,
       );
     }
+
+    console.log(`🎯 Setting calculatedEventPrice to: $${finalPrice}`);
     setCalculatedEventPrice(finalPrice);
 
     // Check if user is authenticated
@@ -423,7 +425,10 @@ export default function BookingWizard() {
         setProcessingEventId(null);
       } else {
         // Same club or no club restriction - proceed
-        await handleProceedToEventPayment(event);
+        console.log(
+          `🎯 About to create payment intent with price: $${finalPrice}`,
+        );
+        await handleProceedToEventPayment(event, finalPrice);
         setProcessingEventId(null);
       }
     }
@@ -445,6 +450,8 @@ export default function BookingWizard() {
     // Calculate discounted price if user has subscription
     let basePrice = instructor.hourly_rate * (duration / 60);
     let finalPrice = basePrice;
+    console.log("🎓 Class - Base Price:", basePrice);
+
     if (
       userSubscription?.status === "active" &&
       userSubscription.subscription?.class_discount_percent
@@ -453,8 +460,15 @@ export default function BookingWizard() {
         userSubscription.subscription.class_discount_percent;
       const discount = (basePrice * discountPercent) / 100;
       finalPrice = basePrice - discount;
+      console.log(`🎓 Discount Applied: ${discountPercent}% = $${discount}`);
+      console.log(`🎓 Final Price: $${finalPrice}`);
     }
+
+    console.log(`🎓 Setting calculatedClassPrice to: $${finalPrice}`);
     setCalculatedClassPrice(finalPrice);
+
+    // Store the calculated price for later use
+    const calculatedPriceRef = finalPrice;
 
     // Check if user is authenticated
     if (!isAuthenticated) {
@@ -479,18 +493,34 @@ export default function BookingWizard() {
     }
   };
 
-  const handleProceedToEventPayment = async (event?: Event) => {
+  const handleProceedToEventPayment = async (
+    event?: Event,
+    priceOverride?: number,
+  ) => {
     const eventToUse = event || selectedEvent;
 
     if (!eventToUse || !user) {
+      console.error("❌ Missing event or user:", { eventToUse, user });
       return;
     }
 
-    // Use calculated price if available, otherwise use original price
+    // IMPORTANT: Use passed price (from calculation), state, or original price
     const finalPrice =
-      calculatedEventPrice !== null
-        ? calculatedEventPrice
-        : Number(eventToUse.registration_fee);
+      priceOverride !== undefined
+        ? priceOverride
+        : calculatedEventPrice !== null
+          ? calculatedEventPrice
+          : Number(eventToUse.registration_fee);
+
+    console.log("💰💰💰 PAYMENT INTENT CREATION 💰💰💰");
+    console.log("Original Event Price:", eventToUse.registration_fee);
+    console.log("Calculated Discounted Price:", calculatedEventPrice);
+    console.log("Final Price Being Sent:", finalPrice);
+    console.log("User Subscription:", userSubscription?.status);
+    console.log(
+      "Discount %:",
+      userSubscription?.subscription?.event_discount_percent,
+    );
 
     const eventData = {
       user_id: user.id,
@@ -498,12 +528,17 @@ export default function BookingWizard() {
       registration_fee: finalPrice,
     };
 
+    console.log("📤 Sending to backend:", JSON.stringify(eventData, null, 2));
+
     try {
-      // Create payment intent for event
-      await dispatch(createEventPaymentIntent(eventData)).unwrap();
+      // Create payment intent for event with the discounted price
+      const result = await dispatch(
+        createEventPaymentIntent(eventData),
+      ).unwrap();
+      console.log("✅ Payment intent created:", result);
       setStep("payment");
     } catch (error: any) {
-      console.error("Event payment intent error:", error);
+      console.error("❌ Event payment intent error:", error);
 
       // Extract error message from various possible error structures
       const errorMessage =
@@ -534,16 +569,26 @@ export default function BookingWizard() {
       !selectedTime ||
       !user
     ) {
+      console.error("❌ Missing required data for class payment");
       return;
     }
 
     const endTime = `${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1].padStart(2, "0")}`;
 
-    // Use calculated price if available, otherwise calculate from hourly rate
+    // IMPORTANT: Use calculated price (includes subscription discount) or calculate from hourly rate
+    const basePrice = selectedInstructor.hourly_rate * (duration / 60);
     const finalPrice =
-      calculatedClassPrice !== null
-        ? calculatedClassPrice
-        : selectedInstructor.hourly_rate * (duration / 60);
+      calculatedClassPrice !== null ? calculatedClassPrice : basePrice;
+
+    console.log("💰💰💰 CLASS PAYMENT INTENT CREATION 💰💰💰");
+    console.log("Base Price:", basePrice);
+    console.log("Calculated Discounted Price:", calculatedClassPrice);
+    console.log("Final Price Being Sent:", finalPrice);
+    console.log("User Subscription:", userSubscription?.status);
+    console.log(
+      "Discount %:",
+      userSubscription?.subscription?.class_discount_percent,
+    );
 
     const classData = {
       user_id: user.id,
@@ -559,8 +604,11 @@ export default function BookingWizard() {
       total_price: finalPrice,
     };
 
-    // Create payment intent for class
-    await dispatch(createClassPaymentIntent(classData));
+    console.log("📤 Sending to backend:", JSON.stringify(classData, null, 2));
+
+    // Create payment intent for class with the discounted price
+    const result = await dispatch(createClassPaymentIntent(classData));
+    console.log("✅ Class payment intent created:", result);
     setStep("payment");
   };
 
@@ -604,11 +652,19 @@ export default function BookingWizard() {
       return;
     }
 
-    // Use calculated price or fallback to base price (fixed for duration block)
+    // Wait for price calculation to complete if still calculating
+    if (isCalculating) {
+      console.log("Waiting for price calculation...");
+      return;
+    }
+
+    // IMPORTANT: Use calculated price (includes discounts) or fallback to base price
     const finalPrice =
       calculatedPrice !== null
         ? calculatedPrice
         : parseFloat(selectedClub.price_per_hour.toString());
+
+    console.log("💰 Creating payment intent with price:", finalPrice);
 
     const bookingData = {
       user_id: user.id,
@@ -621,7 +677,7 @@ export default function BookingWizard() {
       total_price: finalPrice,
     };
 
-    // Create payment intent
+    // Create payment intent with the discounted price
     await dispatch(createPaymentIntent(bookingData));
     setStep("payment");
   };
@@ -1062,12 +1118,20 @@ export default function BookingWizard() {
                       : handleContinueToPayment
                   }
                   disabled={
-                    flowType === "class" ? classPaymentLoading : paymentLoading
+                    flowType === "class"
+                      ? classPaymentLoading || isCalculating
+                      : paymentLoading ||
+                        (flowType === "booking" && isCalculating)
                   }
                   className="flex-1"
                   size="lg"
                 >
-                  {flowType === "class" && classPaymentLoading ? (
+                  {isCalculating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Calculando precio...
+                    </>
+                  ) : flowType === "class" && classPaymentLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Procesando...
@@ -1231,10 +1295,8 @@ export default function BookingWizard() {
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                     isEventPayment={true}
-                    eventDiscountPercent={
-                      userSubscription?.subscription?.event_discount_percent ||
-                      0
-                    }
+                    eventDiscountPercent={0}
+                    originalEventPrice={Number(selectedEvent.registration_fee)}
                   />
                 </Elements>
               )}
@@ -1310,9 +1372,9 @@ export default function BookingWizard() {
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                     isClassPayment={true}
-                    classDiscountPercent={
-                      userSubscription?.subscription?.class_discount_percent ||
-                      0
+                    classDiscountPercent={0}
+                    originalClassPrice={
+                      selectedInstructor.hourly_rate * (duration / 60)
                     }
                   />
                 </Elements>

@@ -85,6 +85,8 @@ interface StripePaymentFormProps {
   isClassPayment?: boolean;
   eventDiscountPercent?: number;
   classDiscountPercent?: number;
+  originalEventPrice?: number;
+  originalClassPrice?: number;
 }
 
 export default function StripePaymentForm({
@@ -99,8 +101,10 @@ export default function StripePaymentForm({
   onError,
   isEventPayment = false,
   isClassPayment = false,
-  eventDiscountPercent,
-  classDiscountPercent,
+  eventDiscountPercent = 0,
+  classDiscountPercent = 0,
+  originalEventPrice,
+  originalClassPrice,
 }: StripePaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
@@ -382,43 +386,46 @@ export default function StripePaymentForm({
 
             {/* Registration Fee */}
             <div className="mt-4 pt-4 border-t border-orange-200 space-y-2">
-              {eventDiscountPercent && eventDiscountPercent > 0 && (
-                <>
-                  <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-lg mb-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Crown className="h-4 w-4 text-amber-600" />
-                      <span className="text-xs font-bold text-amber-900">
-                        Descuento de Membresía {eventDiscountPercent}%
+              {originalEventPrice &&
+                originalEventPrice > eventData.registration_fee && (
+                  <>
+                    <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-lg mb-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Crown className="h-4 w-4 text-amber-600" />
+                        <span className="text-xs font-bold text-amber-900">
+                          Descuento de Membresía{" "}
+                          {(
+                            ((originalEventPrice - eventData.registration_fee) /
+                              originalEventPrice) *
+                            100
+                          ).toFixed(2)}
+                          %
+                        </span>
+                      </div>
+                      <div className="text-xs text-amber-800">
+                        Ahorro: $
+                        {(
+                          originalEventPrice - eventData.registration_fee
+                        ).toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500">Precio Original</span>
+                      <span className="text-gray-500 line-through">
+                        ${originalEventPrice.toFixed(2)}
                       </span>
                     </div>
-                    <div className="text-xs text-amber-800">
-                      Ahorro: $
-                      {(
-                        (eventData.registration_fee * eventDiscountPercent) /
-                        100
-                      ).toFixed(2)}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Precio Original</span>
-                    <span className="text-gray-500 line-through">
-                      ${eventData.registration_fee.toFixed(2)}
-                    </span>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
               <div className="flex items-center justify-between">
                 <span className="text-gray-700 font-medium">
-                  {eventDiscountPercent && eventDiscountPercent > 0
+                  {originalEventPrice &&
+                  originalEventPrice > eventData.registration_fee
                     ? "Precio con Descuento"
                     : "Cuota de Inscripción"}
                 </span>
                 <span className="text-2xl font-bold text-orange-600">
-                  $
-                  {(
-                    eventData.registration_fee *
-                    (1 - (eventDiscountPercent || 0) / 100)
-                  ).toFixed(2)}
+                  ${eventData.registration_fee.toFixed(2)}
                 </span>
               </div>
             </div>
@@ -547,43 +554,46 @@ export default function StripePaymentForm({
 
             {/* Total Price */}
             <div className="mt-4 pt-4 border-t border-green-200 space-y-2">
-              {classDiscountPercent && classDiscountPercent > 0 && (
-                <>
-                  <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-lg mb-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Crown className="h-4 w-4 text-amber-600" />
-                      <span className="text-xs font-bold text-amber-900">
-                        Descuento de Membresía {classDiscountPercent}%
+              {originalClassPrice &&
+                originalClassPrice > classData.total_price && (
+                  <>
+                    <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-lg mb-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Crown className="h-4 w-4 text-amber-600" />
+                        <span className="text-xs font-bold text-amber-900">
+                          Descuento de Membresía{" "}
+                          {(
+                            ((originalClassPrice - classData.total_price) /
+                              originalClassPrice) *
+                            100
+                          ).toFixed(2)}
+                          %
+                        </span>
+                      </div>
+                      <div className="text-xs text-amber-800">
+                        Ahorro: $
+                        {(originalClassPrice - classData.total_price).toFixed(
+                          2,
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500">Precio Original</span>
+                      <span className="text-gray-500 line-through">
+                        ${originalClassPrice.toFixed(2)}
                       </span>
                     </div>
-                    <div className="text-xs text-amber-800">
-                      Ahorro: $
-                      {(
-                        (classData.total_price * classDiscountPercent) /
-                        100
-                      ).toFixed(2)}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Precio Original</span>
-                    <span className="text-gray-500 line-through">
-                      ${classData.total_price.toFixed(2)}
-                    </span>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
               <div className="flex items-center justify-between">
                 <span className="text-gray-700 font-medium">
-                  {classDiscountPercent && classDiscountPercent > 0
+                  {originalClassPrice &&
+                  originalClassPrice > classData.total_price
                     ? "Precio con Descuento"
                     : "Total"}
                 </span>
                 <span className="text-2xl font-bold text-green-600">
-                  $
-                  {(
-                    classData.total_price *
-                    (1 - (classDiscountPercent || 0) / 100)
-                  ).toFixed(2)}
+                  ${classData.total_price.toFixed(2)}
                 </span>
               </div>
             </div>

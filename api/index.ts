@@ -3,6 +3,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import express from "express";
 import cors from "cors";
 import mysql from "mysql2/promise";
+import type { RowDataPacket } from "mysql2/promise";
 import type { RequestHandler } from "express";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
@@ -3201,9 +3202,21 @@ const handleCreatePaymentIntent: RequestHandler = async (req, res) => {
       },
     };
 
-    // Add customer if available (required for saved payment methods)
+    // Add customer and default payment method if available
     if (user?.stripe_customer_id) {
       paymentIntentParams.customer = user.stripe_customer_id;
+
+      // Get customer's default payment method
+      const [paymentMethods] = await pool.query<any[]>(
+        `SELECT stripe_payment_method_id FROM payment_methods 
+         WHERE user_id = ? AND is_default = 1 LIMIT 1`,
+        [user_id],
+      );
+
+      if (paymentMethods[0]?.stripe_payment_method_id) {
+        paymentIntentParams.payment_method =
+          paymentMethods[0].stripe_payment_method_id;
+      }
     }
 
     const paymentIntent =
@@ -3752,13 +3765,25 @@ const handleCreateEventPaymentIntent: RequestHandler = async (req, res) => {
         user_id: user_id.toString(),
         event_id: event_id.toString(),
         event_title: event.title,
-        transaction_type: "event_registration",
+        transaction_type: "event",
       },
     };
 
-    // Add customer if available (required for saved payment methods)
+    // Add customer and default payment method if available
     if (user?.stripe_customer_id) {
       paymentIntentParams.customer = user.stripe_customer_id;
+
+      // Get customer's default payment method
+      const [paymentMethods] = await pool.query<any[]>(
+        `SELECT stripe_payment_method_id FROM payment_methods 
+         WHERE user_id = ? AND is_default = 1 LIMIT 1`,
+        [user_id],
+      );
+
+      if (paymentMethods[0]?.stripe_payment_method_id) {
+        paymentIntentParams.payment_method =
+          paymentMethods[0].stripe_payment_method_id;
+      }
     }
 
     const paymentIntent =
@@ -3778,7 +3803,7 @@ const handleCreateEventPaymentIntent: RequestHandler = async (req, res) => {
         transactionNumber,
         user_id,
         event.club_id,
-        "event_registration",
+        "event",
         registration_fee,
         "MXN",
         "pending",
@@ -3986,7 +4011,7 @@ const handleGetEventParticipants: RequestHandler = async (req, res) => {
           paid_at,
           created_at
         FROM payment_transactions
-        WHERE transaction_type = 'event_registration'
+        WHERE transaction_type = 'event'
           AND JSON_EXTRACT(metadata, '$.event_id') = ?
         ORDER BY created_at DESC
       ) pt ON pt.event_id = ? AND pt.user_id = u.id
@@ -4237,7 +4262,7 @@ const handleGetUserEventRegistrations: RequestHandler = async (req, res) => {
           paid_at,
           created_at
         FROM payment_transactions
-        WHERE transaction_type = 'event_registration'
+        WHERE transaction_type = 'event'
           AND JSON_EXTRACT(metadata, '$.user_id') = ?
         ORDER BY created_at DESC
       ) pt ON pt.event_id = e.id AND pt.user_id = ?
@@ -4551,6 +4576,17 @@ const handleCreateClassPaymentIntent: RequestHandler = async (req, res) => {
     // Add customer if available (required for saved payment methods)
     if (user?.stripe_customer_id) {
       paymentIntentParams.customer = user.stripe_customer_id;
+
+      // Get user's default payment method
+      const [paymentMethods]: any = await pool.query(
+        "SELECT stripe_payment_method_id FROM payment_methods WHERE user_id = ? AND is_default = 1 LIMIT 1",
+        [user_id],
+      );
+
+      if (paymentMethods.length > 0) {
+        paymentIntentParams.payment_method =
+          paymentMethods[0].stripe_payment_method_id;
+      }
     }
 
     const paymentIntent =
@@ -5603,52 +5639,71 @@ const verifySession = async (
 const handleGetDashboardStats: RequestHandler = async (req, res) => {
   try {
     const admin = (req as any).admin;
-    const clubFilter = admin.club_id
-      ? `WHERE b.club_id = ${admin.club_id}`
-      : "";
+    const clubFilter = admin.club_id ? admin.club_id : null;
 
-    // Total bookings
+    // Total bookings (count all completed bookings)
     const [bookingsCount] = await pool.query<any[]>(
-      `SELECT COUNT(*) as total FROM bookings b ${clubFilter}`,
+      `SELECT COUNT(*) as total FROM bookings b 
+       WHERE b.status IN ('confirmed', 'completed') 
+       ${clubFilter ? "AND b.club_id = ?" : ""}`,
+      clubFilter ? [clubFilter] : [],
     );
 
-    // Total revenue
+    // Total revenue from all completed/succeeded transactions
     const [revenue] = await pool.query<any[]>(
-      `SELECT SUM(b.total_price) as total FROM bookings b
-       WHERE b.payment_status = 'paid' ${clubFilter ? "AND b.club_id = " + admin.club_id : ""}`,
+      `SELECT SUM(pt.amount) as total 
+       FROM payment_transactions pt
+       WHERE pt.status IN ('completed', 'succeeded')
+       ${clubFilter ? "AND pt.club_id = ?" : ""}`,
+      clubFilter ? [clubFilter] : [],
     );
 
-    // Total players
+    // Total players (users with club_id matching if club admin)
     const [playersCount] = await pool.query<any[]>(
-      "SELECT COUNT(*) as total FROM users WHERE is_active = 1",
+      `SELECT COUNT(*) as total FROM users 
+       WHERE is_active = 1 
+       ${clubFilter ? "AND club_id = ?" : ""}`,
+      clubFilter ? [clubFilter] : [],
     );
 
-    // Upcoming bookings
+    // Upcoming bookings (future bookings that are confirmed)
     const [upcomingCount] = await pool.query<any[]>(
       `SELECT COUNT(*) as total FROM bookings b
-       WHERE b.booking_date >= CURDATE() AND b.status != 'cancelled' ${clubFilter ? "AND b.club_id = " + admin.club_id : ""}`,
+       WHERE b.booking_date >= CURDATE() 
+       AND b.status IN ('confirmed', 'pending')
+       ${clubFilter ? "AND b.club_id = ?" : ""}`,
+      clubFilter ? [clubFilter] : [],
     );
 
-    // Recent bookings
+    // Recent bookings with full details
     const [recentBookings] = await pool.query<any[]>(
-      `SELECT b.*, u.name as user_name, u.email as user_email, 
-              c.name as club_name, co.name as court_name
+      `SELECT b.*, 
+              u.name as user_name, 
+              u.email as user_email, 
+              c.name as club_name, 
+              co.name as court_name,
+              pt.amount as paid_amount,
+              pt.status as payment_status
        FROM bookings b
        JOIN users u ON b.user_id = u.id
        JOIN clubs c ON b.club_id = c.id
        JOIN courts co ON b.court_id = co.id
-       ${clubFilter}
+       LEFT JOIN payment_transactions pt ON pt.booking_id = b.id
+       ${clubFilter ? "WHERE b.club_id = ?" : ""}
        ORDER BY b.created_at DESC
        LIMIT 10`,
+      clubFilter ? [clubFilter] : [],
     );
 
     res.json({
       success: true,
       data: {
-        totalBookings: bookingsCount[0].total,
-        totalRevenue: revenue[0].total || 0,
-        totalPlayers: playersCount[0].total,
-        upcomingBookings: upcomingCount[0].total,
+        stats: {
+          totalBookings: bookingsCount[0].total,
+          totalRevenue: revenue[0].total || 0,
+          totalPlayers: playersCount[0].total,
+          upcomingBookings: upcomingCount[0].total,
+        },
         recentBookings,
       },
     });
@@ -8224,6 +8279,429 @@ const handleUpdateClubSettings: RequestHandler = async (req, res) => {
   }
 };
 
+// ==================== ADMIN PAYMENTS HANDLERS ====================
+
+const handleGetAdminPayments: RequestHandler = async (req, res) => {
+  try {
+    const { club_id } = (req as any).admin;
+    const { type, status, startDate, endDate, search } = req.query;
+
+    let query = `
+      SELECT 
+        pt.*,
+        u.id as user_id,
+        u.name as user_name,
+        u.email as user_email,
+        u.phone as user_phone,
+        u.avatar_url as user_avatar,
+        u.stripe_customer_id as user_stripe_customer_id,
+        u.club_id as user_club_id,
+        pt.transaction_type as payment_type,
+        pt.transaction_number,
+        CASE 
+          WHEN b.id IS NOT NULL THEN CONCAT('Reserva - Cancha ', ct.name, ' - ', DATE_FORMAT(b.booking_date, '%d/%m/%Y'), ' ', b.start_time)
+          WHEN ep.id IS NOT NULL THEN CONCAT('Evento - ', e.title)
+          WHEN pc.id IS NOT NULL THEN CONCAT('Clase con ', i.name, ' - ', DATE_FORMAT(pc.class_date, '%d/%m/%Y'))
+          WHEN us.id IS NOT NULL THEN CONCAT('Suscripción - ', cs.name)
+          ELSE 'Pago'
+        END as description
+      FROM 
+        payment_transactions pt
+      INNER JOIN users u ON pt.user_id = u.id
+      LEFT JOIN bookings b ON pt.booking_id = b.id
+      LEFT JOIN courts ct ON b.court_id = ct.id
+      LEFT JOIN event_participants ep ON pt.event_participant_id = ep.id
+      LEFT JOIN events e ON ep.event_id = e.id
+      LEFT JOIN private_classes pc ON pt.private_class_id = pc.id
+      LEFT JOIN instructors i ON pc.instructor_id = i.id
+      LEFT JOIN user_subscriptions us ON pt.subscription_id = us.id
+      LEFT JOIN club_subscriptions cs ON us.plan_id = cs.id
+      WHERE 
+        pt.club_id = ?
+    `;
+
+    const params: any[] = [club_id];
+
+    if (type) {
+      query += ` AND pt.transaction_type = ?`;
+      params.push(type);
+    }
+
+    if (status) {
+      query += ` AND pt.status = ?`;
+      params.push(status);
+    }
+
+    if (startDate) {
+      query += ` AND DATE(pt.created_at) >= ?`;
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      query += ` AND DATE(pt.created_at) <= ?`;
+      params.push(endDate);
+    }
+
+    if (search) {
+      query += ` AND (u.name LIKE ? OR u.email LIKE ? OR pt.stripe_payment_intent_id LIKE ? OR pt.transaction_number LIKE ?)`;
+      const searchTerm = `%${search}%`;
+      params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+    }
+
+    query += ` ORDER BY pt.created_at DESC`;
+
+    const [rows] = await pool.query<RowDataPacket[]>(query, params);
+
+    res.json({
+      success: true,
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Error fetching payments:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch payments",
+    });
+  }
+};
+
+const handleGetPaymentStats: RequestHandler = async (req, res) => {
+  try {
+    const { club_id } = (req as any).admin;
+
+    const [stats] = await pool.query<RowDataPacket[]>(
+      `
+      SELECT 
+        COUNT(CASE WHEN pt.transaction_type = 'booking' THEN 1 END) as total_bookings,
+        COUNT(CASE WHEN pt.transaction_type = 'event' THEN 1 END) as total_events,
+        COUNT(CASE WHEN pt.transaction_type = 'private_class' THEN 1 END) as total_classes,
+        COUNT(CASE WHEN pt.transaction_type = 'subscription' THEN 1 END) as total_subscriptions,
+        SUM(CASE WHEN pt.status IN ('completed', 'processing') THEN pt.amount ELSE 0 END) as total_revenue,
+        SUM(CASE WHEN pt.status = 'pending' THEN pt.amount ELSE 0 END) as pending_amount,
+        SUM(CASE WHEN pt.status IN ('refunded', 'partially_refunded') THEN pt.refund_amount ELSE 0 END) as refunded_amount
+      FROM 
+        payment_transactions pt
+      WHERE 
+        pt.club_id = ?
+      `,
+      [club_id],
+    );
+
+    res.json({
+      success: true,
+      data: stats[0] || {
+        total_bookings: 0,
+        total_events: 0,
+        total_classes: 0,
+        total_subscriptions: 0,
+        total_revenue: 0,
+        pending_amount: 0,
+        refunded_amount: 0,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching payment stats:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch payment stats",
+    });
+  }
+};
+
+const handleRefundPayment: RequestHandler = async (req, res) => {
+  try {
+    const { club_id } = (req as any).admin;
+    const paymentId = parseInt(req.params.paymentId);
+    const { amount, reason } = req.body;
+
+    // Get payment details
+    const [payments] = await pool.query<RowDataPacket[]>(
+      `SELECT pt.* FROM payment_transactions pt
+       WHERE pt.id = ? AND pt.club_id = ?`,
+      [paymentId, club_id],
+    );
+
+    if (!payments || payments.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Payment not found",
+      });
+    }
+
+    const payment = payments[0];
+
+    if (payment.status === "refunded") {
+      return res.status(400).json({
+        success: false,
+        error: "Payment already refunded",
+      });
+    }
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    // Process refund in Stripe
+    const refundAmount = amount ? Math.round(amount * 100) : undefined;
+    const refund = await stripe.refunds.create({
+      payment_intent: payment.stripe_payment_intent_id,
+      amount: refundAmount,
+      reason: reason || "requested_by_customer",
+    });
+
+    // Update payment status
+    await pool.query(
+      `UPDATE payment_transactions 
+       SET status = 'refunded', 
+           refund_amount = ?,
+           refund_reason = ?,
+           refunded_at = NOW(),
+           stripe_refund_id = ?,
+           metadata = JSON_SET(
+             COALESCE(metadata, '{}'),
+             '$.refund_reason', ?,
+             '$.refund_id', ?
+           )
+       WHERE id = ?`,
+      [
+        refund.amount / 100,
+        reason || "",
+        refund.id,
+        reason || "",
+        refund.id,
+        paymentId,
+      ],
+    );
+
+    // Get updated payment
+    const [updated] = await pool.query<RowDataPacket[]>(
+      `SELECT pt.*, 
+              u.id as user_id,
+              u.name as user_name, 
+              u.email as user_email,
+              u.phone as user_phone,
+              u.avatar_url as user_avatar,
+              u.stripe_customer_id as user_stripe_customer_id,
+              u.club_id as user_club_id
+       FROM payment_transactions pt
+       INNER JOIN users u ON pt.user_id = u.id
+       WHERE pt.id = ?`,
+      [paymentId],
+    );
+
+    res.json({
+      success: true,
+      data: updated[0],
+    });
+  } catch (error) {
+    console.error("Error refunding payment:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to refund payment",
+    });
+  }
+};
+
+const handleSyncWithStripe: RequestHandler = async (req, res) => {
+  try {
+    const { paymentIntentId } = req.body;
+    const { club_id } = (req as any).admin;
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    // Fetch payment intent from Stripe
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    // Find local payment
+    const [payments] = await pool.query<RowDataPacket[]>(
+      `SELECT pt.* FROM payment_transactions pt
+       WHERE pt.stripe_payment_intent_id = ? AND pt.club_id = ?`,
+      [paymentIntentId, club_id],
+    );
+
+    if (!payments || payments.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Payment not found",
+      });
+    }
+
+    const payment = payments[0];
+
+    // Map Stripe status to our status
+    let status = payment.status;
+    if (paymentIntent.status === "succeeded") {
+      status = "completed";
+    } else if (paymentIntent.status === "processing") {
+      status = "processing";
+    } else if (paymentIntent.status === "requires_payment_method") {
+      status = "pending";
+    } else if (paymentIntent.status === "canceled") {
+      status = "failed";
+    }
+
+    // Update local payment with Stripe data
+    await pool.query(
+      `UPDATE payment_transactions 
+       SET status = ?,
+           amount = ?,
+           stripe_charge_id = ?,
+           paid_at = ?,
+           metadata = JSON_SET(
+             COALESCE(metadata, '{}'),
+             '$.stripe_status', ?,
+             '$.last_sync', NOW()
+           )
+       WHERE id = ?`,
+      [
+        status,
+        paymentIntent.amount / 100,
+        paymentIntent.latest_charge || payment.stripe_charge_id,
+        paymentIntent.status === "succeeded" ? new Date() : payment.paid_at,
+        paymentIntent.status,
+        payment.id,
+      ],
+    );
+
+    // Get updated payment
+    const [updated] = await pool.query<RowDataPacket[]>(
+      `SELECT pt.*, 
+              u.id as user_id,
+              u.name as user_name, 
+              u.email as user_email,
+              u.phone as user_phone,
+              u.avatar_url as user_avatar,
+              u.stripe_customer_id as user_stripe_customer_id,
+              u.club_id as user_club_id
+       FROM payment_transactions pt
+       INNER JOIN users u ON pt.user_id = u.id
+       WHERE pt.id = ?`,
+      [payment.id],
+    );
+
+    res.json({
+      success: true,
+      data: updated[0],
+    });
+  } catch (error) {
+    console.error("Error syncing with Stripe:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to sync with Stripe",
+    });
+  }
+};
+
+const handleSyncPendingPayments: RequestHandler = async (req, res) => {
+  try {
+    const { club_id } = (req as any).admin;
+
+    // Get all pending payments with stripe_payment_intent_id
+    const [pendingPayments] = await pool.query<RowDataPacket[]>(
+      `SELECT pt.* 
+       FROM payment_transactions pt
+       WHERE pt.club_id = ? 
+         AND pt.status = 'pending' 
+         AND pt.stripe_payment_intent_id IS NOT NULL
+         AND pt.created_at > DATE_SUB(NOW(), INTERVAL 30 DAY)
+       ORDER BY pt.created_at DESC
+       LIMIT 100`,
+      [club_id],
+    );
+
+    if (pendingPayments.length === 0) {
+      return res.json({
+        success: true,
+        synced: 0,
+        message: "No pending payments to sync",
+      });
+    }
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    let syncedCount = 0;
+
+    // Sync each pending payment
+    for (const payment of pendingPayments) {
+      try {
+        const paymentIntent = await stripe.paymentIntents.retrieve(
+          payment.stripe_payment_intent_id,
+        );
+
+        // Map Stripe status to our status
+        let status = payment.status;
+        if (paymentIntent.status === "succeeded") {
+          status = "completed";
+          syncedCount++;
+        } else if (paymentIntent.status === "processing") {
+          status = "processing";
+        } else if (paymentIntent.status === "canceled") {
+          status = "failed";
+          syncedCount++;
+        } else if (paymentIntent.status === "requires_payment_method") {
+          status = "pending";
+        }
+
+        // Update payment status if changed
+        if (status !== payment.status) {
+          await pool.query(
+            `UPDATE payment_transactions 
+             SET status = ?,
+                 amount = ?,
+                 stripe_charge_id = ?,
+                 paid_at = ?,
+                 failed_at = ?,
+                 metadata = JSON_SET(
+                   COALESCE(metadata, '{}'),
+                   '$.stripe_status', ?,
+                   '$.last_sync', NOW()
+                 )
+             WHERE id = ?`,
+            [
+              status,
+              paymentIntent.amount / 100,
+              paymentIntent.latest_charge || payment.stripe_charge_id,
+              paymentIntent.status === "succeeded" ? new Date() : null,
+              paymentIntent.status === "canceled" ? new Date() : null,
+              paymentIntent.status,
+              payment.id,
+            ],
+          );
+        }
+      } catch (error) {
+        console.error(
+          `Error syncing payment ${payment.id}:`,
+          error instanceof Error ? error.message : error,
+        );
+        // Continue with next payment
+      }
+    }
+
+    res.json({
+      success: true,
+      synced: syncedCount,
+      total: pendingPayments.length,
+      message: `Synced ${syncedCount} of ${pendingPayments.length} pending payments`,
+    });
+  } catch (error) {
+    console.error("Error syncing pending payments:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to sync pending payments",
+    });
+  }
+};
+
 // ==================== SERVER INITIALIZATION ====================
 
 // Create the Express app once (reused across invocations)
@@ -8534,6 +9012,33 @@ function createServer() {
 
   // Price calculation
   expressApp.post("/api/calculate-price", handleCalculatePrice);
+
+  // Admin payments routes
+  expressApp.get(
+    "/api/admin/payments",
+    verifyAdminSession,
+    handleGetAdminPayments,
+  );
+  expressApp.get(
+    "/api/admin/payments/stats",
+    verifyAdminSession,
+    handleGetPaymentStats,
+  );
+  expressApp.post(
+    "/api/admin/payments/:paymentId/refund",
+    verifyAdminSession,
+    handleRefundPayment,
+  );
+  expressApp.post(
+    "/api/admin/payments/sync-stripe",
+    verifyAdminSession,
+    handleSyncWithStripe,
+  );
+  expressApp.post(
+    "/api/admin/payments/sync-pending",
+    verifyAdminSession,
+    handleSyncPendingPayments,
+  );
 
   // Events routes
   expressApp.get("/api/admin/events", verifyAdminSession, handleGetAdminEvents);

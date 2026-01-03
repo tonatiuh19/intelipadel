@@ -79,7 +79,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${stats?.totalRevenue?.toFixed(2) || "0.00"}
+              ${Number(stats?.totalRevenue || 0).toFixed(2)}
             </div>
             <p className="text-xs text-gray-600 mt-1">
               De reservaciones pagadas

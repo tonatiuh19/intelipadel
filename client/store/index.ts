@@ -21,6 +21,7 @@ import adminSettingsReducer from "./slices/adminSettingsSlice";
 import adminSubscriptionsReducer from "./slices/adminSubscriptionsSlice";
 import userSubscriptionsReducer from "./slices/userSubscriptionsSlice";
 import instructorsReducer from "./slices/instructorsSlice";
+import adminPaymentsReducer from "./slices/adminPaymentsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -46,6 +47,7 @@ export const store = configureStore({
     adminSubscriptions: adminSubscriptionsReducer,
     userSubscriptions: userSubscriptionsReducer,
     instructors: instructorsReducer,
+    adminPayments: adminPaymentsReducer,
   },
 });
 
