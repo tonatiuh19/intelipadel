@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -30,6 +29,7 @@ import {
   createBlockedSlot,
   deleteBlockedSlot,
 } from "@/store/slices/adminBlockedDatesSlice";
+import { getAdminCourts } from "@/store/slices/adminCourtsSlice";
 
 const blockSchema = Yup.object({
   club_id: Yup.number().required("Club is required"),
@@ -53,20 +53,23 @@ export default function AdminBlockedDates() {
   const { blockedSlots, isLoading, isSubmitting } = useAppSelector(
     (state) => state.adminBlockedDates,
   );
+  const { admin } = useAppSelector((state) => state.adminAuth);
+  const { courts } = useAppSelector((state) => state.adminCourts);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const { toast } = useToast();
 
   useEffect(() => {
     dispatch(getBlockedSlots());
+    dispatch(getAdminCourts());
   }, [dispatch]);
 
   const formik = useFormik({
     initialValues: {
-      club_id: 0,
+      club_id: admin?.club_id || 0,
       court_id: null as number | null,
       block_type: "maintenance",
-      block_date: selectedDate || new Date(),
+      block_date: new Date(),
       start_time: "",
       end_time: "",
       is_all_day: false,
@@ -74,7 +77,6 @@ export default function AdminBlockedDates() {
       notes: "",
     },
     validationSchema: blockSchema,
-    enableReinitialize: true,
     onSubmit: async (values) => {
       try {
         await dispatch(
@@ -86,13 +88,13 @@ export default function AdminBlockedDates() {
           }),
         ).unwrap();
 
-        toast({ title: "Blocked slot created successfully" });
+        toast({ title: "Bloqueo creado exitosamente" });
         setDialogOpen(false);
         formik.resetForm();
       } catch (err: any) {
         toast({
           title: "Error",
-          description: err || "Failed to create blocked slot",
+          description: err || "No se pudo crear el bloqueo",
           variant: "destructive",
         });
       }
@@ -100,15 +102,15 @@ export default function AdminBlockedDates() {
   });
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this blocked slot?")) return;
+    if (!confirm("¿Estás seguro de que quieres eliminar este bloqueo?")) return;
 
     try {
       await dispatch(deleteBlockedSlot(id)).unwrap();
-      toast({ title: "Blocked slot deleted successfully" });
+      toast({ title: "Bloqueo eliminado exitosamente" });
     } catch (err: any) {
       toast({
         title: "Error",
-        description: err || "Failed to delete blocked slot",
+        description: err || "No se pudo eliminar el bloqueo",
         variant: "destructive",
       });
     }
@@ -137,64 +139,66 @@ export default function AdminBlockedDates() {
               <DialogTitle>Crear Bloqueo</DialogTitle>
             </DialogHeader>
             <form onSubmit={formik.handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="club_id">ID del Club</Label>
-                  <Input
-                    id="club_id"
-                    type="number"
-                    {...formik.getFieldProps("club_id")}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="court_id">ID de Cancha (Opcional)</Label>
-                  <Input
-                    id="court_id"
-                    type="number"
-                    value={formik.values.court_id || ""}
-                    onChange={(e) =>
-                      formik.setFieldValue(
-                        "court_id",
-                        e.target.value ? parseInt(e.target.value) : null,
-                      )
-                    }
-                  />
-                </div>
-              </div>
-
               <div className="space-y-2">
-                <Label>Tipo de Bloqueo</Label>
-                <Select
-                  value={formik.values.block_type}
-                  onValueChange={(value) =>
-                    formik.setFieldValue("block_type", value)
+                <Label htmlFor="court_id">Cancha (Opcional)</Label>
+                <select
+                  id="court_id"
+                  name="court_id"
+                  value={
+                    formik.values.court_id === null
+                      ? ""
+                      : String(formik.values.court_id)
                   }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const newCourtId = value === "" ? null : Number(value);
+                    formik.setFieldValue("court_id", newCourtId, false);
+                  }}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="maintenance">Mantenimiento</SelectItem>
-                    <SelectItem value="holiday">Día Festivo</SelectItem>
-                    <SelectItem value="event">Evento</SelectItem>
-                    <SelectItem value="private_event">
-                      Evento Privado
-                    </SelectItem>
-                    <SelectItem value="other">Otro</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <option value="">Todas las canchas</option>
+                  {courts.map((court) => (
+                    <option key={court.id} value={court.id}>
+                      {court.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-2">
-                <Label>Fecha de Bloqueo</Label>
-                <Calendar
-                  mode="single"
-                  selected={formik.values.block_date}
-                  onSelect={(date) =>
-                    date && formik.setFieldValue("block_date", date)
-                  }
-                  className="rounded-md border"
+                <Label htmlFor="block_type">Tipo de Bloqueo</Label>
+                <select
+                  id="block_type"
+                  name="block_type"
+                  value={formik.values.block_type}
+                  onChange={(e) => {
+                    formik.setFieldValue("block_type", e.target.value, false);
+                  }}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
+                >
+                  <option value="maintenance">Mantenimiento</option>
+                  <option value="holiday">Día Festivo</option>
+                  <option value="event">Evento</option>
+                  <option value="private_event">Evento Privado</option>
+                  <option value="other">Otro</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="block_date">Fecha de Bloqueo</Label>
+                <Input
+                  id="block_date"
+                  type="date"
+                  value={format(formik.values.block_date, "yyyy-MM-dd")}
+                  onChange={(e) => {
+                    const [year, month, day] = e.target.value
+                      .split("-")
+                      .map(Number);
+                    formik.setFieldValue(
+                      "block_date",
+                      new Date(year, month - 1, day),
+                    );
+                  }}
                 />
               </div>
 
@@ -222,21 +226,31 @@ export default function AdminBlockedDates() {
                       type="time"
                       {...formik.getFieldProps("start_time")}
                     />
+                    {formik.touched.start_time && formik.errors.start_time && (
+                      <p className="text-sm text-red-600">
+                        {formik.errors.start_time}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="end_time">End Time</Label>
+                    <Label htmlFor="end_time">Hora de Fin</Label>
                     <Input
                       id="end_time"
                       type="time"
                       {...formik.getFieldProps("end_time")}
                     />
+                    {formik.touched.end_time && formik.errors.end_time && (
+                      <p className="text-sm text-red-600">
+                        {formik.errors.end_time}
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="reason">Reason</Label>
+                <Label htmlFor="reason">Razón</Label>
                 <Input id="reason" {...formik.getFieldProps("reason")} />
                 {formik.touched.reason && formik.errors.reason && (
                   <p className="text-sm text-red-600">{formik.errors.reason}</p>
@@ -244,20 +258,23 @@ export default function AdminBlockedDates() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="notes">Notes (Optional)</Label>
+                <Label htmlFor="notes">Notas (Opcional)</Label>
                 <Textarea id="notes" {...formik.getFieldProps("notes")} />
               </div>
 
               <div className="flex gap-2">
-                <Button type="submit" disabled={formik.isSubmitting}>
-                  {formik.isSubmitting ? "Creating..." : "Create Block"}
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Creando..." : "Crear Bloqueo"}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setDialogOpen(false)}
+                  onClick={() => {
+                    setDialogOpen(false);
+                    formik.resetForm();
+                  }}
                 >
-                  Cancel
+                  Cancelar
                 </Button>
               </div>
             </form>
@@ -290,7 +307,16 @@ export default function AdminBlockedDates() {
                       {slot.court_name ? `- ${slot.court_name}` : ""}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {new Date(slot.block_date).toLocaleDateString()}
+                      {(() => {
+                        const [year, month, day] = slot.block_date
+                          .split("-")
+                          .map(Number);
+                        return new Date(
+                          year,
+                          month - 1,
+                          day,
+                        ).toLocaleDateString();
+                      })()}
                       {!slot.is_all_day &&
                         ` • ${slot.start_time} - ${slot.end_time}`}
                     </p>
