@@ -10,16 +10,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Menu, X, User, LogOut, Calendar, UserCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
+import { fetchUserSubscription } from "@/store/slices/userSubscriptionsSlice";
 import AuthModal from "./auth/AuthModal";
+import SubscriptionBadge from "./subscription/SubscriptionBadge";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const dispatch = useAppDispatch();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { userSubscription } = useAppSelector(
+    (state) => state.userSubscriptions,
+  );
+
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(fetchUserSubscription(user.id));
+    }
+  }, [user, dispatch]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -29,7 +40,9 @@ export default function Header() {
     if (!user) return "U";
     const nameParts = user.name?.split(" ") || [];
     if (nameParts.length >= 2) {
-      return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+      return (
+        nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)
+      ).toUpperCase();
     }
     return user.name?.charAt(0).toUpperCase() || "U";
   };
@@ -108,6 +121,17 @@ export default function Header() {
                         </p>
                       </div>
                     </DropdownMenuLabel>
+                    {userSubscription &&
+                      userSubscription.status === "active" && (
+                        <div className="px-2 py-1.5">
+                          <SubscriptionBadge
+                            subscriptionName={
+                              userSubscription.subscription?.name || ""
+                            }
+                            size="sm"
+                          />
+                        </div>
+                      )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link to="/bookings" className="cursor-pointer">
@@ -199,9 +223,7 @@ export default function Header() {
                 {isAuthenticated && user ? (
                   <>
                     <div className="px-4 py-2 border-t border-white/30 mt-2 pt-3">
-                      <p className="text-sm font-medium">
-                        {user.name}
-                      </p>
+                      <p className="text-sm font-medium">{user.name}</p>
                       <p className="text-xs text-muted-foreground">
                         {user.email}
                       </p>

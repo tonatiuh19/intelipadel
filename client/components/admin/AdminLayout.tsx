@@ -21,6 +21,7 @@ import {
   Menu,
   X,
   Maximize2,
+  Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -41,6 +42,7 @@ import {
   AdminClasses,
   AdminPayments,
   AdminPolicies,
+  AdminSubscriptions,
 } from "./sections";
 
 type Section =
@@ -54,7 +56,8 @@ type Section =
   | "events"
   | "classes"
   | "payments"
-  | "policies";
+  | "policies"
+  | "subscriptions";
 
 const navigationItems = [
   {
@@ -74,6 +77,7 @@ const navigationItems = [
   },
   { id: "events" as Section, label: "Eventos", icon: Trophy },
   { id: "classes" as Section, label: "Clases Privadas", icon: GraduationCap },
+  { id: "subscriptions" as Section, label: "Suscripciones", icon: Crown },
   { id: "payments" as Section, label: "Pagos", icon: CreditCard },
   { id: "policies" as Section, label: "Términos y Políticas", icon: FileText },
 ];
@@ -185,6 +189,8 @@ export default function AdminLayout() {
         return <AdminEvents />;
       case "classes":
         return <AdminClasses />;
+      case "subscriptions":
+        return <AdminSubscriptions />;
       case "payments":
         return <AdminPayments />;
       case "policies":

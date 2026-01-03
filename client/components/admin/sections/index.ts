@@ -9,3 +9,4 @@ export { default as AdminEvents } from "./AdminEvents";
 export { default as AdminClasses } from "./AdminClasses";
 export { default as AdminPayments } from "./AdminPayments";
 export { default as AdminPolicies } from "./AdminPolicies";
+export { default as AdminSubscriptions } from "./AdminSubscriptions";

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Label } from "@/components/ui/label";
 import {
   Loader2,
   AlertCircle,
@@ -13,6 +15,8 @@ import {
   GraduationCap,
   Target,
   Trophy,
+  Check,
+  Crown,
 } from "lucide-react";
 import {
   PaymentElement,
@@ -23,10 +27,11 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { confirmPayment, setPaymentStatus } from "@/store/slices/paymentSlice";
 import { confirmEventPayment } from "@/store/slices/eventPaymentSlice";
 import { confirmClassPayment } from "@/store/slices/classPaymentSlice";
+import { fetchPaymentMethods } from "@/store/slices/userSubscriptionsSlice";
 import ClubPolicyModal from "./ClubPolicyModal";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import type { Event } from "@shared/types";
+import type { Event, PaymentMethod } from "@shared/types";
 
 interface Instructor {
   id: number;
@@ -78,6 +83,8 @@ interface StripePaymentFormProps {
   onError: () => void;
   isEventPayment?: boolean;
   isClassPayment?: boolean;
+  eventDiscountPercent?: number;
+  classDiscountPercent?: number;
 }
 
 export default function StripePaymentForm({
@@ -92,17 +99,21 @@ export default function StripePaymentForm({
   onError,
   isEventPayment = false,
   isClassPayment = false,
+  eventDiscountPercent,
+  classDiscountPercent,
 }: StripePaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const dispatch = useAppDispatch();
-  const { paymentIntentId, loading, error } = useAppSelector((state) =>
+  const { user } = useAppSelector((state) => state.auth);
+  const { clientSecret, loading, error } = useAppSelector((state) =>
     isEventPayment
       ? state.eventPayment
       : isClassPayment
         ? state.classPayment
         : state.payment,
   );
+  const { paymentMethods } = useAppSelector((state) => state.userSubscriptions);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -110,10 +121,18 @@ export default function StripePaymentForm({
   const [selectedPolicyType, setSelectedPolicyType] = useState<
     "terms" | "privacy" | "cancellation"
   >("terms");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<string>("new");
 
   const handleOpenPolicy = (type: "terms" | "privacy" | "cancellation") => {
     setSelectedPolicyType(type);
     setShowPolicyModal(true);
+  };
+
+  const handleSelectPaymentMethod = (paymentMethodId: string) => {
+    console.log("Selecting payment method:", paymentMethodId);
+    console.log("Current state:", selectedPaymentMethod);
+    setSelectedPaymentMethod(paymentMethodId);
   };
 
   // Reset status when component mounts
@@ -121,10 +140,50 @@ export default function StripePaymentForm({
     dispatch(setPaymentStatus("idle"));
   }, [dispatch]);
 
+  // Fetch user payment methods and set default selection
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(fetchPaymentMethods(user.id)).then((result: any) => {
+        console.log("fetchPaymentMethods result:", result);
+        console.log("result.payload:", result.payload);
+
+        if (
+          result.payload &&
+          Array.isArray(result.payload) &&
+          result.payload.length > 0
+        ) {
+          console.log("First payment method structure:", result.payload[0]);
+          console.log("Keys:", Object.keys(result.payload[0]));
+
+          // Find default payment method
+          const defaultMethod = result.payload.find(
+            (pm: PaymentMethod) => pm.is_default,
+          );
+          if (defaultMethod) {
+            console.log("Default method found:", defaultMethod);
+            console.log(
+              "Setting selected payment method to:",
+              defaultMethod.id,
+            );
+            setSelectedPaymentMethod(defaultMethod.id);
+          } else {
+            console.log('No default method, keeping "new" selected');
+          }
+        }
+      });
+    }
+  }, [user?.id, dispatch]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!stripe || !elements || !paymentIntentId) {
+    if (!stripe || !clientSecret) {
+      return;
+    }
+
+    // Validate payment method selection
+    if (selectedPaymentMethod === "new" && !elements) {
+      setErrorMessage("Por favor completa la información de pago");
       return;
     }
 
@@ -133,22 +192,41 @@ export default function StripePaymentForm({
     dispatch(setPaymentStatus("processing"));
 
     try {
-      // Confirm the payment with Stripe
-      const { error: stripeError } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: window.location.origin + "/booking",
-        },
-        redirect: "if_required",
-      });
+      let confirmResult;
 
-      if (stripeError) {
-        setErrorMessage(stripeError.message || "Payment failed");
+      if (selectedPaymentMethod !== "new") {
+        // Use saved payment method
+        confirmResult = await stripe.confirmPayment({
+          clientSecret,
+          confirmParams: {
+            payment_method: selectedPaymentMethod,
+            return_url: window.location.origin + "/booking",
+          },
+          redirect: "if_required",
+        });
+      } else {
+        // Use new payment method from PaymentElement
+        confirmResult = await stripe.confirmPayment({
+          elements,
+          confirmParams: {
+            return_url: window.location.origin + "/booking",
+          },
+          redirect: "if_required",
+        });
+      }
+
+      if (confirmResult?.error) {
+        setErrorMessage(confirmResult.error.message || "Payment failed");
         dispatch(setPaymentStatus("failed"));
         setIsProcessing(false);
         onError();
         return;
       }
+
+      // Extract PaymentIntent ID from client secret or confirmation result
+      // Client secret format: pi_xxx_secret_yyy, we need just pi_xxx
+      const paymentIntentId =
+        confirmResult?.paymentIntent?.id || clientSecret.split("_secret_")[0];
 
       // Confirm payment on backend
       if (isEventPayment && eventData) {
@@ -173,7 +251,7 @@ export default function StripePaymentForm({
         // Court booking flow
         const result = await dispatch(
           confirmPayment({
-            paymentIntentId,
+            paymentIntentId: paymentIntentId,
             bookingData,
           }),
         ).unwrap();
@@ -303,13 +381,44 @@ export default function StripePaymentForm({
             )}
 
             {/* Registration Fee */}
-            <div className="mt-4 pt-4 border-t border-orange-200">
+            <div className="mt-4 pt-4 border-t border-orange-200 space-y-2">
+              {eventDiscountPercent && eventDiscountPercent > 0 && (
+                <>
+                  <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-lg mb-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Crown className="h-4 w-4 text-amber-600" />
+                      <span className="text-xs font-bold text-amber-900">
+                        Descuento de Membresía {eventDiscountPercent}%
+                      </span>
+                    </div>
+                    <div className="text-xs text-amber-800">
+                      Ahorro: $
+                      {(
+                        (eventData.registration_fee * eventDiscountPercent) /
+                        100
+                      ).toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">Precio Original</span>
+                    <span className="text-gray-500 line-through">
+                      ${eventData.registration_fee.toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              )}
               <div className="flex items-center justify-between">
                 <span className="text-gray-700 font-medium">
-                  Cuota de Inscripción
+                  {eventDiscountPercent && eventDiscountPercent > 0
+                    ? "Precio con Descuento"
+                    : "Cuota de Inscripción"}
                 </span>
                 <span className="text-2xl font-bold text-orange-600">
-                  ${eventData.registration_fee.toFixed(2)}
+                  $
+                  {(
+                    eventData.registration_fee *
+                    (1 - (eventDiscountPercent || 0) / 100)
+                  ).toFixed(2)}
                 </span>
               </div>
             </div>
@@ -437,11 +546,44 @@ export default function StripePaymentForm({
             </div>
 
             {/* Total Price */}
-            <div className="mt-4 pt-4 border-t border-green-200">
+            <div className="mt-4 pt-4 border-t border-green-200 space-y-2">
+              {classDiscountPercent && classDiscountPercent > 0 && (
+                <>
+                  <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-lg mb-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Crown className="h-4 w-4 text-amber-600" />
+                      <span className="text-xs font-bold text-amber-900">
+                        Descuento de Membresía {classDiscountPercent}%
+                      </span>
+                    </div>
+                    <div className="text-xs text-amber-800">
+                      Ahorro: $
+                      {(
+                        (classData.total_price * classDiscountPercent) /
+                        100
+                      ).toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">Precio Original</span>
+                    <span className="text-gray-500 line-through">
+                      ${classData.total_price.toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              )}
               <div className="flex items-center justify-between">
-                <span className="text-gray-700 font-medium">Total</span>
+                <span className="text-gray-700 font-medium">
+                  {classDiscountPercent && classDiscountPercent > 0
+                    ? "Precio con Descuento"
+                    : "Total"}
+                </span>
                 <span className="text-2xl font-bold text-green-600">
-                  ${classData.total_price.toFixed(2)}
+                  $
+                  {(
+                    classData.total_price *
+                    (1 - (classDiscountPercent || 0) / 100)
+                  ).toFixed(2)}
                 </span>
               </div>
             </div>
@@ -462,19 +604,130 @@ export default function StripePaymentForm({
           </div>
         </div>
 
-        {/* Stripe Payment Element */}
-        <div className="mb-6">
-          <PaymentElement
-            options={{
-              layout: "tabs",
-              defaultValues: {
-                billingDetails: {
-                  email: "",
+        {/* Payment Method Selection */}
+        {paymentMethods.length > 0 ? (
+          <div className="mb-6 space-y-4">
+            <Label className="text-sm font-medium">
+              Selecciona un Método de Pago
+            </Label>
+
+            {/* Saved Payment Methods */}
+            <div className="space-y-3">
+              {paymentMethods.map((pm) => {
+                const isSelected = selectedPaymentMethod === pm.id;
+
+                return (
+                  <Card
+                    key={pm.id}
+                    className={`cursor-pointer transition-all ${
+                      isSelected
+                        ? "border-primary border-2 bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                    onClick={() => handleSelectPaymentMethod(pm.id)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-14 rounded bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
+                            <CreditCard className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold capitalize">
+                                {pm.brand?.toUpperCase()}
+                              </span>
+                              <span className="text-muted-foreground">
+                                •••• {pm.last4}
+                              </span>
+                              {!!pm.is_default && (
+                                <Badge
+                                  variant="secondary"
+                                  className="ml-2 bg-green-100 text-green-700"
+                                >
+                                  <Check className="h-3 w-3 mr-1" />
+                                  Predeterminada
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-0.5">
+                              Vence {pm.exp_month.toString().padStart(2, "0")}/
+                              {pm.exp_year}
+                            </p>
+                          </div>
+                        </div>
+                        {isSelected && (
+                          <Check className="h-5 w-5 text-primary" />
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+
+              {/* New Payment Method Option */}
+              <Card
+                className={`cursor-pointer transition-all ${
+                  selectedPaymentMethod === "new"
+                    ? "border-primary border-2 bg-primary/5"
+                    : "border-border hover:border-primary/50"
+                }`}
+                onClick={() => handleSelectPaymentMethod("new")}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-4">
+                      <div className="h-10 w-14 rounded bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                        <CreditCard className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-semibold">
+                          Usar una tarjeta diferente
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                          Ingresa los datos de una nueva tarjeta
+                        </p>
+                      </div>
+                    </div>
+                    {selectedPaymentMethod === "new" && (
+                      <Check className="h-5 w-5 text-primary" />
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* New Card Form */}
+            {selectedPaymentMethod === "new" && (
+              <div className="space-y-4 mt-4 p-4 border-2 border-primary/20 rounded-lg bg-primary/5">
+                <PaymentElement
+                  options={{
+                    layout: "tabs",
+                    defaultValues: {
+                      billingDetails: {
+                        email: user?.email || "",
+                      },
+                    },
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          /* No Saved Cards - Show Payment Element Directly */
+          <div className="mb-6 space-y-4">
+            <PaymentElement
+              options={{
+                layout: "tabs",
+                defaultValues: {
+                  billingDetails: {
+                    email: user?.email || "",
+                  },
                 },
-              },
-            }}
-          />
-        </div>
+              }}
+            />
+          </div>
+        )}
 
         {/* Security Notice */}
         <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
@@ -497,7 +750,12 @@ export default function StripePaymentForm({
       {/* Submit Button */}
       <Button
         type="submit"
-        disabled={!stripe || isProcessing || loading}
+        disabled={
+          !stripe ||
+          isProcessing ||
+          loading ||
+          (selectedPaymentMethod === "new" && !elements)
+        }
         className="w-full"
         size="lg"
       >

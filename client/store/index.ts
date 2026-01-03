@@ -18,6 +18,8 @@ import adminPoliciesReducer from "./slices/adminPoliciesSlice";
 import adminEventsReducer from "./slices/adminEventsSlice";
 import adminInstructorsReducer from "./slices/adminInstructorsSlice";
 import adminSettingsReducer from "./slices/adminSettingsSlice";
+import adminSubscriptionsReducer from "./slices/adminSubscriptionsSlice";
+import userSubscriptionsReducer from "./slices/userSubscriptionsSlice";
 import instructorsReducer from "./slices/instructorsSlice";
 
 export const store = configureStore({
@@ -41,6 +43,8 @@ export const store = configureStore({
     adminInstructors: adminInstructorsReducer,
     adminEvents: adminEventsReducer,
     adminSettings: adminSettingsReducer,
+    adminSubscriptions: adminSubscriptionsReducer,
+    userSubscriptions: userSubscriptionsReducer,
     instructors: instructorsReducer,
   },
 });

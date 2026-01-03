@@ -10,6 +10,7 @@ import {
   Star,
   ChevronDown,
   ChevronUp,
+  Crown,
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -71,6 +72,7 @@ interface CourtTimeSlotSelectorProps {
   loadingInstructors?: boolean;
   selectedInstructor?: Instructor | null;
   onInstructorSelect?: (instructor: Instructor | null) => void;
+  userSubscription?: any;
 }
 
 export default function CourtTimeSlotSelector({
@@ -89,6 +91,7 @@ export default function CourtTimeSlotSelector({
   loadingInstructors = false,
   selectedInstructor = null,
   onInstructorSelect,
+  userSubscription,
 }: CourtTimeSlotSelectorProps) {
   // Filter events for the selected date
   const getEventsForDate = () => {
@@ -473,9 +476,50 @@ export default function CourtTimeSlotSelector({
                         {event.current_participants}/
                         {event.max_participants || "∞"} participantes
                       </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <DollarSign className="h-4 w-4" />$
-                        {Number(event.registration_fee).toFixed(2)}
+                      <div className="flex items-center gap-2">
+                        {userSubscription?.subscription
+                          ?.event_discount_percent ? (
+                          <>
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500">
+                                <Crown className="h-3 w-3 text-white" />
+                                <span className="text-xs font-bold text-white">
+                                  -
+                                  {
+                                    userSubscription.subscription
+                                      .event_discount_percent
+                                  }
+                                  %
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-start">
+                              <span className="text-xs text-gray-400 line-through">
+                                ${Number(event.registration_fee).toFixed(2)}
+                              </span>
+                              <div className="flex items-center gap-1">
+                                <DollarSign className="h-4 w-4 text-green-600" />
+                                <span className="font-semibold text-green-600">
+                                  $
+                                  {(
+                                    Number(event.registration_fee) *
+                                    (1 -
+                                      userSubscription.subscription
+                                        .event_discount_percent /
+                                        100)
+                                  ).toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <DollarSign className="h-4 w-4" />
+                            <span className="text-gray-600">
+                              ${Number(event.registration_fee).toFixed(2)}
+                            </span>
+                          </>
+                        )}
                       </div>
                       <div className="text-gray-600">
                         Nivel:{" "}
@@ -581,9 +625,40 @@ export default function CourtTimeSlotSelector({
                             )}
                           </div>
                           <div className="text-right">
-                            <div className="text-lg font-bold text-green-600">
-                              ${instructor.hourly_rate}/hr
-                            </div>
+                            {userSubscription?.subscription
+                              ?.class_discount_percent ? (
+                              <div className="flex flex-col items-end gap-1">
+                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500">
+                                  <Crown className="h-3 w-3 text-white" />
+                                  <span className="text-xs font-bold text-white">
+                                    -
+                                    {
+                                      userSubscription.subscription
+                                        .class_discount_percent
+                                    }
+                                    %
+                                  </span>
+                                </div>
+                                <div className="text-xs text-gray-400 line-through">
+                                  ${instructor.hourly_rate}/hr
+                                </div>
+                                <div className="text-lg font-bold text-green-600">
+                                  $
+                                  {(
+                                    instructor.hourly_rate *
+                                    (1 -
+                                      userSubscription.subscription
+                                        .class_discount_percent /
+                                        100)
+                                  ).toFixed(2)}
+                                  /hr
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-lg font-bold text-green-600">
+                                ${instructor.hourly_rate}/hr
+                              </div>
+                            )}
                           </div>
                         </div>
                         {instructor.bio && (

@@ -1,7 +1,16 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check, ArrowRight, ArrowLeft, MapPin, Star } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Check,
+  ArrowRight,
+  ArrowLeft,
+  MapPin,
+  Star,
+  Crown,
+  Loader2,
+} from "lucide-react";
 import { addDays, format, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -38,6 +47,14 @@ import ClassRegistrationSummary from "@/components/booking/ClassRegistrationSumm
 import StripePaymentForm from "@/components/booking/StripePaymentForm";
 import PaymentSuccessModal from "@/components/booking/PaymentSuccessModal";
 import PaymentFailedModal from "@/components/booking/PaymentFailedModal";
+import SubscriptionModal from "@/components/subscription/SubscriptionModal";
+import { useToast } from "@/hooks/use-toast";
+import {
+  fetchAvailableSubscriptions,
+  fetchUserSubscription,
+  subscribe,
+  clearAvailableSubscriptions,
+} from "@/store/slices/userSubscriptionsSlice";
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
@@ -94,6 +111,12 @@ export default function BookingWizard() {
   const { instructors, loading: loadingInstructors } = useAppSelector(
     (state) => state.instructors,
   );
+  const {
+    availableSubscriptions,
+    userSubscription,
+    loading: subscriptionsLoading,
+  } = useAppSelector((state) => state.userSubscriptions);
+  const { toast } = useToast();
 
   const [step, setStep] = useState<BookingStep>("club");
   const [flowType, setFlowType] = useState<
@@ -115,6 +138,12 @@ export default function BookingWizard() {
   const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
   const [duration, setDuration] = useState<number>(60);
   const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
+  const [calculatedEventPrice, setCalculatedEventPrice] = useState<
+    number | null
+  >(null);
+  const [calculatedClassPrice, setCalculatedClassPrice] = useState<
+    number | null
+  >(null);
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -123,10 +152,20 @@ export default function BookingWizard() {
   const [processingEventId, setProcessingEventId] = useState<number | null>(
     null,
   );
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [selectedClubForSubscription, setSelectedClubForSubscription] =
+    useState<Club | null>(null);
 
   useEffect(() => {
     dispatch(fetchClubs());
   }, [dispatch]);
+
+  // Fetch user subscription when authenticated
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      dispatch(fetchUserSubscription(user.id));
+    }
+  }, [isAuthenticated, user?.id, dispatch]);
 
   // Load default duration when club is selected
   useEffect(() => {
@@ -153,10 +192,19 @@ export default function BookingWizard() {
     }
   }, [step, dispatch]);
 
-  // Watch for authentication success to proceed to payment
+  // Watch for authentication success to proceed to payment or open subscription modal
   useEffect(() => {
-    if (step === "auth" && isAuthenticated) {
+    if (step === "auth" && isAuthenticated && user) {
       setShowAuthModal(false);
+
+      // Check if we were trying to view subscriptions
+      if (selectedClubForSubscription && !flowType) {
+        dispatch(fetchAvailableSubscriptions(selectedClubForSubscription.id));
+        setShowSubscriptionModal(true);
+        setStep("club");
+        return;
+      }
+
       if (flowType === "event") {
         handleProceedToEventPayment();
       } else if (flowType === "class") {
@@ -165,9 +213,9 @@ export default function BookingWizard() {
         handleProceedToPayment();
       }
     }
-  }, [isAuthenticated, step, flowType]);
+  }, [isAuthenticated, step, flowType, user, selectedClubForSubscription]);
 
-  // Calculate price when date/time/duration changes
+  // Calculate price when date/time/duration changes OR when user changes (for subscription discount)
   useEffect(() => {
     if (
       selectedClub &&
@@ -178,7 +226,7 @@ export default function BookingWizard() {
     ) {
       calculatePrice();
     }
-  }, [selectedClub, selectedDate, selectedTime, duration, selectedCourt]);
+  }, [selectedClub, selectedDate, selectedTime, duration, selectedCourt, user]);
 
   const calculatePrice = async () => {
     if (!selectedClub || !selectedDate || !selectedTime || !duration) return;
@@ -196,6 +244,7 @@ export default function BookingWizard() {
           booking_date: format(selectedDate, "yyyy-MM-dd"),
           start_time: selectedTime,
           duration_minutes: duration,
+          user_id: user?.id, // Pass user_id to apply subscription discounts
         }),
       });
 
@@ -257,6 +306,58 @@ export default function BookingWizard() {
     setStep("datetime");
   };
 
+  const handleViewSubscriptions = (club: Club, event: React.MouseEvent) => {
+    event.stopPropagation();
+
+    // Check if user is authenticated
+    if (!isAuthenticated || !user || !user.email) {
+      // Set club_id before showing auth modal
+      dispatch(setTempClubId(club.id));
+      setSelectedClubForSubscription(club);
+      setStep("auth");
+      setShowAuthModal(true);
+      return;
+    }
+
+    setSelectedClubForSubscription(club);
+    dispatch(fetchAvailableSubscriptions(club.id));
+    setShowSubscriptionModal(true);
+  };
+
+  const handleSubscribe = async (
+    subscriptionId: number,
+    paymentMethodId: string,
+  ) => {
+    if (!user || !selectedClubForSubscription) return;
+
+    try {
+      await dispatch(
+        subscribe({
+          userId: user.id,
+          subscriptionId,
+          paymentMethodId,
+        }),
+      ).unwrap();
+
+      toast({
+        title: "¡Suscripción Exitosa!",
+        description:
+          "Tu suscripción ha sido activada. Disfruta de tus beneficios.",
+      });
+
+      setShowSubscriptionModal(false);
+      setSelectedClubForSubscription(null);
+      dispatch(clearAvailableSubscriptions());
+    } catch (error: any) {
+      console.error("Subscription error:", error);
+      toast({
+        title: "Error",
+        description: error?.message || "No se pudo completar la suscripción",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSelectDateTime = (court: Court, time: string) => {
     setSelectedCourt(court);
     setSelectedTime(time);
@@ -270,6 +371,33 @@ export default function BookingWizard() {
     setSelectedEvent(event);
     setFlowType("event");
     setProcessingEventId(event.id);
+
+    // Calculate discounted price if user has subscription
+    let finalPrice = Number(event.registration_fee);
+    console.log("🎯 Event Registration - Original Price:", finalPrice);
+    console.log("🎯 User Subscription:", userSubscription);
+
+    if (
+      userSubscription?.status === "active" &&
+      userSubscription.subscription?.event_discount_percent
+    ) {
+      const discountPercent =
+        userSubscription.subscription.event_discount_percent;
+      const discount = (finalPrice * discountPercent) / 100;
+      finalPrice = finalPrice - discount;
+      console.log(`🎯 Discount Applied: ${discountPercent}% = $${discount}`);
+      console.log(`🎯 Final Price: $${finalPrice}`);
+    } else {
+      console.log(
+        "🎯 No discount applied - subscription status:",
+        userSubscription?.status,
+      );
+      console.log(
+        "🎯 Discount percent:",
+        userSubscription?.subscription?.event_discount_percent,
+      );
+    }
+    setCalculatedEventPrice(finalPrice);
 
     // Check if user is authenticated
     if (!isAuthenticated) {
@@ -314,6 +442,20 @@ export default function BookingWizard() {
     setFlowType("class");
     // Don't clear selectedInstructorForUI here - keep it for visual feedback
 
+    // Calculate discounted price if user has subscription
+    let basePrice = instructor.hourly_rate * (duration / 60);
+    let finalPrice = basePrice;
+    if (
+      userSubscription?.status === "active" &&
+      userSubscription.subscription?.class_discount_percent
+    ) {
+      const discountPercent =
+        userSubscription.subscription.class_discount_percent;
+      const discount = (basePrice * discountPercent) / 100;
+      finalPrice = basePrice - discount;
+    }
+    setCalculatedClassPrice(finalPrice);
+
     // Check if user is authenticated
     if (!isAuthenticated) {
       if (selectedClub) {
@@ -344,15 +486,44 @@ export default function BookingWizard() {
       return;
     }
 
+    // Use calculated price if available, otherwise use original price
+    const finalPrice =
+      calculatedEventPrice !== null
+        ? calculatedEventPrice
+        : Number(eventToUse.registration_fee);
+
     const eventData = {
       user_id: user.id,
       event_id: eventToUse.id,
-      registration_fee: Number(eventToUse.registration_fee),
+      registration_fee: finalPrice,
     };
 
-    // Create payment intent for event
-    await dispatch(createEventPaymentIntent(eventData));
-    setStep("payment");
+    try {
+      // Create payment intent for event
+      await dispatch(createEventPaymentIntent(eventData)).unwrap();
+      setStep("payment");
+    } catch (error: any) {
+      console.error("Event payment intent error:", error);
+
+      // Extract error message from various possible error structures
+      const errorMessage =
+        error?.message ||
+        error?.error ||
+        (typeof error === "string" ? error : null) ||
+        "No se pudo procesar la inscripción";
+
+      // Show error message to user
+      toast({
+        title: "Error de Inscripción",
+        description: errorMessage,
+        variant: "destructive",
+      });
+
+      // Reset state
+      setProcessingEventId(null);
+      setSelectedEvent(null);
+      setFlowType(null);
+    }
   };
 
   const handleProceedToClassPayment = async () => {
@@ -368,6 +539,12 @@ export default function BookingWizard() {
 
     const endTime = `${parseInt(selectedTime.split(":")[0]) + Math.floor(duration / 60)}:${selectedTime.split(":")[1].padStart(2, "0")}`;
 
+    // Use calculated price if available, otherwise calculate from hourly rate
+    const finalPrice =
+      calculatedClassPrice !== null
+        ? calculatedClassPrice
+        : selectedInstructor.hourly_rate * (duration / 60);
+
     const classData = {
       user_id: user.id,
       instructor_id: selectedInstructor.id,
@@ -379,7 +556,7 @@ export default function BookingWizard() {
       end_time: endTime,
       duration_minutes: duration,
       number_of_students: numberOfStudents,
-      total_price: selectedInstructor.hourly_rate * (duration / 60),
+      total_price: finalPrice,
     };
 
     // Create payment intent for class
@@ -611,6 +788,14 @@ export default function BookingWizard() {
                           {club.city}
                         </p>
                       </div>
+                      {club.has_subscriptions && (
+                        <div className="absolute top-3 right-3">
+                          <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold">
+                            <Crown className="h-3 w-3 mr-1" />
+                            Membresías
+                          </Badge>
+                        </div>
+                      )}
                     </div>
                     <div className="p-5">
                       <div className="flex items-center gap-2 mb-4">
@@ -642,6 +827,19 @@ export default function BookingWizard() {
                           </p>
                         </div>
                       </div>
+
+                      {club.has_subscriptions && (
+                        <Button
+                          variant="outline"
+                          className="w-full mb-2 border-amber-500 text-amber-600 hover:bg-amber-50"
+                          size="sm"
+                          onClick={(e) => handleViewSubscriptions(club, e)}
+                        >
+                          <Crown className="mr-2 h-4 w-4" />
+                          Ver Membresías
+                        </Button>
+                      )}
+
                       <Button
                         variant="default"
                         className="w-full group-hover:bg-primary group-hover:scale-105 transition-all"
@@ -712,10 +910,11 @@ export default function BookingWizard() {
               onInstructorSelect={setSelectedInstructorForUI}
               duration={duration}
               calculatedPrice={calculatedPrice}
+              userSubscription={userSubscription}
             />
 
             {/* Duration & Price */}
-            {selectedTime && (
+            {selectedTime && flowType === "booking" && (
               <Card
                 className={cn(
                   "p-6 bg-gradient-to-br from-primary/10 to-primary/5",
@@ -723,6 +922,49 @@ export default function BookingWizard() {
                 )}
               >
                 <div className="space-y-4">
+                  {userSubscription && userSubscription.status === "active" && (
+                    <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-lg shadow-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
+                          <Crown className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-bold text-amber-900 mb-1">
+                            ✨ Beneficio de Membresía Aplicado
+                          </p>
+                          <p className="text-xs text-amber-800 leading-relaxed">
+                            {userSubscription.subscription
+                              ?.booking_discount_percent && (
+                              <>
+                                Descuento del{" "}
+                                <span className="font-bold">
+                                  {
+                                    userSubscription.subscription
+                                      .booking_discount_percent
+                                  }
+                                  %
+                                </span>{" "}
+                                aplicado a tu reserva
+                              </>
+                            )}
+                            {userSubscription.subscription
+                              ?.booking_credits_monthly && (
+                              <>
+                                Tienes{" "}
+                                <span className="font-bold">
+                                  {userSubscription.subscription
+                                    .booking_credits_monthly -
+                                    (userSubscription.bookings_used_this_month ||
+                                      0)}
+                                </span>{" "}
+                                créditos disponibles este mes
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Duración</span>
                     <span className="font-semibold">
@@ -747,6 +989,56 @@ export default function BookingWizard() {
               </Card>
             )}
 
+            {/* Event/Class Subscription Benefit Banner */}
+            {userSubscription &&
+              userSubscription.status === "active" &&
+              !selectedTime &&
+              (userSubscription.subscription?.event_discount_percent ||
+                userSubscription.subscription?.class_discount_percent) && (
+                <Card className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-lg shadow-sm animate-in fade-in slide-in-from-bottom-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
+                      <Crown className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-amber-900 mb-1">
+                        ✨ Beneficios de Membresía Disponibles
+                      </p>
+                      <div className="text-xs text-amber-800 leading-relaxed space-y-1">
+                        {userSubscription.subscription
+                          ?.event_discount_percent && (
+                          <p>
+                            • Descuento del{" "}
+                            <span className="font-bold">
+                              {
+                                userSubscription.subscription
+                                  .event_discount_percent
+                              }
+                              %
+                            </span>{" "}
+                            en inscripciones a eventos
+                          </p>
+                        )}
+                        {userSubscription.subscription
+                          ?.class_discount_percent && (
+                          <p>
+                            • Descuento del{" "}
+                            <span className="font-bold">
+                              {
+                                userSubscription.subscription
+                                  .class_discount_percent
+                              }
+                              %
+                            </span>{" "}
+                            en clases privadas
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
             {/* Navigation */}
             <div className="flex gap-3">
               <Button
@@ -769,11 +1061,28 @@ export default function BookingWizard() {
                       ? handleProceedToClassPayment
                       : handleContinueToPayment
                   }
+                  disabled={
+                    flowType === "class" ? classPaymentLoading : paymentLoading
+                  }
                   className="flex-1"
                   size="lg"
                 >
-                  Continuar
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  {flowType === "class" && classPaymentLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Procesando...
+                    </>
+                  ) : flowType === "booking" && paymentLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Procesando...
+                    </>
+                  ) : (
+                    <>
+                      Continuar
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
                 </Button>
               )}
             </div>
@@ -911,7 +1220,10 @@ export default function BookingWizard() {
                     eventData={{
                       user_id: user.id,
                       event_id: selectedEvent.id,
-                      registration_fee: Number(selectedEvent.registration_fee),
+                      registration_fee:
+                        calculatedEventPrice !== null
+                          ? calculatedEventPrice
+                          : Number(selectedEvent.registration_fee),
                     }}
                     clubId={selectedClub.id}
                     clubName={selectedClub.name}
@@ -919,6 +1231,10 @@ export default function BookingWizard() {
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                     isEventPayment={true}
+                    eventDiscountPercent={
+                      userSubscription?.subscription?.event_discount_percent ||
+                      0
+                    }
                   />
                 </Elements>
               )}
@@ -984,7 +1300,9 @@ export default function BookingWizard() {
                       duration_minutes: duration,
                       number_of_students: numberOfStudents,
                       total_price:
-                        selectedInstructor.hourly_rate * (duration / 60),
+                        calculatedClassPrice !== null
+                          ? calculatedClassPrice
+                          : selectedInstructor.hourly_rate * (duration / 60),
                     }}
                     clubId={selectedClub.id}
                     clubName={selectedClub.name}
@@ -992,6 +1310,10 @@ export default function BookingWizard() {
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                     isClassPayment={true}
+                    classDiscountPercent={
+                      userSubscription?.subscription?.class_discount_percent ||
+                      0
+                    }
                   />
                 </Elements>
               )}
@@ -1045,6 +1367,25 @@ export default function BookingWizard() {
             dispatch(resetPayment());
           }}
           onRetry={handleRetryPayment}
+        />
+
+        {/* Subscription Modal */}
+        <SubscriptionModal
+          open={showSubscriptionModal}
+          onClose={() => {
+            setShowSubscriptionModal(false);
+            setSelectedClubForSubscription(null);
+            dispatch(clearAvailableSubscriptions());
+          }}
+          subscriptions={availableSubscriptions}
+          onSubscribe={handleSubscribe}
+          loading={subscriptionsLoading}
+          userSubscriptionId={userSubscription?.subscription_id || null}
+          userEmail={user?.email}
+          hasActiveSubscription={
+            userSubscription?.subscription &&
+            userSubscription.status === "active"
+          }
         />
       </div>
     </div>

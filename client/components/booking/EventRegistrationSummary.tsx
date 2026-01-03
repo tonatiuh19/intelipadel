@@ -6,6 +6,7 @@ import {
   Users,
   Trophy,
   DollarSign,
+  Crown,
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -16,6 +17,8 @@ interface EventRegistrationSummaryProps {
   clubName: string;
   clubImage: string;
   totalPrice: number;
+  originalPrice?: number;
+  discountApplied?: number;
 }
 
 export default function EventRegistrationSummary({
@@ -23,6 +26,8 @@ export default function EventRegistrationSummary({
   clubName,
   clubImage,
   totalPrice,
+  originalPrice,
+  discountApplied,
 }: EventRegistrationSummaryProps) {
   const eventTypeLabels: Record<string, string> = {
     tournament: "Torneo",
@@ -144,16 +149,57 @@ export default function EventRegistrationSummary({
         </div>
 
         {/* Price */}
-        <div className="pt-4 border-t">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">
-              Cuota de Inscripción
-            </span>
-            <span className="text-sm font-medium">
-              ${totalPrice.toFixed(2)} MXN
-            </span>
-          </div>
-          <div className="flex justify-between items-center mt-2 pt-2 border-t">
+        <div className="pt-4 border-t space-y-2">
+          {discountApplied && discountApplied > 0 && (
+            <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-lg">
+              <div className="flex items-center gap-2 mb-1">
+                <Crown className="h-4 w-4 text-amber-600" />
+                <span className="text-xs font-bold text-amber-900">
+                  Descuento de Membresía
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-amber-800">
+                  {originalPrice &&
+                    ((discountApplied / originalPrice) * 100).toFixed(0)}
+                  % de descuento
+                </span>
+                <span className="font-semibold text-amber-900">
+                  -${discountApplied.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {originalPrice && discountApplied && discountApplied > 0 ? (
+            <>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Cuota Original</span>
+                <span className="text-muted-foreground line-through">
+                  ${originalPrice.toFixed(2)} MXN
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">
+                  Cuota con Descuento
+                </span>
+                <span className="font-medium text-green-600">
+                  ${totalPrice.toFixed(2)} MXN
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">
+                Cuota de Inscripción
+              </span>
+              <span className="text-sm font-medium">
+                ${totalPrice.toFixed(2)} MXN
+              </span>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center pt-2 border-t">
             <span className="font-bold">Total a Pagar</span>
             <span className="text-2xl font-bold text-orange-600">
               ${totalPrice.toFixed(2)}

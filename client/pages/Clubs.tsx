@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, MapPin, Star } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, MapPin, Star, Crown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchClubs } from "@/store/slices/clubsSlice";
@@ -62,12 +63,18 @@ export default function Clubs() {
                 transition={{ delay: idx * 0.1 }}
               >
                 <Card className="overflow-hidden hover:shadow-xl transition-all">
-                  <div className="aspect-video bg-muted overflow-hidden">
+                  <div className="aspect-video bg-muted overflow-hidden relative">
                     <img
                       src={club.image_url}
                       alt={club.name}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
+                    {club.has_subscriptions && (
+                      <Badge className="absolute top-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-none shadow-lg">
+                        <Crown className="h-3 w-3 mr-1" />
+                        Suscripciones
+                      </Badge>
+                    )}
                   </div>
                   <div className="p-6">
                     <h3 className="font-bold text-xl text-secondary mb-2">

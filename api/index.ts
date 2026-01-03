@@ -321,6 +321,214 @@ async function sendAdminVerificationEmail(
 }
 
 /**
+ * Send subscription confirmation email
+ */
+async function sendSubscriptionConfirmationEmail(
+  email: string,
+  userName: string,
+  subscriptionName: string,
+  clubName: string,
+  price: number,
+  currency: string,
+  benefits: { discount?: number; credits?: number; extras?: string[] },
+): Promise<boolean> {
+  try {
+    const transportConfig = {
+      host: process.env.SMTP_HOST || "mail.disruptinglabs.com",
+      port: parseInt(process.env.SMTP_PORT || "465"),
+      secure: process.env.SMTP_SECURE === "true" || true,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    };
+
+    if (!transportConfig.auth.user || !transportConfig.auth.pass) {
+      console.error("❌ SMTP credentials not configured!");
+      return false;
+    }
+
+    const transporter = nodemailer.createTransport(transportConfig);
+
+    // Process extras - they can be strings or objects with description
+    const extrasList = (benefits.extras || [])
+      .map((extra) =>
+        typeof extra === "string" ? extra : (extra as any).description || "",
+      )
+      .filter(Boolean);
+
+    const benefitsList = [
+      benefits.discount && `✓ ${benefits.discount}% de descuento en reservas`,
+      benefits.credits && `✓ ${benefits.credits} créditos mensuales`,
+      ...extrasList.map((extra) => `✓ ${extra}`),
+    ]
+      .filter(Boolean)
+      .map((b) => `<div class="benefit">${b}</div>`)
+      .join("");
+
+    const emailBody = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
+          .container { background-color: white; border-radius: 10px; padding: 30px; max-width: 600px; margin: 0 auto; }
+          .header { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 30px; }
+          .badge { display: inline-block; background-color: #fbbf24; color: #78350f; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+          .price { font-size: 36px; font-weight: bold; color: #ea580c; margin: 20px 0; }
+          .benefits { background-color: #fef3c7; padding: 20px; border-radius: 10px; margin: 20px 0; }
+          .benefit { padding: 10px 0; border-bottom: 1px solid #fcd34d; }
+          .benefit:last-child { border-bottom: none; }
+          .footer { color: #666; font-size: 12px; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+          .button { background-color: #ea580c; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎉 ¡Suscripción Activada!</h1>
+            <span class="badge">${subscriptionName}</span>
+          </div>
+          
+          <p style="font-size: 18px;">Hola ${userName},</p>
+          
+          <p>¡Bienvenido al programa de membresías de <strong>${clubName}</strong>! Tu suscripción ha sido activada exitosamente.</p>
+          
+          <div style="text-align: center;">
+            <div class="price">$${price} ${currency}/mes</div>
+          </div>
+          
+          <div class="benefits">
+            <h3 style="margin-top: 0; color: #92400e;">✨ Tus Beneficios:</h3>
+            ${benefitsList}
+          </div>
+          
+          <p>Tu próximo cargo será el mismo día del próximo mes. Puedes cancelar en cualquier momento desde tu perfil.</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.FRONTEND_URL || "http://localhost:8080"}/profile" class="button">
+              Ver Mi Perfil
+            </a>
+          </div>
+          
+          <div class="footer">
+            <p>InteliPadel - Tu plataforma de reservas de pádel</p>
+            <p>Si tienes alguna pregunta, contáctanos en soporte@intelipadel.com</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await transporter.sendMail({
+      from: `"InteliPadel" <${transportConfig.auth.user}>`,
+      to: email,
+      subject: `Suscripción Confirmada - ${subscriptionName}`,
+      html: emailBody,
+    });
+
+    console.log("✅ Subscription confirmation email sent");
+    return true;
+  } catch (error) {
+    console.error("❌ Error sending subscription email:", error);
+    return false;
+  }
+}
+
+/**
+ * Send subscription cancellation email
+ */
+async function sendSubscriptionCancellationEmail(
+  email: string,
+  userName: string,
+  subscriptionName: string,
+  endDate: Date,
+): Promise<boolean> {
+  try {
+    const transportConfig = {
+      host: process.env.SMTP_HOST || "mail.disruptinglabs.com",
+      port: parseInt(process.env.SMTP_PORT || "465"),
+      secure: process.env.SMTP_SECURE === "true" || true,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    };
+
+    if (!transportConfig.auth.user || !transportConfig.auth.pass) {
+      console.error("❌ SMTP credentials not configured!");
+      return false;
+    }
+
+    const transporter = nodemailer.createTransport(transportConfig);
+
+    const endDateFormatted = endDate.toLocaleDateString("es-ES", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
+    const emailBody = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
+          .container { background-color: white; border-radius: 10px; padding: 30px; max-width: 600px; margin: 0 auto; }
+          .header { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 30px; }
+          .info-box { background-color: #fef3c7; padding: 20px; border-radius: 10px; border-left: 4px solid #f59e0b; margin: 20px 0; }
+          .footer { color: #666; font-size: 12px; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+          .button { background-color: #10b981; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Suscripción Cancelada</h1>
+          </div>
+          
+          <p style="font-size: 18px;">Hola ${userName},</p>
+          
+          <p>Tu suscripción <strong>${subscriptionName}</strong> ha sido cancelada.</p>
+          
+          <div class="info-box">
+            <p style="margin: 0;"><strong>Información Importante:</strong></p>
+            <p style="margin: 10px 0 0 0;">Seguirás teniendo acceso a tus beneficios hasta el <strong>${endDateFormatted}</strong>. Después de esta fecha, tu suscripción finalizará y no se realizarán más cargos.</p>
+          </div>
+          
+          <p>Lamentamos verte partir. Si cambias de opinión, siempre puedes volver a suscribirte desde nuestra plataforma.</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.FRONTEND_URL || "http://localhost:8080"}/booking" class="button">
+              Ver Planes Disponibles
+            </a>
+          </div>
+          
+          <div class="footer">
+            <p>InteliPadel - Tu plataforma de reservas de pádel</p>
+            <p>Si tienes alguna pregunta, contáctanos en soporte@intelipadel.com</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await transporter.sendMail({
+      from: `"InteliPadel" <${transportConfig.auth.user}>`,
+      to: email,
+      subject: `Suscripción Cancelada - ${subscriptionName}`,
+      html: emailBody,
+    });
+
+    console.log("✅ Subscription cancellation email sent");
+    return true;
+  } catch (error) {
+    console.error("❌ Error sending cancellation email:", error);
+    return false;
+  }
+}
+
+/**
  * Helper function to send welcome email
  */
 async function sendWelcomeEmail(
@@ -648,6 +856,1444 @@ const handleGetClubById: RequestHandler = async (req, res) => {
       message: "Failed to fetch club",
       error: error instanceof Error ? error.message : "Unknown error",
     });
+  }
+};
+
+// ==================== SUBSCRIPTION HANDLERS ====================
+
+/**
+ * GET /api/subscriptions
+ * Get all subscriptions for a club
+ */
+/**
+ * Helper function to safely parse the extras field
+ * Handles both JSON strings and already-parsed objects
+ */
+const parseExtras = (extras: any): any[] => {
+  if (!extras) return [];
+  if (typeof extras === "string") {
+    try {
+      return JSON.parse(extras);
+    } catch (e) {
+      console.error("Failed to parse extras JSON:", e);
+      return [];
+    }
+  }
+  if (Array.isArray(extras)) return extras;
+  return [];
+};
+
+const handleGetSubscriptions: RequestHandler = async (req, res) => {
+  try {
+    const { club_id } = req.query;
+
+    if (!club_id) {
+      return res.status(400).json({ error: "club_id is required" });
+    }
+
+    const [rows] = await pool.query<any[]>(
+      `SELECT * FROM club_subscriptions 
+       WHERE club_id = ? 
+       ORDER BY display_order ASC, created_at DESC`,
+      [club_id],
+    );
+
+    // Parse JSON extras field
+    const subscriptions = rows.map((row) => ({
+      ...row,
+      extras: parseExtras(row.extras),
+    }));
+
+    res.json(subscriptions);
+  } catch (error) {
+    console.error("Error fetching subscriptions:", error);
+    res.status(500).json({ error: "Failed to fetch subscriptions" });
+  }
+};
+
+/**
+ * GET /api/subscriptions/:id
+ * Get a single subscription
+ */
+const handleGetSubscription: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [rows] = await pool.query<any[]>(
+      `SELECT * FROM club_subscriptions WHERE id = ?`,
+      [id],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Subscription not found" });
+    }
+
+    const subscription = {
+      ...rows[0],
+      extras: parseExtras(rows[0].extras),
+    };
+
+    res.json(subscription);
+  } catch (error) {
+    console.error("Error fetching subscription:", error);
+    res.status(500).json({ error: "Failed to fetch subscription" });
+  }
+};
+
+/**
+ * POST /api/subscriptions
+ * Create a new subscription
+ */
+const handleCreateSubscription: RequestHandler = async (req, res) => {
+  try {
+    const data = req.body;
+
+    // Validate required fields
+    if (!data.club_id || !data.name || !data.price_monthly) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Validate booking benefits are mutually exclusive
+    if (data.booking_discount_percent && data.booking_credits_monthly) {
+      return res.status(400).json({
+        error:
+          "Cannot have both booking discount and booking credits. Please choose one.",
+      });
+    }
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    let stripeProductId: string | null = null;
+    let stripePriceId: string | null = null;
+
+    try {
+      // Get club name for product creation
+      const [clubRows] = await pool.query<any[]>(
+        `SELECT name FROM clubs WHERE id = ?`,
+        [data.club_id],
+      );
+      const clubName = clubRows[0]?.name || "Club";
+
+      // Create Stripe product
+      const product = await stripe.products.create({
+        name: `${clubName} - ${data.name}`,
+        description: data.description || undefined,
+        metadata: {
+          club_id: data.club_id.toString(),
+          subscription_name: data.name,
+        },
+      });
+
+      stripeProductId = product.id;
+
+      // Create Stripe price (recurring monthly)
+      const price = await stripe.prices.create({
+        product: product.id,
+        unit_amount: Math.round(data.price_monthly * 100), // Convert to cents
+        currency: (data.currency || "usd").toLowerCase(),
+        recurring: {
+          interval: "month",
+        },
+        metadata: {
+          club_id: data.club_id.toString(),
+        },
+      });
+
+      stripePriceId = price.id;
+    } catch (stripeError) {
+      console.error("Stripe product/price creation error:", stripeError);
+      // Continue without Stripe IDs if creation fails
+    }
+
+    // Convert extras array to JSON string
+    const extrasJson = data.extras ? JSON.stringify(data.extras) : null;
+
+    const [result] = await pool.query<any>(
+      `INSERT INTO club_subscriptions (
+        club_id, name, description, price_monthly, currency,
+        booking_discount_percent, booking_credits_monthly,
+        bar_discount_percent, merch_discount_percent,
+        event_discount_percent, class_discount_percent,
+        extras, is_active, display_order, max_subscribers,
+        stripe_product_id, stripe_price_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.club_id,
+        data.name,
+        data.description || null,
+        data.price_monthly,
+        data.currency || "USD",
+        data.booking_discount_percent || null,
+        data.booking_credits_monthly || null,
+        data.bar_discount_percent || null,
+        data.merch_discount_percent || null,
+        data.event_discount_percent || null,
+        data.class_discount_percent || null,
+        extrasJson,
+        data.is_active !== false ? 1 : 0,
+        data.display_order || 0,
+        data.max_subscribers || null,
+        stripeProductId,
+        stripePriceId,
+      ],
+    );
+
+    // Fetch the created subscription
+    const [rows] = await pool.query<any[]>(
+      `SELECT * FROM club_subscriptions WHERE id = ?`,
+      [result.insertId],
+    );
+
+    const subscription = {
+      ...rows[0],
+      extras: parseExtras(rows[0].extras),
+    };
+
+    res.status(201).json(subscription);
+  } catch (error) {
+    console.error("Error creating subscription:", error);
+    res.status(500).json({ error: "Failed to create subscription" });
+  }
+};
+
+/**
+ * PUT /api/subscriptions/:id
+ * Update a subscription
+ */
+const handleUpdateSubscription: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
+
+    // Check if subscription exists
+    const [existing] = await pool.query<any[]>(
+      `SELECT * FROM club_subscriptions WHERE id = ?`,
+      [id],
+    );
+
+    if (existing.length === 0) {
+      return res.status(404).json({ error: "Subscription not found" });
+    }
+
+    const currentSub = existing[0];
+
+    // Validate booking benefits are mutually exclusive
+    const newDiscountPercent =
+      data.booking_discount_percent !== undefined
+        ? data.booking_discount_percent
+        : currentSub.booking_discount_percent;
+    const newCreditsMonthly =
+      data.booking_credits_monthly !== undefined
+        ? data.booking_credits_monthly
+        : currentSub.booking_credits_monthly;
+
+    if (newDiscountPercent && newCreditsMonthly) {
+      return res.status(400).json({
+        error:
+          "Cannot have both booking discount and booking credits. Please choose one.",
+      });
+    }
+
+    // If price or currency changed and we have Stripe product, create new price
+    if (
+      (data.price_monthly !== undefined || data.currency !== undefined) &&
+      currentSub.stripe_product_id
+    ) {
+      try {
+        const Stripe = (await import("stripe")).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+          apiVersion: "2025-12-15.clover",
+        });
+
+        // Archive old price
+        if (currentSub.stripe_price_id) {
+          await stripe.prices.update(currentSub.stripe_price_id, {
+            active: false,
+          });
+        }
+
+        // Create new price
+        const newPrice = await stripe.prices.create({
+          product: currentSub.stripe_product_id,
+          unit_amount: Math.round(
+            (data.price_monthly || currentSub.price_monthly) * 100,
+          ),
+          currency: (
+            data.currency ||
+            currentSub.currency ||
+            "usd"
+          ).toLowerCase(),
+          recurring: {
+            interval: "month",
+          },
+          metadata: {
+            club_id: currentSub.club_id.toString(),
+          },
+        });
+
+        data.stripe_price_id = newPrice.id;
+      } catch (stripeError) {
+        console.error("Stripe price update error:", stripeError);
+      }
+    }
+
+    // Update Stripe product name/description if changed
+    if (
+      (data.name !== undefined || data.description !== undefined) &&
+      currentSub.stripe_product_id
+    ) {
+      try {
+        const Stripe = (await import("stripe")).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+          apiVersion: "2025-12-15.clover",
+        });
+
+        const [clubRows] = await pool.query<any[]>(
+          `SELECT name FROM clubs WHERE id = ?`,
+          [currentSub.club_id],
+        );
+        const clubName = clubRows[0]?.name || "Club";
+
+        await stripe.products.update(currentSub.stripe_product_id, {
+          name: `${clubName} - ${data.name || currentSub.name}`,
+          description:
+            data.description !== undefined
+              ? data.description || undefined
+              : currentSub.description || undefined,
+        });
+      } catch (stripeError) {
+        console.error("Stripe product update error:", stripeError);
+      }
+    }
+
+    // Build update query dynamically
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (data.name !== undefined) {
+      updates.push("name = ?");
+      values.push(data.name);
+    }
+    if (data.description !== undefined) {
+      updates.push("description = ?");
+      values.push(data.description || null);
+    }
+    if (data.price_monthly !== undefined) {
+      updates.push("price_monthly = ?");
+      values.push(data.price_monthly);
+    }
+    if (data.currency !== undefined) {
+      updates.push("currency = ?");
+      values.push(data.currency);
+    }
+    if (data.booking_discount_percent !== undefined) {
+      updates.push("booking_discount_percent = ?");
+      values.push(data.booking_discount_percent || null);
+    }
+    if (data.booking_credits_monthly !== undefined) {
+      updates.push("booking_credits_monthly = ?");
+      values.push(data.booking_credits_monthly || null);
+    }
+    if (data.bar_discount_percent !== undefined) {
+      updates.push("bar_discount_percent = ?");
+      values.push(data.bar_discount_percent || null);
+    }
+    if (data.merch_discount_percent !== undefined) {
+      updates.push("merch_discount_percent = ?");
+      values.push(data.merch_discount_percent || null);
+    }
+    if (data.event_discount_percent !== undefined) {
+      updates.push("event_discount_percent = ?");
+      values.push(data.event_discount_percent || null);
+    }
+    if (data.class_discount_percent !== undefined) {
+      updates.push("class_discount_percent = ?");
+      values.push(data.class_discount_percent || null);
+    }
+    if (data.extras !== undefined) {
+      updates.push("extras = ?");
+      values.push(data.extras ? JSON.stringify(data.extras) : null);
+    }
+    if (data.is_active !== undefined) {
+      updates.push("is_active = ?");
+      values.push(data.is_active ? 1 : 0);
+    }
+    if (data.display_order !== undefined) {
+      updates.push("display_order = ?");
+      values.push(data.display_order);
+    }
+    if (data.max_subscribers !== undefined) {
+      updates.push("max_subscribers = ?");
+      values.push(data.max_subscribers || null);
+    }
+    if (data.stripe_price_id !== undefined) {
+      updates.push("stripe_price_id = ?");
+      values.push(data.stripe_price_id);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: "No fields to update" });
+    }
+
+    values.push(id);
+
+    await pool.query(
+      `UPDATE club_subscriptions SET ${updates.join(", ")} WHERE id = ?`,
+      values,
+    );
+
+    // Fetch the updated subscription
+    const [rows] = await pool.query<any[]>(
+      `SELECT * FROM club_subscriptions WHERE id = ?`,
+      [id],
+    );
+
+    const subscription = {
+      ...rows[0],
+      extras: parseExtras(rows[0].extras),
+    };
+
+    res.json(subscription);
+  } catch (error) {
+    console.error("Error updating subscription:", error);
+    res.status(500).json({ error: "Failed to update subscription" });
+  }
+};
+
+/**
+ * DELETE /api/subscriptions/:id
+ * Delete a subscription
+ */
+const handleDeleteSubscription: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if subscription has active subscribers
+    const [subscribers] = await pool.query<any[]>(
+      `SELECT COUNT(*) as count FROM user_subscriptions 
+       WHERE subscription_id = ? AND status = 'active'`,
+      [id],
+    );
+
+    if (subscribers[0].count > 0) {
+      return res.status(400).json({
+        error:
+          "Cannot delete subscription with active subscribers. Please cancel all subscriptions first.",
+      });
+    }
+
+    // Get subscription details for Stripe cleanup
+    const [subRows] = await pool.query<any[]>(
+      `SELECT stripe_product_id, stripe_price_id FROM club_subscriptions WHERE id = ?`,
+      [id],
+    );
+
+    // Archive Stripe product and price if they exist
+    if (subRows.length > 0 && subRows[0].stripe_product_id) {
+      try {
+        const Stripe = (await import("stripe")).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+          apiVersion: "2025-12-15.clover",
+        });
+
+        // Archive price first
+        if (subRows[0].stripe_price_id) {
+          await stripe.prices.update(subRows[0].stripe_price_id, {
+            active: false,
+          });
+        }
+
+        // Archive product
+        await stripe.products.update(subRows[0].stripe_product_id, {
+          active: false,
+        });
+      } catch (stripeError) {
+        console.error("Stripe cleanup error:", stripeError);
+        // Continue with deletion even if Stripe cleanup fails
+      }
+    }
+
+    // Delete the subscription
+    const [result] = await pool.query<any>(
+      `DELETE FROM club_subscriptions WHERE id = ?`,
+      [id],
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Subscription not found" });
+    }
+
+    res.json({ message: "Subscription deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting subscription:", error);
+    res.status(500).json({ error: "Failed to delete subscription" });
+  }
+};
+
+/**
+ * GET /api/subscriptions/active/:club_id
+ * Get active subscriptions for public display
+ */
+const handleGetActiveSubscriptions: RequestHandler = async (req, res) => {
+  try {
+    const { club_id } = req.params;
+
+    const [rows] = await pool.query<any[]>(
+      `SELECT * FROM club_subscriptions 
+       WHERE club_id = ? AND is_active = 1
+       ORDER BY display_order ASC, price_monthly ASC`,
+      [club_id],
+    );
+
+    // Parse JSON extras field if it's a string
+    const subscriptions = rows.map((row) => ({
+      ...row,
+      extras: row.extras
+        ? typeof row.extras === "string"
+          ? JSON.parse(row.extras)
+          : row.extras
+        : [],
+    }));
+
+    res.json(subscriptions);
+  } catch (error) {
+    console.error("Error fetching active subscriptions:", error);
+    res.status(500).json({ error: "Failed to fetch subscriptions" });
+  }
+};
+
+/**
+ * POST /api/subscriptions/subscribe
+ * User subscribes to a subscription plan (creates Stripe subscription)
+ */
+const handleUserSubscribe: RequestHandler = async (req, res) => {
+  try {
+    const { user_id, subscription_id, payment_method_id } = req.body;
+
+    if (!user_id || !subscription_id || !payment_method_id) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Get subscription details with club name
+    const [subRows] = await pool.query<any[]>(
+      `SELECT cs.*, c.name as club_name 
+       FROM club_subscriptions cs
+       JOIN clubs c ON cs.club_id = c.id
+       WHERE cs.id = ? AND cs.is_active = 1`,
+      [subscription_id],
+    );
+
+    if (subRows.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "Subscription not found or inactive" });
+    }
+
+    const subscription = subRows[0];
+
+    // Check if user already has an active subscription for this club
+    const [existingSubs] = await pool.query<any[]>(
+      `SELECT us.* FROM user_subscriptions us
+       WHERE us.user_id = ? AND us.club_id = ? AND us.status = 'active'`,
+      [user_id, subscription.club_id],
+    );
+
+    if (existingSubs.length > 0) {
+      return res.status(400).json({
+        error: "User already has an active subscription for this club",
+      });
+    }
+
+    // Check max subscribers limit
+    if (
+      subscription.max_subscribers &&
+      subscription.current_subscribers >= subscription.max_subscribers
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Subscription has reached maximum capacity" });
+    }
+
+    // Get user details and ensure they have a Stripe customer ID
+    const [userRows] = await pool.query<any[]>(
+      `SELECT * FROM users WHERE id = ?`,
+      [user_id],
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user = userRows[0];
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    let customerId = user.stripe_customer_id;
+
+    // Create Stripe customer if doesn't exist
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: user.name,
+        metadata: {
+          user_id: user_id.toString(),
+        },
+      });
+      customerId = customer.id;
+
+      // Update user with Stripe customer ID
+      await pool.query(`UPDATE users SET stripe_customer_id = ? WHERE id = ?`, [
+        customerId,
+        user_id,
+      ]);
+    }
+
+    // Attach payment method to customer
+    await stripe.paymentMethods.attach(payment_method_id, {
+      customer: customerId,
+    });
+
+    // Set as default payment method
+    await stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: payment_method_id,
+      },
+    });
+
+    // Save payment method to database
+    const paymentMethodDetails =
+      await stripe.paymentMethods.retrieve(payment_method_id);
+
+    // First, unset all other payment methods as default for this user
+    await pool.query(
+      `UPDATE payment_methods SET is_default = 0 WHERE user_id = ?`,
+      [user_id],
+    );
+
+    // Then insert or update the new default payment method
+    await pool.query(
+      `INSERT INTO payment_methods (user_id, stripe_payment_method_id, payment_type, card_brand, card_last4, card_exp_month, card_exp_year, is_default)
+       VALUES (?, ?, 'card', ?, ?, ?, ?, 1)
+       ON DUPLICATE KEY UPDATE is_default = 1, card_brand = VALUES(card_brand), card_last4 = VALUES(card_last4), card_exp_month = VALUES(card_exp_month), card_exp_year = VALUES(card_exp_year)`,
+      [
+        user_id,
+        payment_method_id,
+        paymentMethodDetails.card?.brand || "unknown",
+        paymentMethodDetails.card?.last4 || "0000",
+        paymentMethodDetails.card?.exp_month || 0,
+        paymentMethodDetails.card?.exp_year || 0,
+      ],
+    );
+
+    // Create Stripe subscription
+    const nowTimestamp = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+    const stripeSubscription = await stripe.subscriptions.create({
+      customer: customerId,
+      items: [{ price: subscription.stripe_price_id }],
+      billing_cycle_anchor: nowTimestamp,
+      proration_behavior: "none",
+      metadata: {
+        user_id: user_id.toString(),
+        subscription_id: subscription_id.toString(),
+        club_id: subscription.club_id.toString(),
+      },
+    });
+
+    // Calculate credit reset date (first day of next month)
+    const now = new Date();
+    const creditResetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    // Create user subscription record
+    const currentPeriodStart = new Date(
+      (stripeSubscription as any).current_period_start * 1000,
+    );
+    let currentPeriodEnd = new Date(
+      (stripeSubscription as any).current_period_end * 1000,
+    );
+
+    // Ensure period end is at least 1 month after start (safety check)
+    if (currentPeriodEnd.getTime() === currentPeriodStart.getTime()) {
+      currentPeriodEnd = new Date(currentPeriodStart);
+      currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
+    }
+
+    await pool.query(
+      `INSERT INTO user_subscriptions (
+        user_id, club_id, plan_id, subscription_number, stripe_subscription_id, status,
+        current_period_start, current_period_end, started_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      [
+        user_id,
+        subscription.club_id,
+        subscription_id,
+        `SUB-${Date.now()}-${user_id}`,
+        stripeSubscription.id,
+        "active",
+        currentPeriodStart,
+        currentPeriodEnd,
+      ],
+    );
+
+    // Increment current_subscribers count
+    await pool.query(
+      `UPDATE club_subscriptions SET current_subscribers = current_subscribers + 1 WHERE id = ?`,
+      [subscription_id],
+    );
+
+    // Update has_subscriptions flag on club
+    await pool.query(`UPDATE clubs SET has_subscriptions = 1 WHERE id = ?`, [
+      subscription.club_id,
+    ]);
+
+    // Send confirmation email
+    await sendSubscriptionConfirmationEmail(
+      user.email,
+      user.name,
+      subscription.name,
+      subscription.club_name,
+      parseFloat(subscription.price_monthly),
+      subscription.currency,
+      {
+        discount: subscription.booking_discount_percent,
+        credits: subscription.booking_credits_monthly,
+        extras: subscription.extras
+          ? typeof subscription.extras === "string"
+            ? JSON.parse(subscription.extras)
+            : subscription.extras
+          : [],
+      },
+    );
+
+    res.json({
+      success: true,
+      message: "Subscription created successfully",
+      subscription: stripeSubscription,
+    });
+  } catch (error) {
+    console.error("Subscribe error:", error);
+    res.status(500).json({
+      error: "Failed to create subscription",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/subscriptions/cancel
+ * User cancels their subscription
+ */
+const handleUserCancelSubscription: RequestHandler = async (req, res) => {
+  try {
+    const { user_id, subscription_id } = req.body;
+
+    if (!user_id || !subscription_id) {
+      return res
+        .status(400)
+        .json({ error: "user_id and subscription_id are required" });
+    }
+
+    // Get subscription details
+    const [subRows] = await pool.query<any[]>(
+      `SELECT * FROM user_subscriptions WHERE user_id = ? AND subscription_id = ? AND status = 'active'`,
+      [user_id, subscription_id],
+    );
+
+    if (subRows.length === 0) {
+      return res.status(404).json({ error: "Active subscription not found" });
+    }
+
+    const userSub = subRows[0];
+
+    if (userSub.status === "cancelled") {
+      return res.status(400).json({ error: "Subscription already cancelled" });
+    }
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    // Cancel Stripe subscription at period end
+    await stripe.subscriptions.update(userSub.stripe_subscription_id, {
+      cancel_at_period_end: true,
+    });
+
+    // Update database
+    await pool.query(
+      `UPDATE user_subscriptions SET status = 'cancelled', cancelled_at = NOW() WHERE id = ?`,
+      [userSub.id],
+    );
+
+    // Decrement current_subscribers count
+    await pool.query(
+      `UPDATE club_subscriptions SET current_subscribers = current_subscribers - 1 WHERE id = ?`,
+      [userSub.subscription_id],
+    );
+
+    // Get subscription and user details for email
+    const [subDetails] = await pool.query<any[]>(
+      `SELECT cs.name, u.email, u.name as user_name
+       FROM club_subscriptions cs
+       JOIN users u ON u.id = ?
+       WHERE cs.id = ?`,
+      [userSub.user_id, userSub.subscription_id],
+    );
+
+    if (subDetails.length > 0) {
+      const endDate = new Date(userSub.current_period_end);
+      await sendSubscriptionCancellationEmail(
+        subDetails[0].email,
+        subDetails[0].user_name,
+        subDetails[0].name,
+        endDate,
+      );
+    }
+
+    res.json({
+      success: true,
+      message:
+        "Subscription cancelled successfully. Access will continue until the end of the billing period.",
+    });
+  } catch (error) {
+    console.error("Cancel subscription error:", error);
+    res.status(500).json({
+      error: "Failed to cancel subscription",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/users/:userId/subscription
+ * Get user's active subscription with full details
+ */
+const handleGetUserSubscription: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const [rows] = await pool.query<any[]>(
+      `SELECT 
+        us.id as user_subscription_id,
+        us.user_id,
+        us.plan_id as subscription_id,
+        us.stripe_subscription_id,
+        us.status,
+        us.bookings_used_this_month,
+        us.started_at,
+        us.current_period_start,
+        us.current_period_end,
+        us.cancelled_at,
+        cs.club_id,
+        cs.name,
+        cs.description,
+        cs.price_monthly,
+        cs.currency,
+        cs.booking_discount_percent,
+        cs.booking_credits_monthly,
+        cs.bar_discount_percent,
+        cs.merch_discount_percent,
+        cs.event_discount_percent,
+        cs.class_discount_percent,
+        cs.extras,
+        c.name as club_name
+       FROM user_subscriptions us
+       JOIN club_subscriptions cs ON us.plan_id = cs.id
+       JOIN clubs c ON cs.club_id = c.id
+       WHERE us.user_id = ? AND us.status = 'active'
+       LIMIT 1`,
+      [userId],
+    );
+
+    if (rows.length === 0) {
+      return res.json(null);
+    }
+
+    const row = rows[0];
+    const userSubscription = {
+      id: row.user_subscription_id,
+      user_id: row.user_id,
+      subscription_id: row.subscription_id,
+      stripe_subscription_id: row.stripe_subscription_id,
+      status: row.status,
+      bookings_used_this_month: row.bookings_used_this_month,
+      started_at: row.started_at,
+      current_period_start: row.current_period_start,
+      current_period_end: row.current_period_end,
+      cancelled_at: row.cancelled_at,
+      subscription: {
+        id: row.subscription_id,
+        club_id: row.club_id,
+        club_name: row.club_name,
+        name: row.name,
+        description: row.description,
+        price_monthly: row.price_monthly,
+        currency: row.currency,
+        booking_discount_percent: row.booking_discount_percent,
+        booking_credits_monthly: row.booking_credits_monthly,
+        bar_discount_percent: row.bar_discount_percent,
+        merch_discount_percent: row.merch_discount_percent,
+        event_discount_percent: row.event_discount_percent,
+        class_discount_percent: row.class_discount_percent,
+        extras: parseExtras(row.extras),
+      },
+    };
+
+    res.json(userSubscription);
+  } catch (error) {
+    console.error("Error fetching user subscription:", error);
+    res.status(500).json({ error: "Failed to fetch subscription" });
+  }
+};
+
+/**
+ * GET /api/users/:userId/payment-methods
+ * Get user's saved payment methods
+ */
+const handleGetPaymentMethods: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    // First, validate and fix any duplicate defaults in the database
+    const [defaultCheck] = await pool.query<any[]>(
+      `SELECT COUNT(*) as count FROM payment_methods WHERE user_id = ? AND is_default = 1`,
+      [userId],
+    );
+
+    // If more than one default exists, fix it
+    if (defaultCheck[0]?.count > 1) {
+      console.log(
+        `Found ${defaultCheck[0].count} default payment methods for user ${userId}, fixing...`,
+      );
+
+      // Get user's Stripe customer ID to check default in Stripe
+      const [userRows] = await pool.query<any[]>(
+        `SELECT stripe_customer_id FROM users WHERE id = ?`,
+        [userId],
+      );
+
+      if (userRows[0]?.stripe_customer_id) {
+        try {
+          // Get the default payment method from Stripe
+          const customer = (await stripe.customers.retrieve(
+            userRows[0].stripe_customer_id,
+          )) as any;
+          const stripeDefaultPM =
+            customer.invoice_settings?.default_payment_method;
+
+          // Unset all defaults first
+          await pool.query(
+            `UPDATE payment_methods SET is_default = 0 WHERE user_id = ?`,
+            [userId],
+          );
+
+          // Set the correct default based on Stripe
+          if (stripeDefaultPM) {
+            await pool.query(
+              `UPDATE payment_methods SET is_default = 1 WHERE user_id = ? AND stripe_payment_method_id = ?`,
+              [userId, stripeDefaultPM],
+            );
+          } else {
+            // If no default in Stripe, set the most recent one as default
+            await pool.query(
+              `UPDATE payment_methods SET is_default = 1 WHERE user_id = ? ORDER BY created_at DESC LIMIT 1`,
+              [userId],
+            );
+          }
+        } catch (stripeError) {
+          console.error("Error syncing with Stripe:", stripeError);
+          // If Stripe sync fails, just keep the most recent one as default
+          await pool.query(
+            `UPDATE payment_methods SET is_default = 0 WHERE user_id = ?`,
+            [userId],
+          );
+          await pool.query(
+            `UPDATE payment_methods SET is_default = 1 WHERE user_id = ? ORDER BY created_at DESC LIMIT 1`,
+            [userId],
+          );
+        }
+      }
+    }
+
+    const [rows] = await pool.query<any[]>(
+      `SELECT 
+        stripe_payment_method_id as id,
+        card_brand as brand,
+        card_last4 as last4,
+        card_exp_month as exp_month,
+        card_exp_year as exp_year,
+        is_default,
+        created_at
+       FROM payment_methods 
+       WHERE user_id = ? 
+       ORDER BY is_default DESC, created_at DESC`,
+      [userId],
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching payment methods:", error);
+    res.status(500).json({ error: "Failed to fetch payment methods" });
+  }
+};
+
+/**
+ * DELETE /api/payment-methods/:paymentMethodId
+ * Delete a payment method
+ */
+const handleDeletePaymentMethod: RequestHandler = async (req, res) => {
+  try {
+    const { paymentMethodId } = req.params;
+
+    // Get payment method details
+    const [rows] = await pool.query<any[]>(
+      `SELECT * FROM payment_methods WHERE stripe_payment_method_id = ?`,
+      [paymentMethodId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Payment method not found" });
+    }
+
+    const pm = rows[0];
+
+    // Check if this is the default payment method and user has active subscription
+    if (pm.is_default) {
+      const [activeSubs] = await pool.query<any[]>(
+        `SELECT * FROM user_subscriptions WHERE user_id = ? AND status = 'active'`,
+        [pm.user_id],
+      );
+
+      if (activeSubs.length > 0) {
+        return res.status(400).json({
+          error:
+            "Cannot delete default payment method while subscription is active",
+        });
+      }
+    }
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    // Detach payment method from Stripe
+    await stripe.paymentMethods.detach(paymentMethodId);
+
+    // Delete from database
+    await pool.query(
+      `DELETE FROM payment_methods WHERE stripe_payment_method_id = ?`,
+      [paymentMethodId],
+    );
+
+    res.json({ success: true, message: "Payment method deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting payment method:", error);
+    res.status(500).json({ error: "Failed to delete payment method" });
+  }
+};
+
+/**
+ * GET /api/admin/subscriptions/:subscriptionId/subscribers
+ * Get list of subscribers for a specific subscription plan
+ */
+const handleGetSubscriptionSubscribers: RequestHandler = async (req, res) => {
+  try {
+    const { subscriptionId } = req.params;
+
+    const [rows] = await pool.query<any[]>(
+      `SELECT 
+        us.id as user_subscription_id,
+        us.user_id,
+        us.status,
+        us.started_at,
+        us.current_period_start,
+        us.current_period_end,
+        us.cancelled_at,
+        us.bookings_used_this_month,
+        u.name as user_name,
+        u.email as user_email,
+        u.phone as user_phone,
+        cs.name as subscription_name,
+        cs.price_monthly,
+        cs.currency
+       FROM user_subscriptions us
+       JOIN users u ON us.user_id = u.id
+       JOIN club_subscriptions cs ON us.plan_id = cs.id
+       WHERE us.plan_id = ?
+       ORDER BY us.started_at DESC`,
+      [subscriptionId],
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching subscription subscribers:", error);
+    res.status(500).json({ error: "Failed to fetch subscribers" });
+  }
+};
+
+/**
+ * POST /api/admin/subscriptions/:userSubscriptionId/cancel
+ * Admin cancels a user subscription
+ */
+const handleAdminCancelUserSubscription: RequestHandler = async (req, res) => {
+  try {
+    const { userSubscriptionId } = req.params;
+    const { reason } = req.body;
+
+    // Get subscription details
+    const [subRows] = await pool.query<any[]>(
+      `SELECT us.*, u.email, u.name as user_name, cs.name as subscription_name
+       FROM user_subscriptions us
+       JOIN users u ON us.user_id = u.id
+       JOIN club_subscriptions cs ON us.plan_id = cs.id
+       WHERE us.id = ?`,
+      [userSubscriptionId],
+    );
+
+    if (subRows.length === 0) {
+      return res.status(404).json({ error: "Subscription not found" });
+    }
+
+    const userSub = subRows[0];
+
+    if (userSub.status === "cancelled") {
+      return res.status(400).json({ error: "Subscription already cancelled" });
+    }
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    // Cancel Stripe subscription immediately
+    if (userSub.stripe_subscription_id) {
+      await stripe.subscriptions.cancel(userSub.stripe_subscription_id);
+    }
+
+    // Update database
+    await pool.query(
+      `UPDATE user_subscriptions 
+       SET status = 'cancelled', 
+           cancelled_at = NOW(),
+           cancellation_reason = ?
+       WHERE id = ?`,
+      [reason || "Cancelled by admin", userSubscriptionId],
+    );
+
+    // Decrement current_subscribers count
+    await pool.query(
+      `UPDATE club_subscriptions SET current_subscribers = GREATEST(0, current_subscribers - 1) WHERE id = ?`,
+      [userSub.plan_id],
+    );
+
+    res.json({
+      success: true,
+      message: "Subscription cancelled successfully",
+    });
+  } catch (error) {
+    console.error("Admin cancel subscription error:", error);
+    res.status(500).json({
+      error: "Failed to cancel subscription",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/admin/subscriptions/:userSubscriptionId/upgrade
+ * Admin upgrades a user subscription to a different plan
+ */
+const handleAdminUpgradeUserSubscription: RequestHandler = async (req, res) => {
+  try {
+    const { userSubscriptionId } = req.params;
+    const { new_subscription_id } = req.body;
+
+    if (!new_subscription_id) {
+      return res.status(400).json({ error: "new_subscription_id is required" });
+    }
+
+    // Get current subscription details
+    const [currentSubRows] = await pool.query<any[]>(
+      `SELECT us.*, u.email, u.name as user_name, cs.stripe_price_id as old_price_id
+       FROM user_subscriptions us
+       JOIN users u ON us.user_id = u.id
+       JOIN club_subscriptions cs ON us.plan_id = cs.id
+       WHERE us.id = ?`,
+      [userSubscriptionId],
+    );
+
+    if (currentSubRows.length === 0) {
+      return res.status(404).json({ error: "Subscription not found" });
+    }
+
+    const currentSub = currentSubRows[0];
+
+    // Get new subscription details
+    const [newSubRows] = await pool.query<any[]>(
+      `SELECT * FROM club_subscriptions WHERE id = ? AND is_active = 1`,
+      [new_subscription_id],
+    );
+
+    if (newSubRows.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "New subscription not found or inactive" });
+    }
+
+    const newSub = newSubRows[0];
+
+    // Initialize Stripe
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    // Update Stripe subscription with new price
+    if (currentSub.stripe_subscription_id && newSub.stripe_price_id) {
+      const stripeSubscription = await stripe.subscriptions.retrieve(
+        currentSub.stripe_subscription_id,
+      );
+
+      await stripe.subscriptions.update(currentSub.stripe_subscription_id, {
+        items: [
+          {
+            id: stripeSubscription.items.data[0].id,
+            price: newSub.stripe_price_id,
+          },
+        ],
+        proration_behavior: "always_invoice",
+      });
+    }
+
+    // Update database
+    await pool.query(
+      `UPDATE user_subscriptions 
+       SET plan_id = ?
+       WHERE id = ?`,
+      [new_subscription_id, userSubscriptionId],
+    );
+
+    // Update subscriber counts
+    await pool.query(
+      `UPDATE club_subscriptions SET current_subscribers = GREATEST(0, current_subscribers - 1) WHERE id = ?`,
+      [currentSub.plan_id],
+    );
+    await pool.query(
+      `UPDATE club_subscriptions SET current_subscribers = current_subscribers + 1 WHERE id = ?`,
+      [new_subscription_id],
+    );
+
+    res.json({
+      success: true,
+      message: "Subscription upgraded successfully",
+    });
+  } catch (error) {
+    console.error("Admin upgrade subscription error:", error);
+    res.status(500).json({
+      error: "Failed to upgrade subscription",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * POST /api/subscriptions/webhook
+ * Handle Stripe webhook events for subscriptions
+ */
+const handleSubscriptionWebhook: RequestHandler = async (req, res) => {
+  try {
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+
+    const sig = req.headers["stripe-signature"];
+
+    if (!sig) {
+      return res.status(400).json({ error: "Missing stripe-signature header" });
+    }
+
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET!,
+      );
+    } catch (err) {
+      console.error("Webhook signature verification failed:", err);
+      return res
+        .status(400)
+        .json({ error: "Webhook signature verification failed" });
+    }
+
+    console.log("Received Stripe webhook event:", event.type);
+
+    // Handle different event types
+    switch (event.type) {
+      case "customer.subscription.updated": {
+        const subscription = event.data.object as any;
+
+        // Update subscription status in database
+        await pool.query(
+          `UPDATE user_subscriptions 
+           SET status = ?,
+               current_period_start = ?,
+               current_period_end = ?
+           WHERE stripe_subscription_id = ?`,
+          [
+            subscription.status,
+            new Date(subscription.current_period_start * 1000),
+            new Date(subscription.current_period_end * 1000),
+            subscription.id,
+          ],
+        );
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as any;
+
+        // Mark subscription as cancelled
+        await pool.query(
+          `UPDATE user_subscriptions 
+           SET status = 'cancelled',
+               cancelled_at = NOW()
+           WHERE stripe_subscription_id = ?`,
+          [subscription.id],
+        );
+
+        // Decrement subscriber count
+        const [subRows] = await pool.query<any[]>(
+          `SELECT plan_id FROM user_subscriptions WHERE stripe_subscription_id = ?`,
+          [subscription.id],
+        );
+
+        if (subRows.length > 0) {
+          await pool.query(
+            `UPDATE club_subscriptions 
+             SET current_subscribers = GREATEST(0, current_subscribers - 1)
+             WHERE id = ?`,
+            [subRows[0].plan_id],
+          );
+        }
+        break;
+      }
+
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object as any;
+
+        if (invoice.subscription) {
+          // Reset bookings counter for the new billing period
+          const [subRows] = await pool.query<any[]>(
+            `SELECT us.id
+             FROM user_subscriptions us
+             JOIN club_subscriptions cs ON us.plan_id = cs.id
+             WHERE us.stripe_subscription_id = ?`,
+            [invoice.subscription],
+          );
+
+          if (subRows.length > 0) {
+            await pool.query(
+              `UPDATE user_subscriptions 
+               SET bookings_used_this_month = 0,
+                   status = 'active'
+               WHERE stripe_subscription_id = ?`,
+              [invoice.subscription],
+            );
+          }
+        }
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as any;
+
+        if (invoice.subscription) {
+          // Mark subscription as past_due
+          await pool.query(
+            `UPDATE user_subscriptions 
+             SET status = 'past_due'
+             WHERE stripe_subscription_id = ?`,
+            [invoice.subscription],
+          );
+        }
+        break;
+      }
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error("Webhook handler error:", error);
+    res.status(500).json({
+      error: "Webhook processing failed",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * GET /api/subscriptions/user/:user_id
+ * Get user's active subscriptions
+ */
+const handleGetUserSubscriptions: RequestHandler = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+
+    const [rows] = await pool.query<any[]>(
+      `SELECT 
+        us.*,
+        cs.name as subscription_name,
+        cs.description as subscription_description,
+        cs.price_monthly,
+        cs.currency,
+        cs.booking_discount_percent,
+        cs.booking_credits_monthly,
+        cs.bar_discount_percent,
+        cs.merch_discount_percent,
+        cs.event_discount_percent,
+        cs.class_discount_percent,
+        cs.extras,
+        c.name as club_name
+      FROM user_subscriptions us
+      JOIN club_subscriptions cs ON us.plan_id = cs.id
+      JOIN clubs c ON cs.club_id = c.id
+      WHERE us.user_id = ?
+      ORDER BY us.created_at DESC`,
+      [user_id],
+    );
+
+    // Parse JSON extras field
+    const subscriptions = rows.map((row) => ({
+      ...row,
+      extras: row.extras ? JSON.parse(row.extras) : [],
+    }));
+
+    res.json(subscriptions);
+  } catch (error) {
+    console.error("Error fetching user subscriptions:", error);
+    res.status(500).json({ error: "Failed to fetch user subscriptions" });
   }
 };
 
@@ -1528,14 +3174,21 @@ const handleCreatePaymentIntent: RequestHandler = async (req, res) => {
       });
     }
 
+    // Get user's Stripe customer ID
+    const [users]: any = await pool.query(
+      "SELECT stripe_customer_id FROM users WHERE id = ?",
+      [user_id],
+    );
+    const user = users[0];
+
     // Initialize Stripe
     const Stripe = (await import("stripe")).default;
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
       apiVersion: "2025-12-15.clover",
     });
 
-    // Create payment intent
-    const paymentIntent = await stripe.paymentIntents.create({
+    // Create payment intent with customer if available
+    const paymentIntentParams: any = {
       amount: Math.round(total_price * 100), // Convert to cents
       currency: "mxn",
       metadata: {
@@ -1546,7 +3199,15 @@ const handleCreatePaymentIntent: RequestHandler = async (req, res) => {
         start_time,
         end_time,
       },
-    });
+    };
+
+    // Add customer if available (required for saved payment methods)
+    if (user?.stripe_customer_id) {
+      paymentIntentParams.customer = user.stripe_customer_id;
+    }
+
+    const paymentIntent =
+      await stripe.paymentIntents.create(paymentIntentParams);
 
     // Generate transaction number
     const transactionNumber = `TXN${Date.now()}${Math.floor(Math.random() * 1000)}`;
@@ -2070,14 +3731,21 @@ const handleCreateEventPaymentIntent: RequestHandler = async (req, res) => {
       });
     }
 
+    // Get user's Stripe customer ID
+    const [users]: any = await pool.query(
+      "SELECT stripe_customer_id FROM users WHERE id = ?",
+      [user_id],
+    );
+    const user = users[0];
+
     // Initialize Stripe
     const Stripe = (await import("stripe")).default;
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
       apiVersion: "2025-12-15.clover",
     });
 
-    // Create payment intent
-    const paymentIntent = await stripe.paymentIntents.create({
+    // Create payment intent with customer if available
+    const paymentIntentParams: any = {
       amount: Math.round(registration_fee * 100), // Convert to cents
       currency: "mxn",
       metadata: {
@@ -2086,7 +3754,15 @@ const handleCreateEventPaymentIntent: RequestHandler = async (req, res) => {
         event_title: event.title,
         transaction_type: "event_registration",
       },
-    });
+    };
+
+    // Add customer if available (required for saved payment methods)
+    if (user?.stripe_customer_id) {
+      paymentIntentParams.customer = user.stripe_customer_id;
+    }
+
+    const paymentIntent =
+      await stripe.paymentIntents.create(paymentIntentParams);
 
     // Generate transaction number
     const transactionNumber = `EVT${Date.now()}${Math.floor(Math.random() * 1000)}`;
@@ -2843,14 +4519,21 @@ const handleCreateClassPaymentIntent: RequestHandler = async (req, res) => {
       });
     }
 
+    // Get user's Stripe customer ID
+    const [users]: any = await pool.query(
+      "SELECT stripe_customer_id FROM users WHERE id = ?",
+      [user_id],
+    );
+    const user = users[0];
+
     // Initialize Stripe
     const Stripe = (await import("stripe")).default;
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
       apiVersion: "2025-12-15.clover",
     });
 
-    // Create payment intent
-    const paymentIntent = await stripe.paymentIntents.create({
+    // Create payment intent with customer if available
+    const paymentIntentParams: any = {
       amount: Math.round(total_price * 100), // Convert to cents
       currency: "mxn",
       metadata: {
@@ -2863,7 +4546,15 @@ const handleCreateClassPaymentIntent: RequestHandler = async (req, res) => {
         end_time,
         transaction_type: "private_class",
       },
-    });
+    };
+
+    // Add customer if available (required for saved payment methods)
+    if (user?.stripe_customer_id) {
+      paymentIntentParams.customer = user.stripe_customer_id;
+    }
+
+    const paymentIntent =
+      await stripe.paymentIntents.create(paymentIntentParams);
 
     // Generate transaction number
     const transactionNumber = `CLS${Date.now()}${Math.floor(Math.random() * 1000)}`;
@@ -3849,6 +5540,55 @@ const verifyAdminSession = async (
     next();
   } catch (error) {
     console.error("Error verifying admin session:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to verify session",
+    });
+  }
+};
+
+/**
+ * Middleware to verify user session
+ */
+const verifySession = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        message: "No session token provided",
+      });
+    }
+
+    const sessionToken = authHeader.substring(7);
+
+    // Check user session exists and isn't expired
+    const [sessions] = await pool.query<any[]>(
+      `SELECT s.*, u.id as user_id, u.email, u.name, u.phone, u.club_id
+       FROM sessions s
+       JOIN users u ON s.user_id = u.id
+       WHERE s.session_token = ? AND s.expires_at > NOW()`,
+      [sessionToken],
+    );
+
+    if (sessions.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired session",
+      });
+    }
+
+    // Attach user info to request
+    (req as any).user = sessions[0];
+
+    next();
+  } catch (error) {
+    console.error("Error verifying user session:", error);
     res.status(500).json({
       success: false,
       message: "Failed to verify session",
@@ -6117,8 +7857,14 @@ const handleDeletePriceRule: RequestHandler = async (req, res) => {
  */
 const handleCalculatePrice: RequestHandler = async (req, res) => {
   try {
-    const { club_id, court_id, booking_date, start_time, duration_minutes } =
-      req.body;
+    const {
+      club_id,
+      court_id,
+      booking_date,
+      start_time,
+      duration_minutes,
+      user_id,
+    } = req.body;
 
     if (!club_id || !booking_date || !start_time || !duration_minutes) {
       return res.status(400).json({
@@ -6156,7 +7902,15 @@ const handleCalculatePrice: RequestHandler = async (req, res) => {
     // Parse booking date and time
     const bookingDateTime = new Date(`${booking_date}T${start_time}`);
     const dayOfWeek = bookingDateTime.getDay(); // 0 = Sunday, 6 = Saturday
-    const timeString = start_time; // HH:MM format
+
+    // Normalize time to HH:MM format for comparison
+    const normalizeTime = (time: string): string => {
+      if (!time) return "";
+      // If time includes seconds (HH:MM:SS), strip them
+      return time.substring(0, 5);
+    };
+
+    const timeString = normalizeTime(start_time);
 
     console.log(
       `[PRICE CALC] Booking: ${booking_date} ${start_time}, Day: ${dayOfWeek}, Rules found: ${rules.length}`,
@@ -6184,8 +7938,12 @@ const handleCalculatePrice: RequestHandler = async (req, res) => {
         case "time_of_day":
           // Match if time is within range
           if (rule.start_time && rule.end_time) {
-            matches =
-              timeString >= rule.start_time && timeString < rule.end_time;
+            const ruleStartTime = normalizeTime(rule.start_time);
+            const ruleEndTime = normalizeTime(rule.end_time);
+            matches = timeString >= ruleStartTime && timeString < ruleEndTime;
+            console.log(
+              `[PRICE CALC] Time check: ${timeString} >= ${ruleStartTime} && ${timeString} < ${ruleEndTime} = ${matches}`,
+            );
           }
           break;
 
@@ -6220,8 +7978,10 @@ const handleCalculatePrice: RequestHandler = async (req, res) => {
 
             let timeMatches = true;
             if (rule.start_time && rule.end_time) {
+              const ruleStartTime = normalizeTime(rule.start_time);
+              const ruleEndTime = normalizeTime(rule.end_time);
               timeMatches =
-                timeString >= rule.start_time && timeString < rule.end_time;
+                timeString >= ruleStartTime && timeString < ruleEndTime;
             }
 
             matches = dateMatches && timeMatches;
@@ -6244,7 +8004,29 @@ const handleCalculatePrice: RequestHandler = async (req, res) => {
     );
 
     // Price is fixed for the duration block, not per hour
-    const totalPrice = pricePerHour;
+    let totalPrice = pricePerHour;
+
+    // Apply subscription discount if user has active subscription
+    let subscriptionDiscount = 0;
+    if (user_id) {
+      const [subRows] = await pool.query<any[]>(
+        `SELECT us.*, cs.booking_discount_percent
+         FROM user_subscriptions us
+         JOIN club_subscriptions cs ON us.plan_id = cs.id
+         WHERE us.user_id = ? AND us.status = 'active' AND cs.club_id = ?
+         LIMIT 1`,
+        [user_id, club_id],
+      );
+
+      if (subRows.length > 0 && subRows[0].booking_discount_percent) {
+        subscriptionDiscount = subRows[0].booking_discount_percent;
+        const discountAmount = totalPrice * (subscriptionDiscount / 100);
+        totalPrice = totalPrice - discountAmount;
+        console.log(
+          `[PRICE CALC] Subscription discount applied: ${subscriptionDiscount}% = -$${discountAmount.toFixed(2)}`,
+        );
+      }
+    }
 
     res.json({
       success: true,
@@ -6252,7 +8034,9 @@ const handleCalculatePrice: RequestHandler = async (req, res) => {
         price_per_hour: pricePerHour,
         duration_minutes: duration_minutes,
         duration_hours: duration_minutes / 60,
-        total_price: totalPrice,
+        total_price: parseFloat(totalPrice.toFixed(2)),
+        has_discount: subscriptionDiscount > 0,
+        subscription_discount: subscriptionDiscount,
       },
     });
   } catch (error) {
@@ -6475,6 +8259,65 @@ function createServer() {
   expressApp.get(
     "/api/clubs/:clubId/policies/:policyType",
     handleGetClubPolicy,
+  );
+
+  // Subscriptions routes
+  expressApp.get("/api/subscriptions", handleGetSubscriptions);
+  expressApp.get(
+    "/api/subscriptions/active/:club_id",
+    handleGetActiveSubscriptions,
+  );
+  expressApp.get(
+    "/api/subscriptions/user/:user_id",
+    handleGetUserSubscriptions,
+  );
+  expressApp.get("/api/subscriptions/:id", handleGetSubscription);
+  expressApp.post(
+    "/api/subscriptions",
+    verifyAdminSession,
+    handleCreateSubscription,
+  );
+  expressApp.put(
+    "/api/subscriptions/:id",
+    verifyAdminSession,
+    handleUpdateSubscription,
+  );
+  expressApp.delete(
+    "/api/subscriptions/:id",
+    verifyAdminSession,
+    handleDeleteSubscription,
+  );
+  expressApp.post("/api/subscriptions/subscribe", handleUserSubscribe);
+  expressApp.post("/api/subscriptions/cancel", handleUserCancelSubscription);
+  expressApp.post(
+    "/api/subscriptions/webhook",
+    express.raw({ type: "application/json" }),
+    handleSubscriptionWebhook,
+  );
+
+  // Admin subscription management routes
+  expressApp.get(
+    "/api/admin/subscriptions/:subscriptionId/subscribers",
+    verifyAdminSession,
+    handleGetSubscriptionSubscribers,
+  );
+  expressApp.post(
+    "/api/admin/subscriptions/:userSubscriptionId/cancel",
+    verifyAdminSession,
+    handleAdminCancelUserSubscription,
+  );
+  expressApp.post(
+    "/api/admin/subscriptions/:userSubscriptionId/upgrade",
+    verifyAdminSession,
+    handleAdminUpgradeUserSubscription,
+  );
+
+  // User subscription routes
+  expressApp.get("/api/users/:userId/subscription", handleGetUserSubscription);
+  expressApp.get("/api/users/:userId/payment-methods", handleGetPaymentMethods);
+  expressApp.delete(
+    "/api/payment-methods/:paymentMethodId",
+    handleDeletePaymentMethod,
   );
 
   // Bookings routes
