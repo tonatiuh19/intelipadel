@@ -3967,6 +3967,37 @@ const handleConfirmEventPayment: RequestHandler = async (req, res) => {
       });
     }
 
+    // Get event details to retrieve club_id
+    const [eventRows] = await pool.query<any[]>(
+      "SELECT club_id FROM events WHERE id = ?",
+      [event_id],
+    );
+
+    if (eventRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found",
+      });
+    }
+
+    const eventClubId = eventRows[0].club_id;
+
+    // Check if user's club_id is NULL and update it with the event's club_id
+    const [userRows] = await pool.query<any[]>(
+      "SELECT club_id FROM users WHERE id = ?",
+      [user_id],
+    );
+
+    if (userRows.length > 0 && userRows[0].club_id === null) {
+      console.log(
+        `🏢 Assigning club_id ${eventClubId} to user ${user_id} on event registration (payment flow)`,
+      );
+      await pool.query("UPDATE users SET club_id = ? WHERE id = ?", [
+        eventClubId,
+        user_id,
+      ]);
+    }
+
     // Start transaction
     const connection = await pool.getConnection();
     await connection.beginTransaction();
@@ -4196,6 +4227,22 @@ const handleAddEventParticipant: RequestHandler = async (req, res) => {
         success: false,
         message: "Sesión de administrador inválida",
       });
+    }
+
+    // Check if user's club_id is NULL and update it with the event's club_id
+    const [userCheckRows] = await pool.query<any[]>(
+      "SELECT club_id FROM users WHERE id = ?",
+      [user_id],
+    );
+
+    if (userCheckRows.length > 0 && userCheckRows[0].club_id === null) {
+      console.log(
+        `🏢 Assigning club_id ${admin.club_id} to user ${user_id} on manual event registration`,
+      );
+      await pool.query("UPDATE users SET club_id = ? WHERE id = ?", [
+        admin.club_id,
+        user_id,
+      ]);
     }
 
     // Start transaction (same pattern as Stripe payment confirmation)
@@ -4792,6 +4839,22 @@ const handleConfirmClassPayment: RequestHandler = async (req, res) => {
         success: false,
         message: "Payment has not been completed",
       });
+    }
+
+    // Check if user's club_id is NULL and update it with the private class club_id
+    const [userRows] = await pool.query<any[]>(
+      "SELECT club_id FROM users WHERE id = ?",
+      [user_id],
+    );
+
+    if (userRows.length > 0 && userRows[0].club_id === null) {
+      console.log(
+        `🏢 Assigning club_id ${club_id} to user ${user_id} on private class booking (payment flow)`,
+      );
+      await pool.query("UPDATE users SET club_id = ? WHERE id = ?", [
+        club_id,
+        user_id,
+      ]);
     }
 
     // Start transaction
@@ -6093,6 +6156,22 @@ const handleCreateManualPrivateClass: RequestHandler = async (req, res) => {
     const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
     const endMinutes = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
     const durationMinutes = endMinutes - startMinutes;
+
+    // Check if user's club_id is NULL and update it with the private class club_id
+    const [userRows] = await pool.query<any[]>(
+      "SELECT club_id FROM users WHERE id = ?",
+      [user_id],
+    );
+
+    if (userRows.length > 0 && userRows[0].club_id === null) {
+      console.log(
+        `🏢 Assigning club_id ${club_id} to user ${user_id} on manual private class creation`,
+      );
+      await pool.query("UPDATE users SET club_id = ? WHERE id = ?", [
+        club_id,
+        user_id,
+      ]);
+    }
 
     // Generate booking number
     const bookingNumber = `PCL${Date.now()}${Math.floor(Math.random() * 10000)}`;
