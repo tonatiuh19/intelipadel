@@ -38,6 +38,7 @@ import type { Event, PrivateClass } from "@shared/types";
 import { cn } from "@/lib/utils";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
+import { useClubTheme } from "@/hooks/use-club-theme";
 import CalendarSelector from "@/components/booking/CalendarSelector";
 import CourtTimeSlotSelector from "@/components/booking/CourtTimeSlotSelector";
 import AuthModal from "@/components/auth/AuthModal";
@@ -88,6 +89,7 @@ interface Instructor {
 
 export default function BookingWizard() {
   const dispatch = useAppDispatch();
+  const { setClubId, colors } = useClubTheme();
   const { clubs, loading: clubsLoading } = useAppSelector(
     (state) => state.clubs,
   );
@@ -333,6 +335,7 @@ export default function BookingWizard() {
 
   const handleSelectClub = (club: Club) => {
     setSelectedClub(club);
+    setClubId(club.id); // Apply club theme
     setStep("datetime");
   };
 
@@ -969,7 +972,7 @@ export default function BookingWizard() {
                       {club.has_subscriptions && (
                         <Button
                           variant="outline"
-                          className="w-full mb-2 border-amber-500 text-amber-600 hover:bg-amber-50"
+                          className="w-full mb-2 border-club-primary text-club-primary hover:bg-club-accent"
                           size="sm"
                           onClick={(e) => handleViewSubscriptions(club, e)}
                         >
@@ -980,8 +983,19 @@ export default function BookingWizard() {
 
                       <Button
                         variant="default"
-                        className="w-full group-hover:bg-primary group-hover:scale-105 transition-all"
+                        className="w-full group-hover:scale-105 transition-all bg-club-primary hover:bg-club-secondary"
+                        style={{
+                          backgroundColor: colors.primary_color,
+                        }}
                         size="sm"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor =
+                            colors.secondary_color;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor =
+                            colors.primary_color;
+                        }}
                       >
                         Seleccionar Club
                         <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -1206,7 +1220,24 @@ export default function BookingWizard() {
                         (flowType === "booking" && isCalculating)
                   }
                   className="flex-1"
+                  style={{
+                    backgroundColor: selectedClub
+                      ? colors.primary_color
+                      : undefined,
+                  }}
                   size="lg"
+                  onMouseEnter={(e) => {
+                    if (selectedClub) {
+                      e.currentTarget.style.backgroundColor =
+                        colors.secondary_color;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedClub) {
+                      e.currentTarget.style.backgroundColor =
+                        colors.primary_color;
+                    }
+                  }}
                 >
                   {isCalculating ? (
                     <>

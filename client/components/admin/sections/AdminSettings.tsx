@@ -39,6 +39,7 @@ import {
   DollarSign,
   Calendar,
   Shield,
+  Palette,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
@@ -56,6 +57,8 @@ import {
   setDefaultDuration,
   getFeeStructure,
   updateFeeStructure,
+  getClubColors,
+  updateClubColors,
 } from "@/store/slices/adminSettingsSlice";
 
 interface PriceRule {
@@ -122,6 +125,7 @@ export default function AdminSettings() {
     basePrice,
     defaultDuration,
     feeStructure,
+    clubColors,
     isLoading,
     isSubmitting,
   } = useAppSelector((state) => state.adminSettings);
@@ -175,6 +179,7 @@ export default function AdminSettings() {
         dispatch(getSchedules(admin.club_id)).unwrap(),
         dispatch(getCourts(admin.club_id)).unwrap(),
         dispatch(getFeeStructure()).unwrap(),
+        dispatch(getClubColors()).unwrap(),
       ]);
 
       // Fetch club base settings
@@ -403,6 +408,10 @@ export default function AdminSettings() {
           <TabsTrigger value="fee-structure">
             <Shield className="h-4 w-4 mr-2" />
             Estructura de Comisión
+          </TabsTrigger>
+          <TabsTrigger value="colors">
+            <Palette className="h-4 w-4 mr-2" />
+            Colores del Club
           </TabsTrigger>
         </TabsList>
 
@@ -1283,6 +1292,443 @@ export default function AdminSettings() {
                       </Form>
                     );
                   }}
+                </Formik>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Colors Tab */}
+        <TabsContent value="colors">
+          <Card>
+            <CardHeader>
+              <CardTitle>Personalización de Colores</CardTitle>
+              <p className="text-sm text-gray-600 mt-2">
+                Personaliza los colores de tu marca que se aplicarán al CRM y al
+                asistente de reservas.
+              </p>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <p className="text-center text-gray-500 py-8">
+                  Cargando configuración de colores...
+                </p>
+              ) : (
+                <Formik
+                  initialValues={{
+                    primary_color: clubColors?.primary_color || "#ea580c",
+                    secondary_color: clubColors?.secondary_color || "#fb923c",
+                    accent_color: clubColors?.accent_color || "#fed7aa",
+                    text_color: clubColors?.text_color || "#1f2937",
+                    background_color: clubColors?.background_color || "#ffffff",
+                  }}
+                  enableReinitialize
+                  validationSchema={Yup.object({
+                    primary_color: Yup.string()
+                      .matches(
+                        /^#[0-9A-F]{6}$/i,
+                        "Debe ser un color hexadecimal válido (#RRGGBB)",
+                      )
+                      .required("El color primario es requerido"),
+                    secondary_color: Yup.string()
+                      .matches(
+                        /^#[0-9A-F]{6}$/i,
+                        "Debe ser un color hexadecimal válido (#RRGGBB)",
+                      )
+                      .required("El color secundario es requerido"),
+                    accent_color: Yup.string()
+                      .matches(
+                        /^#[0-9A-F]{6}$/i,
+                        "Debe ser un color hexadecimal válido (#RRGGBB)",
+                      )
+                      .required("El color de acento es requerido"),
+                    text_color: Yup.string()
+                      .matches(
+                        /^#[0-9A-F]{6}$/i,
+                        "Debe ser un color hexadecimal válido (#RRGGBB)",
+                      )
+                      .required("El color de texto es requerido"),
+                    background_color: Yup.string()
+                      .matches(
+                        /^#[0-9A-F]{6}$/i,
+                        "Debe ser un color hexadecimal válido (#RRGGBB)",
+                      )
+                      .required("El color de fondo es requerido"),
+                  })}
+                  onSubmit={async (values, { setSubmitting }) => {
+                    try {
+                      await dispatch(updateClubColors(values)).unwrap();
+
+                      toast({
+                        title: "Colores actualizados",
+                        description:
+                          "Los colores de tu club se han guardado correctamente",
+                      });
+                    } catch (error: any) {
+                      toast({
+                        title: "Error",
+                        description:
+                          error || "No se pudieron actualizar los colores",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setSubmitting(false);
+                    }
+                  }}
+                >
+                  {({
+                    values,
+                    setFieldValue,
+                    isSubmitting: formSubmitting,
+                  }) => (
+                    <Form className="space-y-8">
+                      {/* Color Inputs */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Primary Color */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="primary_color"
+                            className="text-base font-semibold"
+                          >
+                            Color Primario
+                          </Label>
+                          <p className="text-sm text-gray-600">
+                            Color principal de tu marca (botones, enlaces
+                            principales)
+                          </p>
+                          <div className="flex gap-3 items-center">
+                            <Field name="primary_color">
+                              {({ field }: any) => (
+                                <Input
+                                  {...field}
+                                  type="color"
+                                  className="h-16 w-24 cursor-pointer"
+                                  onChange={(e) => {
+                                    setFieldValue(
+                                      "primary_color",
+                                      e.target.value,
+                                    );
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            <Field name="primary_color">
+                              {({ field }: any) => (
+                                <Input
+                                  {...field}
+                                  type="text"
+                                  placeholder="#ea580c"
+                                  className="flex-1 font-mono"
+                                  maxLength={7}
+                                />
+                              )}
+                            </Field>
+                          </div>
+                          <ErrorMessage
+                            name="primary_color"
+                            component="div"
+                            className="text-sm text-red-600"
+                          />
+                        </div>
+
+                        {/* Secondary Color */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="secondary_color"
+                            className="text-base font-semibold"
+                          >
+                            Color Secundario
+                          </Label>
+                          <p className="text-sm text-gray-600">
+                            Color de soporte y elementos secundarios
+                          </p>
+                          <div className="flex gap-3 items-center">
+                            <Field name="secondary_color">
+                              {({ field }: any) => (
+                                <Input
+                                  {...field}
+                                  type="color"
+                                  className="h-16 w-24 cursor-pointer"
+                                  onChange={(e) => {
+                                    setFieldValue(
+                                      "secondary_color",
+                                      e.target.value,
+                                    );
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            <Field name="secondary_color">
+                              {({ field }: any) => (
+                                <Input
+                                  {...field}
+                                  type="text"
+                                  placeholder="#fb923c"
+                                  className="flex-1 font-mono"
+                                  maxLength={7}
+                                />
+                              )}
+                            </Field>
+                          </div>
+                          <ErrorMessage
+                            name="secondary_color"
+                            component="div"
+                            className="text-sm text-red-600"
+                          />
+                        </div>
+
+                        {/* Accent Color */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="accent_color"
+                            className="text-base font-semibold"
+                          >
+                            Color de Acento
+                          </Label>
+                          <p className="text-sm text-gray-600">
+                            Color para destacar información importante
+                          </p>
+                          <div className="flex gap-3 items-center">
+                            <Field name="accent_color">
+                              {({ field }: any) => (
+                                <Input
+                                  {...field}
+                                  type="color"
+                                  className="h-16 w-24 cursor-pointer"
+                                  onChange={(e) => {
+                                    setFieldValue(
+                                      "accent_color",
+                                      e.target.value,
+                                    );
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            <Field name="accent_color">
+                              {({ field }: any) => (
+                                <Input
+                                  {...field}
+                                  type="text"
+                                  placeholder="#fed7aa"
+                                  className="flex-1 font-mono"
+                                  maxLength={7}
+                                />
+                              )}
+                            </Field>
+                          </div>
+                          <ErrorMessage
+                            name="accent_color"
+                            component="div"
+                            className="text-sm text-red-600"
+                          />
+                        </div>
+
+                        {/* Text Color */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="text_color"
+                            className="text-base font-semibold"
+                          >
+                            Color de Texto
+                          </Label>
+                          <p className="text-sm text-gray-600">
+                            Color principal del texto
+                          </p>
+                          <div className="flex gap-3 items-center">
+                            <Field name="text_color">
+                              {({ field }: any) => (
+                                <Input
+                                  {...field}
+                                  type="color"
+                                  className="h-16 w-24 cursor-pointer"
+                                  onChange={(e) => {
+                                    setFieldValue("text_color", e.target.value);
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            <Field name="text_color">
+                              {({ field }: any) => (
+                                <Input
+                                  {...field}
+                                  type="text"
+                                  placeholder="#1f2937"
+                                  className="flex-1 font-mono"
+                                  maxLength={7}
+                                />
+                              )}
+                            </Field>
+                          </div>
+                          <ErrorMessage
+                            name="text_color"
+                            component="div"
+                            className="text-sm text-red-600"
+                          />
+                        </div>
+
+                        {/* Background Color */}
+                        <div className="space-y-2 md:col-span-2">
+                          <Label
+                            htmlFor="background_color"
+                            className="text-base font-semibold"
+                          >
+                            Color de Fondo
+                          </Label>
+                          <p className="text-sm text-gray-600">
+                            Color de fondo principal de la interfaz
+                          </p>
+                          <div className="flex gap-3 items-center max-w-md">
+                            <Field name="background_color">
+                              {({ field }: any) => (
+                                <Input
+                                  {...field}
+                                  type="color"
+                                  className="h-16 w-24 cursor-pointer"
+                                  onChange={(e) => {
+                                    setFieldValue(
+                                      "background_color",
+                                      e.target.value,
+                                    );
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            <Field name="background_color">
+                              {({ field }: any) => (
+                                <Input
+                                  {...field}
+                                  type="text"
+                                  placeholder="#ffffff"
+                                  className="flex-1 font-mono"
+                                  maxLength={7}
+                                />
+                              )}
+                            </Field>
+                          </div>
+                          <ErrorMessage
+                            name="background_color"
+                            component="div"
+                            className="text-sm text-red-600"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Preview Section */}
+                      <div className="border-t pt-6">
+                        <h3 className="text-lg font-semibold mb-4">
+                          Vista Previa
+                        </h3>
+                        <div
+                          className="rounded-lg border-2 p-8 space-y-4 transition-colors duration-300"
+                          style={{
+                            backgroundColor: values.background_color,
+                            color: values.text_color,
+                          }}
+                        >
+                          <div className="space-y-2">
+                            <h4
+                              className="text-2xl font-bold transition-colors duration-300"
+                              style={{ color: values.primary_color }}
+                            >
+                              Bienvenido a tu Club
+                            </h4>
+                            <p style={{ color: values.text_color }}>
+                              Este es un ejemplo de cómo se verán los colores de
+                              tu marca en la interfaz.
+                            </p>
+                          </div>
+
+                          <div className="flex flex-wrap gap-3">
+                            <button
+                              type="button"
+                              className="px-6 py-2 rounded-lg font-semibold transition-transform hover:scale-105"
+                              style={{
+                                backgroundColor: values.primary_color,
+                                color: "#ffffff",
+                              }}
+                            >
+                              Botón Primario
+                            </button>
+                            <button
+                              type="button"
+                              className="px-6 py-2 rounded-lg font-semibold transition-transform hover:scale-105"
+                              style={{
+                                backgroundColor: values.secondary_color,
+                                color: "#ffffff",
+                              }}
+                            >
+                              Botón Secundario
+                            </button>
+                            <div
+                              className="px-6 py-2 rounded-lg font-semibold"
+                              style={{
+                                backgroundColor: values.accent_color,
+                                color: values.text_color,
+                              }}
+                            >
+                              Etiqueta de Acento
+                            </div>
+                          </div>
+
+                          <div
+                            className="border rounded-lg p-4 mt-4"
+                            style={{
+                              borderColor: values.primary_color,
+                              backgroundColor: values.background_color,
+                            }}
+                          >
+                            <h5
+                              className="font-semibold mb-2"
+                              style={{ color: values.primary_color }}
+                            >
+                              Tarjeta de Ejemplo
+                            </h5>
+                            <p
+                              className="text-sm"
+                              style={{ color: values.text_color }}
+                            >
+                              Los elementos de tu interfaz utilizarán estos
+                              colores para mantener la identidad visual de tu
+                              club.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Info Notice */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p className="text-sm text-blue-900 font-medium mb-2">
+                          💡 Consejos para elegir colores
+                        </p>
+                        <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+                          <li>
+                            Usa colores que representen la identidad de tu club
+                          </li>
+                          <li>
+                            Asegúrate de que el texto sea legible sobre el fondo
+                            elegido
+                          </li>
+                          <li>
+                            Los cambios se aplicarán inmediatamente al guardar
+                          </li>
+                          <li>
+                            Puedes restablecer los colores predeterminados en
+                            cualquier momento
+                          </li>
+                        </ul>
+                      </div>
+
+                      <Button
+                        type="submit"
+                        disabled={formSubmitting || isSubmitting}
+                        className="w-full"
+                      >
+                        {formSubmitting || isSubmitting
+                          ? "Guardando..."
+                          : "Guardar Colores"}
+                      </Button>
+                    </Form>
+                  )}
                 </Formik>
               )}
             </CardContent>

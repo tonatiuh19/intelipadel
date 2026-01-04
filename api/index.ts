@@ -860,6 +860,53 @@ const handleGetClubById: RequestHandler = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/clubs/:id/colors
+ * Get club color customization (public endpoint)
+ */
+const handleGetClubColorsPublic: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [rows] = await pool.query<any[]>(
+      `SELECT 
+        primary_color,
+        secondary_color,
+        accent_color,
+        text_color,
+        background_color
+      FROM clubs 
+      WHERE id = ? AND is_active = TRUE`,
+      [id],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Club not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      colors: {
+        primary_color: rows[0].primary_color || "#ea580c",
+        secondary_color: rows[0].secondary_color || "#fb923c",
+        accent_color: rows[0].accent_color || "#fed7aa",
+        text_color: rows[0].text_color || "#1f2937",
+        background_color: rows[0].background_color || "#ffffff",
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching club colors:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch club colors",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 // ==================== SUBSCRIPTION HANDLERS ====================
 
 /**
@@ -8087,6 +8134,141 @@ const handleDeletePriceRule: RequestHandler = async (req, res) => {
 };
 
 /**
+ * GET /api/admin/club-colors
+ * Get club color customization settings
+ */
+const handleGetClubColors: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+
+    if (!admin.club_id) {
+      return res.status(403).json({
+        success: false,
+        message: "Admin must be associated with a club",
+      });
+    }
+
+    const [rows] = await pool.query<any[]>(
+      `SELECT 
+        primary_color,
+        secondary_color,
+        accent_color,
+        text_color,
+        background_color
+      FROM clubs 
+      WHERE id = ?`,
+      [admin.club_id],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Club not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      colors: {
+        primary_color: rows[0].primary_color || "#ea580c",
+        secondary_color: rows[0].secondary_color || "#fb923c",
+        accent_color: rows[0].accent_color || "#fed7aa",
+        text_color: rows[0].text_color || "#1f2937",
+        background_color: rows[0].background_color || "#ffffff",
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching club colors:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch club colors",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * PUT /api/admin/club-colors
+ * Update club color customization settings
+ */
+const handleUpdateClubColors: RequestHandler = async (req, res) => {
+  try {
+    const admin = (req as any).admin;
+    const {
+      primary_color,
+      secondary_color,
+      accent_color,
+      text_color,
+      background_color,
+    } = req.body;
+
+    if (!admin.club_id) {
+      return res.status(403).json({
+        success: false,
+        message: "Admin must be associated with a club",
+      });
+    }
+
+    // Validate hex color format
+    const hexColorRegex = /^#[0-9A-F]{6}$/i;
+    const colors = {
+      primary_color,
+      secondary_color,
+      accent_color,
+      text_color,
+      background_color,
+    };
+
+    for (const [key, value] of Object.entries(colors)) {
+      if (value && !hexColorRegex.test(value)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid hex color format for ${key}. Use format: #RRGGBB`,
+        });
+      }
+    }
+
+    // Update colors
+    await pool.query(
+      `UPDATE clubs 
+       SET primary_color = ?,
+           secondary_color = ?,
+           accent_color = ?,
+           text_color = ?,
+           background_color = ?
+       WHERE id = ?`,
+      [
+        primary_color || "#ea580c",
+        secondary_color || "#fb923c",
+        accent_color || "#fed7aa",
+        text_color || "#1f2937",
+        background_color || "#ffffff",
+        admin.club_id,
+      ],
+    );
+
+    res.json({
+      success: true,
+      message: "Club colors updated successfully",
+      colors: {
+        primary_color: primary_color || "#ea580c",
+        secondary_color: secondary_color || "#fb923c",
+        accent_color: accent_color || "#fed7aa",
+        text_color: text_color || "#1f2937",
+        background_color: background_color || "#ffffff",
+      },
+    });
+  } catch (error) {
+    console.error("Error updating club colors:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update club colors",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
  * POST /api/calculate-price
  * Calculate price for a booking based on price rules
  */
@@ -9133,6 +9315,7 @@ function createServer() {
   // Clubs routes
   expressApp.get("/api/clubs", handleGetClubs);
   expressApp.get("/api/clubs/:id", handleGetClubById);
+  expressApp.get("/api/clubs/:id/colors", handleGetClubColorsPublic);
   expressApp.get(
     "/api/clubs/:clubId/policies/:policyType",
     handleGetClubPolicy,
@@ -9392,6 +9575,16 @@ function createServer() {
     "/api/admin/price-rules/:id",
     verifyAdminSession,
     handleDeletePriceRule,
+  );
+  expressApp.get(
+    "/api/admin/club-colors",
+    verifyAdminSession,
+    handleGetClubColors,
+  );
+  expressApp.put(
+    "/api/admin/club-colors",
+    verifyAdminSession,
+    handleUpdateClubColors,
   );
   expressApp.get(
     "/api/admin/schedules",

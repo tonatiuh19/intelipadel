@@ -295,11 +295,12 @@ export default function ForClubs() {
       "Soporte durante la implementación",
     ],
     commissionFeatures: [
+      "Comisión baja por transacción",
       "Uso ilimitado de la plataforma",
       "Procesamiento de pagos",
       "Mantenimiento y actualizaciones",
       "Soporte técnico continuo",
-      "Hosting y servidores",
+      "Servidores",
       "Mejoras y nuevas funcionalidades",
       "Sin límites de reservas",
       "Sin límites de usuarios",
@@ -544,14 +545,7 @@ export default function ForClubs() {
                     <h4 className="text-xl font-bold text-secondary mb-2">
                       Sin Mensualidades
                     </h4>
-                    <div className="mb-4">
-                      <span className="text-4xl font-black text-primary">
-                        Comisión
-                      </span>
-                      <span className="text-muted-foreground ml-2">
-                        por transacción
-                      </span>
-                    </div>
+                    <div className="mb-4"></div>
                     <p className="text-muted-foreground text-sm">
                       {pricingPlan.commissionDescription}
                     </p>

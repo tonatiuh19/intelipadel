@@ -38,6 +38,14 @@ interface FeeStructure {
   fee_terms_accepted_at: string | null;
 }
 
+interface ClubColors {
+  primary_color: string;
+  secondary_color: string;
+  accent_color: string;
+  text_color: string;
+  background_color: string;
+}
+
 interface AdminSettingsState {
   priceRules: PriceRule[];
   schedules: ClubSchedule[];
@@ -45,6 +53,7 @@ interface AdminSettingsState {
   basePrice: number;
   defaultDuration: number;
   feeStructure: FeeStructure | null;
+  clubColors: ClubColors | null;
   isLoading: boolean;
   isSubmitting: boolean;
   error: string | null;
@@ -57,6 +66,7 @@ const initialState: AdminSettingsState = {
   basePrice: 45,
   defaultDuration: 60,
   feeStructure: null,
+  clubColors: null,
   isLoading: false,
   isSubmitting: false,
   error: null,
@@ -302,6 +312,41 @@ export const updateFeeStructure = createAsyncThunk(
   },
 );
 
+// Club Colors async thunks
+export const getClubColors = createAsyncThunk(
+  "adminSettings/getClubColors",
+  async (_, { rejectWithValue }) => {
+    try {
+      const sessionToken = localStorage.getItem("adminSessionToken");
+      const response = await axios.get("/api/admin/club-colors", {
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+      return response.data.colors;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch club colors",
+      );
+    }
+  },
+);
+
+export const updateClubColors = createAsyncThunk(
+  "adminSettings/updateClubColors",
+  async (colors: ClubColors, { rejectWithValue }) => {
+    try {
+      const sessionToken = localStorage.getItem("adminSessionToken");
+      const response = await axios.put("/api/admin/club-colors", colors, {
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+      return response.data.colors;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update club colors",
+      );
+    }
+  },
+);
+
 const adminSettingsSlice = createSlice({
   name: "adminSettings",
   initialState,
@@ -472,6 +517,36 @@ const adminSettingsSlice = createSlice({
         state.feeStructure = action.payload;
       })
       .addCase(updateFeeStructure.rejected, (state, action) => {
+        state.isSubmitting = false;
+        state.error = action.payload as string;
+      });
+
+    // Get Club Colors
+    builder
+      .addCase(getClubColors.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getClubColors.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.clubColors = action.payload;
+      })
+      .addCase(getClubColors.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Update Club Colors
+    builder
+      .addCase(updateClubColors.pending, (state) => {
+        state.isSubmitting = true;
+        state.error = null;
+      })
+      .addCase(updateClubColors.fulfilled, (state, action) => {
+        state.isSubmitting = false;
+        state.clubColors = action.payload;
+      })
+      .addCase(updateClubColors.rejected, (state, action) => {
         state.isSubmitting = false;
         state.error = action.payload as string;
       });
