@@ -13,9 +13,9 @@ import {
   ArrowRight,
   Clock,
   Sparkles,
+  CreditCard,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchClubs } from "@/store/slices/clubsSlice";
@@ -46,7 +46,7 @@ export default function Index() {
       opacity: 1,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: [0.4, 0, 0.2, 1] as const,
       },
     },
   };
@@ -390,12 +390,11 @@ export default function Index() {
             {clubs.map((club) => (
               <Card
                 key={club.id}
-                className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-primary cursor-pointer group"
-                onClick={() => setBookingOpen(true)}
+                className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-primary group"
               >
                 <div className="aspect-video bg-muted overflow-hidden relative">
                   <img
-                    src={club.image}
+                    src={club.image_url}
                     alt={club.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
@@ -410,19 +409,19 @@ export default function Index() {
                   </h3>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                     <MapPin className="h-4 w-4" />
-                    <span className="line-clamp-1">{club.location}</span>
+                    <span className="line-clamp-1">{club.city}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
                     <div className="bg-muted rounded-lg p-2">
                       <p className="text-muted-foreground text-xs">Price</p>
                       <p className="font-bold text-primary">
-                        ${club.pricePerHour}
+                        ${club.price_per_hour}
                       </p>
                     </div>
                     <div className="bg-muted rounded-lg p-2">
                       <p className="text-muted-foreground text-xs">Courts</p>
                       <p className="font-bold text-secondary">
-                        {club.courtCount}
+                        {club.court_count}
                       </p>
                     </div>
                   </div>
@@ -448,6 +447,131 @@ export default function Index() {
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Club Management Features Section */}
+      <section className="py-20 md:py-32 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden opacity-20">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <motion.div
+              className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6 border border-primary/30"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <Shield className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold">
+                Para Dueños de Clubes
+              </span>
+            </motion.div>
+            <motion.h2
+              className="text-4xl md:text-5xl font-bold mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              Administra Tu Club de Forma Inteligente
+            </motion.h2>
+            <motion.p
+              className="text-xl text-white/80 max-w-3xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              Panel de administración completo con herramientas poderosas para
+              automatizar reservas, gestionar jugadores, y hacer crecer tu
+              negocio.
+            </motion.p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Calendar,
+                title: "Calendario Inteligente",
+                description:
+                  "Visualiza todas tus reservas, clases privadas y eventos en un calendario unificado. Gestiona disponibilidad en tiempo real.",
+              },
+              {
+                icon: Users,
+                title: "Base de Datos de Jugadores",
+                description:
+                  "Administra tu base de clientes, historial de reservas, y métricas de comportamiento. Reservas manuales con un click.",
+              },
+              {
+                icon: Trophy,
+                title: "Eventos & Torneos",
+                description:
+                  "Crea y gestiona torneos, ligas y eventos sociales. Control completo de inscripciones y programación de canchas.",
+              },
+              {
+                icon: CreditCard,
+                title: "Pagos & Facturación",
+                description:
+                  "Sistema de pagos integrado con Stripe. Seguimiento de ingresos, reportes financieros y gestión de suscripciones.",
+              },
+              {
+                icon: Shield,
+                title: "Control de Accesos",
+                description:
+                  "Múltiples usuarios administrativos con permisos personalizados. Seguridad y auditoria de todas las acciones.",
+              },
+              {
+                icon: Star,
+                title: "Suscripciones Premium",
+                description:
+                  "Crea planes de membresía con beneficios personalizados: descuentos en reservas, créditos mensuales, y acceso VIP.",
+              },
+            ].map((feature, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              >
+                <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-all h-full">
+                  <div className="p-6">
+                    <feature.icon className="h-10 w-10 text-primary mb-4" />
+                    <h3 className="text-xl font-bold text-white mb-3">
+                      {feature.title}
+                    </h3>
+                    <p className="text-white/70 leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            className="mt-16 text-center"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+          >
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-8"
+              asChild
+            >
+              <Link to="/for-clubs">
+                Ver Todas las Características
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </motion.div>
         </div>
       </section>
 
@@ -500,7 +624,12 @@ export default function Index() {
               <h4 className="font-bold mb-4">Plataforma</h4>
               <ul className="space-y-2 text-sm text-white/80">
                 <li>
-                  <a href="#" className="hover:text-white transition">
+                  <Link to="/for-clubs" className="hover:text-white transition">
+                    Para Clubes
+                  </Link>
+                </li>
+                <li>
+                  <a href="#clubs" className="hover:text-white transition">
                     Explorar Clubes
                   </a>
                 </li>

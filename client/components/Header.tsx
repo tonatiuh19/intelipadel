@@ -69,11 +69,11 @@ export default function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
-              {/* <Link
-                to="/clubs"
+              <Link
+                to="/for-clubs"
                 className="text-foreground hover:text-primary transition-all duration-300 font-medium relative group"
               >
-                <span>Clubes</span>
+                <span>Para Clubes</span>
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
               {isAuthenticated && (
@@ -85,13 +85,6 @@ export default function Header() {
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </Link>
               )}
-              <Link
-                to="/about"
-                className="text-foreground hover:text-primary transition-all duration-300 font-medium relative group"
-              >
-                <span>Acerca de</span>
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </Link> */}
             </nav>
 
             {/* Desktop Auth / User Menu */}
@@ -202,12 +195,12 @@ export default function Header() {
           {/* Mobile Navigation */}
           {mobileOpen && (
             <nav className="md:hidden pb-4 space-y-2 backdrop-blur-xl bg-white/50 rounded-lg p-2 mt-2">
-              {/* <Link
-                to="/clubs"
+              <Link
+                to="/for-clubs"
                 className="block px-4 py-2 text-foreground hover:bg-white/70 rounded-lg transition-all duration-300 backdrop-blur-sm"
                 onClick={() => setMobileOpen(false)}
               >
-                Clubes
+                Para Clubes
               </Link>
               {isAuthenticated && (
                 <Link
@@ -218,13 +211,6 @@ export default function Header() {
                   Mis Reservas
                 </Link>
               )}
-              <Link
-                to="/about"
-                className="block px-4 py-2 text-foreground hover:bg-white/70 rounded-lg transition-all duration-300 backdrop-blur-sm"
-                onClick={() => setMobileOpen(false)}
-              >
-                Acerca de
-              </Link> */}
 
               <div className="pt-2 space-y-2">
                 {isAuthenticated && user ? (
