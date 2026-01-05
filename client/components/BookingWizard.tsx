@@ -931,7 +931,7 @@ export default function BookingWizard() {
                       </div>
                       {club.has_subscriptions && (
                         <div className="absolute top-3 right-3">
-                          <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold">
+                          <Badge className="hover:bg-primary/90 text-primary-foreground text-white font-semibold">
                             <Crown className="h-3 w-3 mr-1" />
                             Membresías
                           </Badge>
@@ -972,7 +972,7 @@ export default function BookingWizard() {
                       {club.has_subscriptions && (
                         <Button
                           variant="outline"
-                          className="w-full mb-2 border-club-primary text-club-primary hover:bg-club-accent"
+                          className="w-full mb-2 border-primary text-primary hover:bg-primary/20"
                           size="sm"
                           onClick={(e) => handleViewSubscriptions(club, e)}
                         >
@@ -983,19 +983,7 @@ export default function BookingWizard() {
 
                       <Button
                         variant="default"
-                        className="w-full group-hover:scale-105 transition-all bg-club-primary hover:bg-club-secondary"
-                        style={{
-                          backgroundColor: colors.primary_color,
-                        }}
-                        size="sm"
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor =
-                            colors.secondary_color;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor =
-                            colors.primary_color;
-                        }}
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-8"
                       >
                         Seleccionar Club
                         <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -1075,7 +1063,7 @@ export default function BookingWizard() {
               >
                 <div className="space-y-4">
                   {userSubscription && userSubscription.status === "active" && (
-                    <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-lg shadow-sm">
+                    <div className="p-4 bg-primary border-2 border-amber-300 rounded-lg shadow-sm">
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0 w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
                           <Crown className="h-5 w-5 text-white" />
@@ -1147,7 +1135,7 @@ export default function BookingWizard() {
               !selectedTime &&
               (userSubscription.subscription?.event_discount_percent ||
                 userSubscription.subscription?.class_discount_percent) && (
-                <Card className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-lg shadow-sm animate-in fade-in slide-in-from-bottom-4">
+                <Card className="p-4 bg-primary border-2 border-amber-300 rounded-lg shadow-sm animate-in fade-in slide-in-from-bottom-4">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
                       <Crown className="h-5 w-5 text-white" />
@@ -1219,25 +1207,7 @@ export default function BookingWizard() {
                       : paymentLoading ||
                         (flowType === "booking" && isCalculating)
                   }
-                  className="flex-1"
-                  style={{
-                    backgroundColor: selectedClub
-                      ? colors.primary_color
-                      : undefined,
-                  }}
-                  size="lg"
-                  onMouseEnter={(e) => {
-                    if (selectedClub) {
-                      e.currentTarget.style.backgroundColor =
-                        colors.secondary_color;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedClub) {
-                      e.currentTarget.style.backgroundColor =
-                        colors.primary_color;
-                    }
-                  }}
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-8"
                 >
                   {isCalculating ? (
                     <>
@@ -1430,7 +1400,7 @@ export default function BookingWizard() {
                 {!eventClientSecret && eventPaymentLoading && (
                   <Card className="p-8">
                     <div className="text-center">
-                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-orange-600 border-r-transparent"></div>
+                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
                       <p className="mt-4 text-muted-foreground">
                         Preparando inscripción...
                       </p>

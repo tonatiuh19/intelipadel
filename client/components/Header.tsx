@@ -54,17 +54,12 @@ export default function Header() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-lg shadow-primary/30">
-                  <span className="text-primary-foreground font-bold text-sm">
-                    P
-                  </span>
-                </div>
-                <span className="font-bold text-xl text-secondary hidden sm:inline bg-gradient-to-r from-secondary to-secondary/80 bg-clip-text text-transparent">
-                  Intelipadel
-                </span>
-              </div>
+            <Link to="/" className="flex items-center">
+              <img
+                src="https://garbrix.com/intelipadel/assets/images/logo-intelipadel-header.png"
+                alt="Intelipadel"
+                className="h-10 w-auto"
+              />
             </Link>
 
             {/* Desktop Navigation */}
@@ -151,26 +146,14 @@ export default function Header() {
               ) : (
                 <>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => setAuthModalOpen(true)}
                   >
                     <User className="mr-2 h-4 w-4" />
-                    Iniciar Sesión
+                    Iniciar Sesión / Crear Cuenta
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setAuthModalOpen(true)}
-                  >
-                    Crear Cuenta
-                  </Button>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300"
-                    asChild
-                  >
+                  <Button variant="default" size="sm" asChild>
                     <Link to="/booking">Reservar Ahora</Link>
                   </Button>
                 </>

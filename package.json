@@ -28,6 +28,7 @@
     "formik": "^2.4.9",
     "mysql2": "^3.11.5",
     "nodemailer": "^7.0.12",
+    "react-helmet-async": "^2.0.5",
     "react-quill": "^2.0.0",
     "react-redux": "^9.2.0",
     "stripe": "^20.1.0",

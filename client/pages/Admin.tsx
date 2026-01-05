@@ -88,7 +88,7 @@ export default function Admin() {
   // Show loading while validating session
   if (isLoading && !verificationEmail) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-orange-500 to-orange-600">
+      <div className="flex h-screen w-full items-center justify-center bg-primary/10">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
           <p className="text-lg">Verificando sesión...</p>
@@ -103,23 +103,14 @@ export default function Admin() {
       {/* Left Column - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative p-12 flex-col justify-center items-center overflow-hidden">
         {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] via-blue-700 to-orange-600 animate-gradient-shift" />
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-orange-400 rounded-full mix-blend-multiply filter blur-xl animate-blob" />
-          <div className="absolute top-40 right-10 w-72 h-72 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000" />
-          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-amber-400 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000" />
-        </div>
-
         <div className="relative z-10 max-w-lg mx-auto text-center space-y-8">
           <div className="animate-fade-in-up">
             <div className="flex items-center justify-center gap-3 mb-8">
-              <div className="relative">
-                <Shield className="h-16 w-16 text-white animate-pulse-slow" />
-                <div className="absolute inset-0 h-16 w-16 bg-white/20 rounded-lg blur-xl animate-pulse-slow" />
-              </div>
-              <h1 className="text-5xl font-bold text-white animate-shimmer bg-gradient-to-r from-white via-orange-100 to-white bg-[length:200%_100%]">
-                InteliPadel
-              </h1>
+              <img
+                src="https://garbrix.com/intelipadel/assets/images/logo-intelipdale-white.png"
+                alt="InteliPadel Logo"
+                className="h-16 w-auto"
+              />
             </div>
             <h2 className="text-4xl font-semibold text-white mb-6 animate-fade-in-up animation-delay-200">
               Panel de Control Administrativo
@@ -162,21 +153,17 @@ export default function Admin() {
       </div>
 
       {/* Right Column - Login Form */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center p-8 bg-gradient-to-br from-orange-50 to-amber-50 relative overflow-hidden">
+      <div className="flex w-full lg:w-1/2 items-center justify-center p-8 bg-white relative overflow-hidden">
         {/* Floating shapes */}
-        <div className="absolute top-10 right-10 w-20 h-20 bg-orange-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float" />
-        <div className="absolute bottom-10 left-10 w-32 h-32 bg-amber-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float animation-delay-2000" />
 
         <div className="w-full max-w-md space-y-8 relative z-10 animate-fade-in">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-2 mb-8 animate-fade-in-down">
-            <div className="relative">
-              <Shield className="h-10 w-10 text-[hsl(var(--primary))] animate-pulse-slow" />
-              <div className="absolute inset-0 bg-orange-400 rounded-lg blur-lg opacity-20 animate-pulse-slow" />
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-[hsl(var(--primary))] to-orange-600 bg-clip-text text-transparent">
-              InteliPadel Admin
-            </h1>
+            <img
+              src="https://garbrix.com/intelipadel/assets/images/logo-intelipdale-white.png"
+              alt="InteliPadel Logo"
+              className="h-10 w-auto"
+            />
           </div>
 
           <div>
@@ -215,7 +202,7 @@ export default function Admin() {
                     placeholder="admin@intelipadel.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 border-gray-300 focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary))]/20 transition-all duration-200 hover:border-orange-400"
+                    className="pl-10 bg-white text-gray-900 border-gray-300 focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary))]/20 transition-all duration-200 hover:border-[hsl(var(--primary))]"
                     required
                     disabled={isLoading}
                   />
@@ -224,7 +211,7 @@ export default function Admin() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-[hsl(var(--primary))] to-orange-600 hover:from-orange-700 hover:to-amber-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl animate-fade-in-up animation-delay-400 relative overflow-hidden group"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-8"
                 size="lg"
                 disabled={isLoading || !email}
               >
@@ -237,7 +224,7 @@ export default function Admin() {
           ) : (
             <form
               onSubmit={handleVerifyCode}
-              className="space-y-6 bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-gray-200/50 hover:shadow-orange-500/10 transition-all duration-300 animate-scale-in"
+              className="space-y-6 bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-gray-200/50 hover:shadow-primary-500/10 transition-all duration-300 animate-scale-in"
             >
               <div className="space-y-2 animate-fade-in-up animation-delay-200">
                 <Label htmlFor="code" className="text-gray-700 font-medium">
@@ -252,7 +239,7 @@ export default function Admin() {
                     setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
                   }
                   maxLength={6}
-                  className="text-center text-2xl tracking-widest border-gray-300 focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary))]/20 transition-all duration-200"
+                  className="text-center text-2xl tracking-widest bg-white text-gray-900 border-gray-300 focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary))]/20 transition-all duration-200 hover:border-[hsl(var(--primary))]"
                   required
                   disabled={isLoading}
                   autoFocus
@@ -261,14 +248,14 @@ export default function Admin() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-[hsl(var(--primary))] to-orange-600 hover:from-orange-700 hover:to-amber-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl relative overflow-hidden group"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-8"
                 size="lg"
                 disabled={isLoading || code.length !== 6}
               >
                 <span className="relative z-10">
                   {isLoading ? "Verificando..." : "Verificar e Iniciar Sesión"}
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-amber-400 opacity-0 group-hover:opacity-20 transition-opacity duration-200" />
+                <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-20 transition-opacity duration-200" />
               </Button>
 
               <Button

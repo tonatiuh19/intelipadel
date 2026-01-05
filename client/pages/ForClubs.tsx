@@ -376,10 +376,18 @@ export default function ForClubs() {
                 className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-8 shadow-2xl shadow-primary/50"
                 asChild
               >
-                <a href="#pricing">
-                  Ver Planes
+                <Link to="/club-onboarding">
+                  Registrar Mi Club
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </a>
+                </Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20 font-bold text-lg px-8 backdrop-blur-sm"
+                asChild
+              >
+                <a href="#pricing">Ver Planes</a>
               </Button>
             </motion.div>
           </div>
@@ -565,8 +573,12 @@ export default function ForClubs() {
                 <Button
                   size="lg"
                   className="bg-primary hover:bg-primary/90 text-lg px-12"
+                  asChild
                 >
-                  {pricingPlan.cta}
+                  <Link to="/club-onboarding">
+                    {pricingPlan.cta}
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
               </div>
             </Card>
@@ -594,10 +606,18 @@ export default function ForClubs() {
               className="bg-white text-primary hover:bg-white/90 font-bold text-lg px-8"
               asChild
             >
-              <Link to="/admin">
-                Comenzar Ahora
+              <Link to="/club-onboarding">
+                Registrar Mi Club
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white hover:bg-white/10 font-bold text-lg px-8"
+              asChild
+            >
+              <a href="#pricing">Ver Precios</a>
             </Button>
           </div>
         </div>

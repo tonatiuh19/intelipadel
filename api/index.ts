@@ -907,6 +907,307 @@ const handleGetClubColorsPublic: RequestHandler = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/clubs/onboard
+ * Create a new club onboarding request (club created as inactive for review)
+ */
+const handleClubOnboarding: RequestHandler = async (req, res) => {
+  try {
+    const {
+      name,
+      slug,
+      description,
+      address,
+      city,
+      state,
+      postal_code,
+      country,
+      phone,
+      email,
+      website,
+      price_per_hour,
+      default_booking_duration,
+      currency,
+      courts,
+      operating_hours,
+      enable_events,
+      enable_classes,
+      enable_subscriptions,
+      terms_and_conditions,
+      privacy_policy,
+      cancellation_policy,
+      admin_name,
+      admin_email,
+      admin_phone,
+    } = req.body;
+
+    // Validate required fields
+    if (
+      !name ||
+      !address ||
+      !city ||
+      !state ||
+      !phone ||
+      !email ||
+      !price_per_hour ||
+      !admin_name ||
+      !admin_email ||
+      !admin_phone
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Faltan campos obligatorios",
+      });
+    }
+
+    if (!courts || courts.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Debes agregar al menos una cancha",
+      });
+    }
+
+    // Start transaction
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // 1. Insert club (as inactive for review)
+      const [clubResult] = await connection.query<any>(
+        `INSERT INTO clubs (
+          name, slug, description, address, city, state, postal_code, country,
+          phone, email, website, price_per_hour, default_booking_duration, currency,
+          is_active, featured, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE, FALSE, NOW(), NOW())`,
+        [
+          name,
+          slug,
+          description,
+          address,
+          city,
+          state,
+          postal_code,
+          country || "México",
+          phone,
+          email,
+          website || null,
+          price_per_hour,
+          default_booking_duration || 90,
+          currency || "MXN",
+        ],
+      );
+
+      const clubId = clubResult.insertId;
+
+      // 2. Insert courts
+      for (const court of courts) {
+        await connection.query(
+          `INSERT INTO courts (
+            club_id, name, court_type, surface_type, has_lighting,
+            is_active, display_order, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, TRUE, ?, NOW(), NOW())`,
+          [
+            clubId,
+            court.name,
+            court.court_type,
+            court.surface_type,
+            court.has_lighting ? 1 : 0,
+            court.display_order,
+          ],
+        );
+      }
+
+      // 3. Create admin account (inactive until club is approved)
+      const [adminResult] = await connection.query<any>(
+        `INSERT INTO admins (
+          email, name, phone, role, club_id, is_active, created_at, updated_at
+        ) VALUES (?, ?, ?, 'club_admin', ?, FALSE, NOW(), NOW())`,
+        [admin_email, admin_name, admin_phone, clubId],
+      );
+
+      // 4. Insert cancellation policy if provided
+      if (cancellation_policy) {
+        await connection.query(
+          `INSERT INTO club_cancellation_policy (
+            club_id, version, content, hours_before_cancellation,
+            refund_percentage, effective_date, is_active, created_at, updated_at
+          ) VALUES (?, '1.0', ?, 24, 100.00, NOW(), TRUE, NOW(), NOW())`,
+          [clubId, cancellation_policy],
+        );
+      }
+
+      // 5. Send notification email to Intelipadel team
+      try {
+        await sendClubOnboardingNotification(
+          name,
+          admin_email,
+          admin_name,
+          clubId,
+        );
+      } catch (emailError) {
+        console.error("Failed to send onboarding notification:", emailError);
+        // Don't fail the request if email fails
+      }
+
+      // Commit transaction
+      await connection.commit();
+      connection.release();
+
+      res.json({
+        success: true,
+        message: "Solicitud de registro enviada exitosamente",
+        data: {
+          club_id: clubId,
+          name,
+          status: "pending_review",
+        },
+      });
+    } catch (error) {
+      // Rollback on error
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    console.error("Error creating club onboarding:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al crear la solicitud de registro",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * Helper to send club onboarding notification email
+ */
+async function sendClubOnboardingNotification(
+  clubName: string,
+  adminEmail: string,
+  adminName: string,
+  clubId: number,
+): Promise<boolean> {
+  try {
+    const transportConfig = {
+      host: process.env.SMTP_HOST || "mail.disruptinglabs.com",
+      port: parseInt(process.env.SMTP_PORT || "465"),
+      secure: process.env.SMTP_SECURE === "true" || true,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    };
+
+    if (!transportConfig.auth.user || !transportConfig.auth.pass) {
+      console.error("SMTP credentials not configured");
+      return false;
+    }
+
+    const transporter = nodemailer.createTransport(transportConfig);
+
+    // Email to Intelipadel team
+    const teamEmailBody = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
+          .container { background-color: white; border-radius: 10px; padding: 30px; max-width: 600px; margin: 0 auto; }
+          .header { background-color: #ea580c; color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+          .info { background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 15px 0; }
+          .footer { color: #666; font-size: 12px; text-align: center; margin-top: 30px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Nueva Solicitud de Club</h1>
+          </div>
+          <h2>Club: ${clubName}</h2>
+          <div class="info">
+            <p><strong>Club ID:</strong> ${clubId}</p>
+            <p><strong>Administrador:</strong> ${adminName}</p>
+            <p><strong>Email:</strong> ${adminEmail}</p>
+          </div>
+          <p>Un nuevo club ha solicitado unirse a Intelipadel. Por favor revisa la información y contacta al administrador.</p>
+          <div class="footer">
+            <p>InteliPadel - Sistema de Gestión</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await transporter.sendMail({
+      from: `"Intelipadel" <${transportConfig.auth.user}>`,
+      to: transportConfig.auth.user, // Send to team email
+      subject: `Nueva Solicitud de Club: ${clubName}`,
+      html: teamEmailBody,
+    });
+
+    // Confirmation email to club admin
+    const confirmEmailBody = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
+          .container { background-color: white; border-radius: 10px; padding: 30px; max-width: 600px; margin: 0 auto; }
+          .header { background-color: #ea580c; color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+          .success { background-color: #dcfce7; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #10b981; }
+          .footer { color: #666; font-size: 12px; text-align: center; margin-top: 30px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>¡Solicitud Recibida!</h1>
+          </div>
+          <h2>Hola ${adminName},</h2>
+          <div class="success">
+            <p>Hemos recibido tu solicitud para registrar <strong>${clubName}</strong> en Intelipadel.</p>
+          </div>
+          <p>Nuestro equipo revisará tu información y se pondrá en contacto contigo en las próximas 24-48 horas.</p>
+          <h3>Próximos Pasos:</h3>
+          <ul>
+            <li>Revisión de tu información</li>
+            <li>Configuración de tu cuenta de administrador</li>
+            <li>Activación de tu club en la plataforma</li>
+            <li>Capacitación personalizada para tu equipo</li>
+          </ul>
+          <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+          <div class="footer">
+            <p>InteliPadel - Tu plataforma de gestión de clubes</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await transporter.sendMail({
+      from: `"Intelipadel" <${transportConfig.auth.user}>`,
+      to: adminEmail,
+      subject: `Solicitud de Registro Recibida - ${clubName}`,
+      html: confirmEmailBody,
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error sending onboarding notification:", error);
+    return false;
+  }
+}
+
+/**
+    console.error("Error fetching club colors:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch club colors",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 // ==================== SUBSCRIPTION HANDLERS ====================
 
 /**
@@ -9320,6 +9621,7 @@ function createServer() {
     "/api/clubs/:clubId/policies/:policyType",
     handleGetClubPolicy,
   );
+  expressApp.post("/api/clubs/onboard", handleClubOnboarding);
 
   // Subscriptions routes
   expressApp.get("/api/subscriptions", handleGetSubscriptions);

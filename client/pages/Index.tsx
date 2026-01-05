@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Header from "@/components/Header";
+import SEOHelmet from "@/components/SEOHelmet";
 import { Link } from "react-router-dom";
 import {
   Calendar,
@@ -53,6 +54,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEOHelmet />
       <Header />
 
       {/* Hero Section */}
@@ -197,11 +199,35 @@ export default function Index() {
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
               >
-                <img
-                  src="https://images.unsplash.com/photo-1517959872602-eaded9a78003?w=600&h=600&fit=crop"
-                  alt="Padel Courts"
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  poster="https://garbrix.com/intelipadel/assets/images/hero-intelipadel.jpg"
                   className="w-full h-full object-cover"
-                />
+                  onError={(e) => {
+                    // If video fails to load, show poster image
+                    e.currentTarget.style.display = "none";
+                    const img = document.createElement("img");
+                    img.src =
+                      "https://garbrix.com/intelipadel/assets/images/hero-intelipadel.jpg";
+                    img.alt = "Padel Courts";
+                    img.className = "w-full h-full object-cover";
+                    e.currentTarget.parentElement?.appendChild(img);
+                  }}
+                >
+                  <source
+                    src="https://garbrix.com/intelipadel/assets/videos/video-hero-intelipadel.mp4"
+                    type="video/mp4"
+                  />
+                  {/* Fallback image if video doesn't load */}
+                  <img
+                    src="https://garbrix.com/intelipadel/assets/images/hero-intelipadel.jpg"
+                    alt="Padel Courts"
+                    className="w-full h-full object-cover"
+                  />
+                </video>
                 <div className="absolute inset-0 bg-gradient-to-tr from-secondary/40 via-transparent to-transparent"></div>
               </motion.div>
 
@@ -307,9 +333,7 @@ export default function Index() {
                   <h3 className="text-xl font-bold text-secondary mb-3">
                     {feature.title}
                   </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {feature.description}
-                  </p>
+                  <p className="leading-relaxed">{feature.description}</p>
                 </Card>
               </motion.div>
             ))}
@@ -321,10 +345,10 @@ export default function Index() {
       <section className="py-20 md:py-32 bg-muted">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-secondary mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
               Cómo Funciona
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl max-w-2xl mx-auto">
               Reserva tu cancha de padel en 3 pasos simples
             </p>
           </div>
@@ -352,15 +376,11 @@ export default function Index() {
             ].map((item, idx) => (
               <div key={idx} className="relative">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary text-primary-foreground rounded-full font-bold text-2xl mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full font-bold text-2xl mb-6">
                     {item.step}
                   </div>
-                  <h3 className="text-2xl font-bold text-secondary mb-3">
-                    {item.title}
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {item.description}
-                  </p>
+                  <h3 className="text-2xl font-bold mb-3">{item.title}</h3>
+                  <p className="leading-relaxed">{item.description}</p>
                 </div>
                 {idx < 2 && (
                   <div className="hidden md:flex absolute top-8 -right-4 items-center justify-center">

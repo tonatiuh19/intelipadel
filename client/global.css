@@ -12,58 +12,52 @@
    * A different format will require also updating the theme in tailwind.config.ts.
   */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 15 50% 10%;
+    /* Dark theme with Lime primary */
+    --background: 222 47% 11%; /* Midnight Navy #0F172A */
+    --foreground: 0 0% 100%; /* White text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 15 50% 10%;
+    --card: 217 33% 17%; /* Slate Dark #1E293B */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 15 50% 10%;
+    --popover: 217 33% 17%; /* Slate Dark #1E293B */
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 32 95% 44%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 84 81% 44%; /* Lime Punch #84CC16 */
+    --primary-foreground: 222 47% 11%; /* Dark text on lime */
 
-    --secondary: 15 50% 10%;
+    --secondary: 217 33% 17%; /* Slate Dark #1E293B */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 215 25% 27%; /* Carbon Gray #334155 */
+    --muted-foreground: 215 16% 47%; /* Cool Gray #64748B */
 
-    --accent: 32 95% 44%;
+    --accent: 215 25% 27%; /* Carbon Gray #334155 */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 92%;
-    --input: 0 0% 96%;
-    --ring: 32 95% 44%;
+    --border: 215 25% 27%; /* Carbon Gray #334155 */
+    --input: 217 33% 17%; /* Slate Dark #1E293B */
+    --ring: 84 81% 44%; /* Lime Punch */
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 15 50% 10%;
-
-    --sidebar-primary: 32 95% 44%;
-
-    --sidebar-primary-foreground: 0 0% 100%;
-
-    --sidebar-accent: 32 95% 50%;
-
+    --sidebar-background: 222 47% 11%; /* Midnight Navy */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 84 81% 44%; /* Lime Punch */
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 199 89% 48%; /* Electric Blue */
     --sidebar-accent-foreground: 0 0% 100%;
-
-    --sidebar-border: 0 0% 92%;
-
-    --sidebar-ring: 32 95% 44%;
+    --sidebar-border: 215 25% 27%;
+    --sidebar-ring: 84 81% 44%;
 
     /* Club Theme Colors (Dynamic) */
-    --club-primary: #ea580c;
-    --club-secondary: #fb923c;
-    --club-accent: #fed7aa;
-    --club-text: #1f2937;
-    --club-background: #ffffff;
+    --club-primary: #84cc16; /* Lime Punch */
+    --club-secondary: #1e293b; /* Slate Dark - secondary surfaces */
+    --club-accent: #334155; /* Carbon Gray - borders/dividers */
+    --club-text: #ffffff; /* White */
+    --club-background: #0f172a; /* Midnight Navy */
   }
 
   .dark {

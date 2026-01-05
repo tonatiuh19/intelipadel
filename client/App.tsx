@@ -12,6 +12,7 @@ import Booking from "./pages/Booking";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import ForClubs from "./pages/ForClubs";
+import ClubOnboarding from "./pages/ClubOnboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ export default function App() {
               <Route path="/about" element={<About />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/for-clubs" element={<ForClubs />} />
+              <Route path="/club-onboarding" element={<ClubOnboarding />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

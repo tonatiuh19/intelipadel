@@ -22,11 +22,13 @@ import adminSubscriptionsReducer from "./slices/adminSubscriptionsSlice";
 import userSubscriptionsReducer from "./slices/userSubscriptionsSlice";
 import instructorsReducer from "./slices/instructorsSlice";
 import adminPaymentsReducer from "./slices/adminPaymentsSlice";
+import clubOnboardingReducer from "./slices/clubOnboardingSlice";
 
 export const store = configureStore({
   reducer: {
     bookings: bookingsReducer,
     clubs: clubsReducer,
+    clubOnboarding: clubOnboardingReducer,
     auth: authReducer,
     availability: availabilityReducer,
     payment: paymentReducer,
