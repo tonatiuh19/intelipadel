@@ -124,12 +124,10 @@ export default function AdminCourts() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-primary">
             Gestión de Canchas
           </h1>
-          <p className="text-gray-600 mt-1">
-            Administra las canchas de tu club
-          </p>
+          <p className="mt-1">Administra las canchas de tu club</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -239,11 +237,11 @@ export default function AdminCourts() {
               {courts.map((court) => (
                 <div
                   key={court.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-card border rounded-lg"
                 >
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-900">{court.name}</p>
-                    <p className="text-sm text-gray-600">{court.club_name}</p>
+                    <p className="font-semibold text-primary">{court.name}</p>
+                    <p className="text-sm">{court.club_name}</p>
                     <div className="flex gap-2 mt-1">
                       <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                         {court.court_type === "indoor"

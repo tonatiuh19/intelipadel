@@ -256,7 +256,7 @@ export default function SubscriptionWizard({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
         {/* Wizard Header */}
-        <div className="p-6 border-b bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50">
+        <div className="p-6 border-b bg-muted/30">
           <DialogTitle className="text-2xl font-bold text-gray-900 mb-6">
             {editingSubscription ? "Editar" : "Crear"} Suscripción
           </DialogTitle>
@@ -274,7 +274,7 @@ export default function SubscriptionWizard({
                     <div
                       className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
                         isActive
-                          ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white ring-4 ring-orange-200 scale-110 shadow-lg"
+                          ? "bg-primary text-primary-foreground ring-4 ring-primary/20 scale-110 shadow-lg"
                           : isCompleted
                             ? "bg-green-500 text-white shadow-md"
                             : "bg-gray-200 text-gray-400"
@@ -289,7 +289,7 @@ export default function SubscriptionWizard({
                     <span
                       className={`text-xs mt-2 text-center transition-colors duration-300 hidden sm:block max-w-[80px] ${
                         isActive
-                          ? "text-orange-600 font-bold"
+                          ? "text-primary font-bold"
                           : isCompleted
                             ? "text-green-600 font-semibold"
                             : "text-gray-500"
@@ -304,7 +304,7 @@ export default function SubscriptionWizard({
                         isCompleted
                           ? "bg-green-500"
                           : isActive
-                            ? "bg-gradient-to-r from-orange-500 to-gray-200"
+                            ? "bg-primary"
                             : "bg-gray-200"
                       }`}
                     />
@@ -443,10 +443,10 @@ export default function SubscriptionWizard({
                   <div
                     className={`p-5 border-2 rounded-lg transition-all ${
                       formik.values.booking_discount_percent
-                        ? "border-orange-500 bg-orange-50"
+                        ? "border-primary bg-muted"
                         : formik.values.booking_credits_monthly
                           ? "border-gray-200 bg-gray-50 opacity-50"
-                          : "border-gray-300 hover:border-orange-300"
+                          : "border-gray-300 hover:border-primary"
                     }`}
                   >
                     <Label
@@ -931,7 +931,7 @@ export default function SubscriptionWizard({
             <Button
               onClick={() => formik.handleSubmit()}
               disabled={!canProceed() || formik.isSubmitting}
-              className="min-w-[140px] bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+              className="min-w-[140px] bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {formik.isSubmitting ? (
                 <div className="flex items-center gap-2">
@@ -949,7 +949,7 @@ export default function SubscriptionWizard({
             <Button
               onClick={handleNext}
               disabled={!canProceed()}
-              className="min-w-[140px] bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+              className="min-w-[140px] bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               Siguiente
             </Button>

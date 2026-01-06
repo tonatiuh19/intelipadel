@@ -192,10 +192,10 @@ export default function AdminBookings() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-primary">
             Gestión de Reservaciones
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="mt-1">
             Ve y administra todas las reservaciones de tus clubes
           </p>
         </div>
@@ -204,7 +204,7 @@ export default function AdminBookings() {
         <div className="flex gap-2">
           <Button
             onClick={() => setShowManualBookingModal(true)}
-            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Plus className="h-4 w-4 mr-2" />
             Crear Reserva
@@ -221,7 +221,7 @@ export default function AdminBookings() {
             onClick={() => setViewMode("calendar")}
             className={
               viewMode === "calendar"
-                ? "bg-gradient-to-r from-orange-500 to-orange-600"
+                ? "bg-primary text-primary-foreground"
                 : ""
             }
           >
@@ -232,9 +232,7 @@ export default function AdminBookings() {
             variant={viewMode === "list" ? "default" : "outline"}
             onClick={() => setViewMode("list")}
             className={
-              viewMode === "list"
-                ? "bg-gradient-to-r from-orange-500 to-orange-600"
-                : ""
+              viewMode === "list" ? "bg-primary text-primary-foreground" : ""
             }
           >
             <List className="h-4 w-4 mr-2" />
@@ -564,7 +562,7 @@ export default function AdminBookings() {
                       {selectedBooking.status}
                     </span>
                   </div>
-                  <p className="font-bold text-orange-600 text-lg mt-1">
+                  <p className="font-bold text-primary text-lg mt-1">
                     ${selectedBooking.total_price}
                   </p>
                 </div>

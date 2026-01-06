@@ -87,10 +87,8 @@ export default function AdminUsers() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Usuarios Admin</h1>
-          <p className="text-gray-600 mt-1">
-            Administra cuentas de administrador
-          </p>
+          <h1 className="text-3xl font-bold text-primary">Usuarios Admin</h1>
+          <p className="mt-1">Administra cuentas de administrador</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -192,12 +190,12 @@ export default function AdminUsers() {
               {admins.map((admin) => (
                 <div
                   key={admin.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-card border rounded-lg"
                 >
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-900">{admin.name}</p>
-                    <p className="text-sm text-gray-600">{admin.email}</p>
-                    <p className="text-xs text-gray-500">{admin.phone}</p>
+                    <p className="font-semibold text-primary">{admin.name}</p>
+                    <p className="text-sm">{admin.email}</p>
+                    <p className="text-xs">{admin.phone}</p>
                     {admin.club_name && (
                       <p className="text-xs text-blue-600 mt-1">
                         {admin.club_name}

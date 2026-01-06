@@ -286,8 +286,8 @@ export default function ManualBookingModal({
           </div>
 
           {/* Payment Info */}
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-            <p className="text-sm text-orange-900">
+          <div className="bg-muted border border-border rounded-lg p-4">
+            <p className="text-sm text-foreground">
               <strong>💰 Pago Manual:</strong> Esta reserva se marcará como
               pagada manualmente por el administrador.
             </p>
@@ -304,7 +304,7 @@ export default function ManualBookingModal({
                 !selectedCourtObj ||
                 !selectedTime
               }
-              className="bg-gradient-to-r from-orange-500 to-orange-600"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {isSubmitting ? "Creando..." : "Crear Reserva"}
             </Button>
@@ -313,7 +313,7 @@ export default function ManualBookingModal({
             </Button>
           </div>
           {(!selectedCourtObj || !selectedTime) && (
-            <p className="text-sm text-orange-600">
+            <p className="text-sm text-muted-foreground">
               * Debes seleccionar una cancha y horario antes de crear la reserva
             </p>
           )}

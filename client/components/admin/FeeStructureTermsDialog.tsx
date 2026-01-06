@@ -60,7 +60,7 @@ export default function FeeStructureTermsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-orange-600">
+          <DialogTitle className="flex items-center gap-2 text-primary">
             <AlertTriangle className="h-5 w-5" />
             Confirmación de Cambio de Estructura de Comisión
           </DialogTitle>
@@ -73,8 +73,8 @@ export default function FeeStructureTermsDialog({
         <ScrollArea className="max-h-[50vh] pr-4">
           <div className="space-y-6">
             {/* Summary of change */}
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 space-y-2">
-              <h3 className="font-semibold text-orange-900">
+            <div className="bg-muted border border-border rounded-lg p-4 space-y-2">
+              <h3 className="font-semibold text-foreground">
                 Nueva Estructura de Comisión
               </h3>
               <div className="text-sm text-gray-700 space-y-1">
@@ -82,7 +82,7 @@ export default function FeeStructureTermsDialog({
                   {FEE_STRUCTURE_LABELS[feeStructure]}
                 </p>
                 <p>{FEE_STRUCTURE_DESCRIPTIONS[feeStructure]}</p>
-                <p className="text-orange-700 font-medium mt-2">
+                <p className="text-foreground font-medium mt-2">
                   Comisión de servicio: {serviceFeePercentage}%
                 </p>
               </div>
@@ -136,7 +136,7 @@ export default function FeeStructureTermsDialog({
                   Acepto los{" "}
                   <a
                     href="#"
-                    className="text-orange-600 hover:underline"
+                    className="text-primary hover:underline"
                     onClick={(e) => e.preventDefault()}
                   >
                     Términos y Condiciones
@@ -161,7 +161,7 @@ export default function FeeStructureTermsDialog({
                   Acepto la{" "}
                   <a
                     href="#"
-                    className="text-orange-600 hover:underline"
+                    className="text-primary hover:underline"
                     onClick={(e) => e.preventDefault()}
                   >
                     Política de Privacidad
@@ -184,7 +184,7 @@ export default function FeeStructureTermsDialog({
           <Button
             onClick={handleAccept}
             disabled={!canAccept || isLoading}
-            className="bg-orange-600 hover:bg-orange-700"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {isLoading ? "Guardando..." : "Aceptar y Continuar"}
           </Button>

@@ -45,8 +45,8 @@ export default function AdminDashboard() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Panel Principal</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-3xl font-bold text-primary">Panel Principal</h1>
+        <p className="mt-1">
           ¡Bienvenido de nuevo! Aquí está una vista general de tu negocio.
         </p>
       </div>
@@ -55,63 +55,59 @@ export default function AdminDashboard() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium ">
               Total de Reservaciones
             </CardTitle>
-            <Calendar className="h-4 w-4 text-gray-600" />
+            <Calendar className="h-4 w-4 " />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {stats?.totalBookings || 0}
             </div>
-            <p className="text-xs text-gray-600 mt-1">
-              Reservaciones de todos los tiempos
-            </p>
+            <p className="text-xs  mt-1">Reservaciones de todos los tiempos</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium ">
               Ingresos Totales
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-gray-600" />
+            <DollarSign className="h-4 w-4 " />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               ${Number(stats?.totalRevenue || 0).toFixed(2)}
             </div>
-            <p className="text-xs text-gray-600 mt-1">
-              De reservaciones pagadas
-            </p>
+            <p className="text-xs  mt-1">De reservaciones pagadas</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium ">
               Total de Jugadores
             </CardTitle>
-            <Users className="h-4 w-4 text-gray-600" />
+            <Users className="h-4 w-4 " />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.totalPlayers || 0}</div>
-            <p className="text-xs text-gray-600 mt-1">Usuarios registrados</p>
+            <p className="text-xs  mt-1">Usuarios registrados</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium ">
               Próximas Reservaciones
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-gray-600" />
+            <TrendingUp className="h-4 w-4 " />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {stats?.upcomingBookings || 0}
             </div>
-            <p className="text-xs text-gray-600 mt-1">Reservaciones futuras</p>
+            <p className="text-xs  mt-1">Reservaciones futuras</p>
           </CardContent>
         </Card>
       </div>
@@ -127,11 +123,11 @@ export default function AdminDashboard() {
               {recentBookings.map((booking) => (
                 <div
                   key={booking.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-card border rounded-lg"
                 >
                   <div className="flex-1">
                     <p className="font-medium">{booking.user_name}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm ">
                       {booking.club_name} - {booking.court_name}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
@@ -140,7 +136,7 @@ export default function AdminDashboard() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-blue-600">
+                    <p className="font-bold text-primary">
                       ${booking.total_price}
                     </p>
                     <span

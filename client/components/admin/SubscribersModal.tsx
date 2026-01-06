@@ -237,7 +237,7 @@ export default function SubscribersModal({
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-2xl">
-              <Crown className="h-6 w-6 text-orange-500" />
+              <Crown className="h-6 w-6 text-primary" />
               Suscriptores - {subscriptionName}
             </DialogTitle>
             <DialogDescription>
@@ -247,7 +247,7 @@ export default function SubscribersModal({
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : subscribers.length === 0 ? (
             <div className="text-center py-12">
@@ -261,7 +261,7 @@ export default function SubscribersModal({
               {subscribers.map((subscriber) => (
                 <div
                   key={subscriber.user_subscription_id}
-                  className="border rounded-lg p-4 hover:border-orange-200 transition-all"
+                  className="border rounded-lg p-4 hover:border-primary transition-all"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">

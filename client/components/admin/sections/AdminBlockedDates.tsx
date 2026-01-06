@@ -120,10 +120,8 @@ export default function AdminBlockedDates() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Fechas Bloqueadas
-          </h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-primary">Fechas Bloqueadas</h1>
+          <p className="mt-1">
             Administra bloqueos de disponibilidad de canchas
           </p>
         </div>
@@ -298,29 +296,20 @@ export default function AdminBlockedDates() {
               {blockedSlots.map((slot) => (
                 <div
                   key={slot.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-card border rounded-lg"
                 >
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-900">{slot.reason}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="font-semibold text-primary">{slot.reason}</p>
+                    <p className="text-sm">
                       {slot.club_name}{" "}
                       {slot.court_name ? `- ${slot.court_name}` : ""}
                     </p>
-                    <p className="text-sm text-gray-600">
-                      {(() => {
-                        const [year, month, day] = slot.block_date
-                          .split("-")
-                          .map(Number);
-                        return new Date(
-                          year,
-                          month - 1,
-                          day,
-                        ).toLocaleDateString();
-                      })()}
+                    <p className="text-sm">
+                      {format(new Date(slot.block_date), "dd/MM/yyyy")}
                       {!slot.is_all_day &&
                         ` • ${slot.start_time} - ${slot.end_time}`}
                     </p>
-                    <span className="inline-block px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800 mt-1">
+                    <span className="inline-block px-2 py-1 text-xs rounded-full bg-muted text-foreground mt-1">
                       {slot.block_type}
                     </span>
                   </div>

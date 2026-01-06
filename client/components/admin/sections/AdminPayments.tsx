@@ -243,11 +243,11 @@ export default function AdminPayments() {
   const getTypeBadge = (type: string) => {
     const variants: Record<string, { color: string; label: string }> = {
       booking: { color: "bg-blue-100 text-blue-800", label: "Reserva" },
-      event: { color: "bg-orange-100 text-orange-800", label: "Evento" },
+      event: { color: "bg-muted text-foreground", label: "Evento" },
       private_class: { color: "bg-green-100 text-green-800", label: "Clase" },
       class: { color: "bg-green-100 text-green-800", label: "Clase" },
       subscription: {
-        color: "bg-amber-100 text-amber-800",
+        color: "bg-muted text-foreground",
         label: "Suscripción",
       },
     };
@@ -302,10 +302,8 @@ export default function AdminPayments() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Pagos</h1>
-          <p className="text-gray-600 mt-1">
-            Administra pagos y transacciones de Stripe
-          </p>
+          <h1 className="text-3xl font-bold text-primary">Pagos</h1>
+          <p className="mt-1">Administra pagos y transacciones de Stripe</p>
         </div>
         <Button onClick={exportToCSV} variant="outline">
           <Download className="h-4 w-4 mr-2" />
@@ -653,9 +651,9 @@ export default function AdminPayments() {
                 />
               </div>
 
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex gap-2">
-                <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800">
+              <div className="p-3 bg-muted/50 border border-border rounded-lg flex gap-2">
+                <AlertCircle className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground">
                   Esta acción procesará el reembolso inmediatamente en Stripe y
                   no se puede deshacer.
                 </p>

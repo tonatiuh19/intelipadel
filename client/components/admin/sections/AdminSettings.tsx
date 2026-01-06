@@ -389,8 +389,8 @@ export default function AdminSettings() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Configuración</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-3xl font-bold text-primary">Configuración</h1>
+        <p className="mt-1">
           Administra precios, horarios y configuraciones del sistema
         </p>
       </div>
@@ -409,10 +409,10 @@ export default function AdminSettings() {
             <Shield className="h-4 w-4 mr-2" />
             Estructura de Comisión
           </TabsTrigger>
-          <TabsTrigger value="colors">
+          {/* <TabsTrigger value="colors">
             <Palette className="h-4 w-4 mr-2" />
             Colores del Club
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         {/* Pricing Tab */}
@@ -848,7 +848,7 @@ export default function AdminSettings() {
           <Card>
             <CardHeader>
               <CardTitle>Estructura de Comisión de InteliPadel</CardTitle>
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm  mt-2">
                 Define cómo se aplicará la comisión de servicio no reembolsable
                 de InteliPadel en las reservas de tu club.
               </p>
@@ -960,8 +960,8 @@ export default function AdminSettings() {
                           <div
                             className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                               values.fee_structure === "user_pays_fee"
-                                ? "border-orange-500 bg-orange-50"
-                                : "border-gray-200 hover:border-orange-300"
+                                ? "border-primary bg-muted"
+                                : "border-gray-200 hover:border-primary"
                             }`}
                             onClick={() =>
                               setFieldValue("fee_structure", "user_pays_fee")
@@ -984,17 +984,15 @@ export default function AdminSettings() {
                                 className="mt-1"
                               />
                               <div className="flex-1">
-                                <h4 className="font-semibold text-gray-900 mb-1">
+                                <h4 className="font-semibold  mb-1">
                                   Usuario Paga Comisión Completa
                                 </h4>
-                                <p className="text-sm text-gray-600 mb-2">
+                                <p className="text-sm  mb-2">
                                   El usuario paga el precio de la reserva más la
                                   comisión de servicio.
                                 </p>
-                                <div className="bg-white rounded p-3 text-sm border space-y-1">
-                                  <p className="font-medium text-gray-700">
-                                    Ejemplo:
-                                  </p>
+                                <div className="bg-secondary rounded p-3 text-sm border space-y-1">
+                                  <p className="font-medium ">Ejemplo:</p>
                                   <p>Precio de reserva: $750.00</p>
                                   <p>
                                     Comisión de servicio ({serviceFeePercentage}
@@ -1028,7 +1026,7 @@ export default function AdminSettings() {
                                       0.16
                                     ).toFixed(2)}
                                   </p>
-                                  <p className="font-semibold text-orange-600 border-t pt-1 mt-1">
+                                  <p className="font-semibold text-primary border-t pt-1 mt-1">
                                     Total a pagar: $
                                     {(
                                       (750 +
@@ -1051,8 +1049,8 @@ export default function AdminSettings() {
                           <div
                             className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                               values.fee_structure === "shared_fee"
-                                ? "border-orange-500 bg-orange-50"
-                                : "border-gray-200 hover:border-orange-300"
+                                ? "border-primary bg-muted"
+                                : "border-gray-200 hover:border-primary"
                             }`}
                             onClick={() =>
                               setFieldValue("fee_structure", "shared_fee")
@@ -1070,17 +1068,15 @@ export default function AdminSettings() {
                                 className="mt-1"
                               />
                               <div className="flex-1">
-                                <h4 className="font-semibold text-gray-900 mb-1">
+                                <h4 className="font-semibold  mb-1">
                                   Comisión Compartida 50/50
                                 </h4>
-                                <p className="text-sm text-gray-600 mb-2">
+                                <p className="text-sm  mb-2">
                                   El usuario y el club comparten la comisión al
                                   50% cada uno.
                                 </p>
-                                <div className="bg-white rounded p-3 text-sm border space-y-1">
-                                  <p className="font-medium text-gray-700">
-                                    Ejemplo:
-                                  </p>
+                                <div className="bg-secondary rounded p-3 text-sm border space-y-1">
+                                  <p className="font-medium ">Ejemplo:</p>
                                   <p>Precio de reserva: $750.00</p>
                                   <p>
                                     Comisión total ({serviceFeePercentage}%): $
@@ -1129,7 +1125,7 @@ export default function AdminSettings() {
                                       0.16
                                     ).toFixed(2)}
                                   </p>
-                                  <p className="font-semibold text-orange-600 border-t pt-1 mt-1">
+                                  <p className="font-semibold text-primary border-t pt-1 mt-1">
                                     Total a pagar: $
                                     {(
                                       (750 +
@@ -1174,8 +1170,8 @@ export default function AdminSettings() {
                           <div
                             className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                               values.fee_structure === "club_absorbs_fee"
-                                ? "border-orange-500 bg-orange-50"
-                                : "border-gray-200 hover:border-orange-300"
+                                ? "border-primary bg-muted"
+                                : "border-gray-200 hover:border-primary"
                             }`}
                             onClick={() =>
                               setFieldValue("fee_structure", "club_absorbs_fee")
@@ -1198,17 +1194,15 @@ export default function AdminSettings() {
                                 className="mt-1"
                               />
                               <div className="flex-1">
-                                <h4 className="font-semibold text-gray-900 mb-1">
+                                <h4 className="font-semibold  mb-1">
                                   Club Absorbe Comisión (Predeterminado)
                                 </h4>
-                                <p className="text-sm text-gray-600 mb-2">
+                                <p className="text-sm  mb-2">
                                   La comisión está incluida en el precio
                                   mostrado. El club paga la comisión completa.
                                 </p>
-                                <div className="bg-white rounded p-3 text-sm border space-y-1">
-                                  <p className="font-medium text-gray-700">
-                                    Ejemplo:
-                                  </p>
+                                <div className="bg-secondary rounded p-3 text-sm border space-y-1">
+                                  <p className="font-medium ">Ejemplo:</p>
                                   <p>Precio mostrado: $750.00</p>
                                   <p className="text-xs text-gray-500 ml-4">
                                     (comisión incluida)
@@ -1217,7 +1211,7 @@ export default function AdminSettings() {
                                     Subtotal: $750.00
                                   </p>
                                   <p>IVA (16%): ${(750 * 0.16).toFixed(2)}</p>
-                                  <p className="font-semibold text-orange-600 border-t pt-1 mt-1">
+                                  <p className="font-semibold text-primary border-t pt-1 mt-1">
                                     Total a pagar: ${(750 * 1.16).toFixed(2)}
                                   </p>
                                   <p className="text-green-700 font-medium border-t pt-1 mt-1">
@@ -1303,7 +1297,7 @@ export default function AdminSettings() {
           <Card>
             <CardHeader>
               <CardTitle>Personalización de Colores</CardTitle>
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm  mt-2">
                 Personaliza los colores de tu marca que se aplicarán al CRM y al
                 asistente de reservas.
               </p>
@@ -1392,7 +1386,7 @@ export default function AdminSettings() {
                           >
                             Color Primario
                           </Label>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm ">
                             Color principal de tu marca (botones, enlaces
                             principales)
                           </p>
@@ -1439,7 +1433,7 @@ export default function AdminSettings() {
                           >
                             Color Secundario
                           </Label>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm ">
                             Color de soporte y elementos secundarios
                           </p>
                           <div className="flex gap-3 items-center">
@@ -1485,7 +1479,7 @@ export default function AdminSettings() {
                           >
                             Color de Acento
                           </Label>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm ">
                             Color para destacar información importante
                           </p>
                           <div className="flex gap-3 items-center">
@@ -1531,9 +1525,7 @@ export default function AdminSettings() {
                           >
                             Color de Texto
                           </Label>
-                          <p className="text-sm text-gray-600">
-                            Color principal del texto
-                          </p>
+                          <p className="text-sm ">Color principal del texto</p>
                           <div className="flex gap-3 items-center">
                             <Field name="text_color">
                               {({ field }: any) => (
@@ -1574,7 +1566,7 @@ export default function AdminSettings() {
                           >
                             Color de Fondo
                           </Label>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm ">
                             Color de fondo principal de la interfaz
                           </p>
                           <div className="flex gap-3 items-center max-w-md">

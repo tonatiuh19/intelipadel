@@ -254,12 +254,10 @@ export default function AdminEvents() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-primary">
             Gestión de Eventos
           </h1>
-          <p className="text-gray-600 mt-1">
-            Administra eventos y torneos de tu club
-          </p>
+          <p className="mt-1">Administra eventos y torneos de tu club</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -447,7 +445,7 @@ export default function AdminEvents() {
                       }`}
                     >
                       <p className="font-medium text-sm">{court.name}</p>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs ">
                         {court.court_type === "indoor"
                           ? "Techada"
                           : court.court_type === "covered"
@@ -518,42 +516,38 @@ export default function AdminEvents() {
               {events.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-start justify-between p-4 bg-gray-50 rounded-lg"
+                  className="flex items-start justify-between p-4 bg-card border rounded-lg"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold text-gray-900">
-                        {event.title}
-                      </h3>
+                      <h3 className="font-semibold">{event.title}</h3>
                       <span
                         className={`px-2 py-1 text-xs rounded-full ${getStatusColor(event.status)}`}
                       >
                         {getStatusLabel(event.status)}
                       </span>
-                      <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                      <span className="px-2 py-1 text-xs rounded-full">
                         {getEventTypeLabel(event.event_type)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">
-                      {event.description}
-                    </p>
+                    <p className="text-sm mb-3">{event.description}</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm ">
                         <Calendar className="h-4 w-4" />
                         {format(new Date(event.event_date), "PPP", {
                           locale: es,
                         })}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm ">
                         <Users className="h-4 w-4" />
                         {event.current_participants}/
                         {event.max_participants || "∞"}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm ">
                         <DollarSign className="h-4 w-4" />$
                         {Number(event.registration_fee).toFixed(2)}
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm ">
                         Nivel: {getSkillLevelLabel(event.skill_level)}
                       </div>
                     </div>

@@ -89,14 +89,14 @@ export default function BookingCalendar({
       switch (status) {
         case "open":
         case "full":
-          return "bg-orange-600";
+          return "bg-primary";
         case "cancelled":
           return "bg-red-500";
         case "completed":
         case "in_progress":
-          return "bg-orange-700";
+          return "bg-primary/80";
         default:
-          return "bg-orange-500";
+          return "bg-primary/70";
       }
     }
     // Private classes use green theme
@@ -164,14 +164,14 @@ export default function BookingCalendar({
               key={idx}
               className={`min-h-32 border rounded-lg p-2 transition-all ${
                 isCurrentMonth
-                  ? "bg-white hover:shadow-md"
+                  ? "bg-muted hover:shadow-md"
                   : "bg-gray-50 opacity-50"
-              } ${isDayToday ? "ring-2 ring-orange-500" : ""}`}
+              } ${isDayToday ? "ring-2 ring-primary" : ""}`}
             >
               <div
                 className={`text-sm font-medium mb-1 ${
                   isDayToday
-                    ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full w-7 h-7 flex items-center justify-center"
+                    ? "bg-primary text-primary-foreground rounded-full w-7 h-7 flex items-center justify-center"
                     : isCurrentMonth
                       ? "text-gray-900"
                       : "text-gray-400"
@@ -188,27 +188,27 @@ export default function BookingCalendar({
 
                   const colorClass = isEvent
                     ? booking.status === "open" || booking.status === "full"
-                      ? "bg-orange-100 text-orange-800 hover:bg-orange-200 border-l-2 border-orange-600"
+                      ? "bg-secondary text-foreground hover:bg-secondary/80 border-l-2 border-primary"
                       : booking.status === "cancelled"
                         ? "bg-red-100 text-red-800 hover:bg-red-200"
                         : booking.status === "completed" ||
                             booking.status === "in_progress"
-                          ? "bg-orange-100 text-orange-900 hover:bg-orange-200"
-                          : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+                          ? "bg-secondary/50 text-foreground hover:bg-secondary/70"
+                          : "bg-secondary/30 text-muted-foreground hover:bg-secondary/50"
                     : isClass
                       ? booking.status === "confirmed"
-                        ? "bg-green-100 text-green-800 hover:bg-green-200 border-l-2 border-green-600"
+                        ? "bg-secondary/50 hover:bg-green-200 border-l-2 border-green-600"
                         : booking.status === "cancelled"
                           ? "bg-red-100 text-red-800 hover:bg-red-200"
                           : booking.status === "completed"
-                            ? "bg-green-100 text-green-900 hover:bg-green-200"
-                            : "bg-green-50 text-green-700 hover:bg-green-100"
+                            ? "bg-secondary/50 text-green-900 hover:bg-muted"
+                            : "bg-secondary/50 text-green-700 hover:bg-muted"
                       : booking.status === "confirmed"
-                        ? "bg-blue-100 text-blue-800 hover:bg-blue-200 border-l-2 border-blue-600"
+                        ? "bg-secondary/50 hover:bg-blue-200 border-l-2 border-blue-600"
                         : booking.status === "cancelled"
                           ? "bg-red-100 text-red-800 hover:bg-red-200"
                           : booking.status === "completed"
-                            ? "bg-blue-100 text-blue-900 hover:bg-blue-200"
+                            ? "bg-secondary/50 text-blue-900 hover:bg-blue-200"
                             : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
 
                   return (
@@ -263,7 +263,7 @@ export default function BookingCalendar({
                 key={day.toString()}
                 className={`text-center py-2 rounded-lg ${
                   isToday(day)
-                    ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold"
+                    ? "bg-primary text-primary-foreground font-bold"
                     : "font-semibold text-gray-600"
                 }`}
               >
@@ -294,7 +294,7 @@ export default function BookingCalendar({
                   return (
                     <div
                       key={day.toString()}
-                      className="border rounded p-1 min-h-16 bg-white hover:bg-gray-50"
+                      className="border rounded p-1 min-h-16 bg-secondary hover:bg-gray-50"
                     >
                       {dayBookings.map((booking) => (
                         <div
@@ -302,7 +302,7 @@ export default function BookingCalendar({
                           onClick={() => onBookingClick?.(booking)}
                           className={`text-xs p-1 rounded mb-1 cursor-pointer hover:scale-105 transition-transform ${
                             booking.status === "confirmed"
-                              ? "bg-green-500 text-white"
+                              ? "bg-secondary/50 text-white"
                               : booking.status === "cancelled"
                                 ? "bg-red-500 text-white"
                                 : booking.status === "completed"
@@ -338,7 +338,7 @@ export default function BookingCalendar({
 
     return (
       <div className="space-y-2">
-        <div className="text-center bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg py-4">
+        <div className="text-center bg-primary text-primary-foreground rounded-lg py-4">
           <div className="text-3xl font-bold">{format(currentDate, "d")}</div>
           <div className="text-lg">
             {format(currentDate, "EEEE, MMMM yyyy", { locale: es })}
@@ -366,20 +366,18 @@ export default function BookingCalendar({
                         onClick={() => onBookingClick?.(booking)}
                         className={`p-4 rounded-lg cursor-pointer hover:shadow-lg transition-all ${
                           booking.status === "confirmed"
-                            ? "bg-green-50 border-l-4 border-green-500"
+                            ? "bg-secondary/50 border-l-4 border-green-500"
                             : booking.status === "cancelled"
                               ? "bg-red-50 border-l-4 border-red-500"
                               : booking.status === "completed"
-                                ? "bg-blue-50 border-l-4 border-blue-500"
-                                : "bg-yellow-50 border-l-4 border-yellow-500"
+                                ? "bg-secondary/50 border-l-4 border-blue-500"
+                                : "bg-secondary/50 border-l-4 border-yellow-500"
                         }`}
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <div className="font-bold text-gray-900">
-                              {booking.user_name}
-                            </div>
-                            <div className="text-sm text-gray-600">
+                            <div className="font-bold">{booking.user_name}</div>
+                            <div className="text-sm">
                               {booking.user_email} • {booking.user_phone}
                             </div>
                             <div className="flex gap-4 mt-2 text-sm">
@@ -392,7 +390,7 @@ export default function BookingCalendar({
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-lg font-bold text-gray-900">
+                            <div className="text-lg font-bold ">
                               {booking.start_time} - {booking.end_time}
                             </div>
                             <div className="text-sm text-gray-600">
@@ -440,9 +438,7 @@ export default function BookingCalendar({
               variant={viewMode === "month" ? "default" : "outline"}
               onClick={() => setViewMode("month")}
               className={
-                viewMode === "month"
-                  ? "bg-gradient-to-r from-orange-500 to-orange-600"
-                  : ""
+                viewMode === "month" ? "bg-primary text-primary-foreground" : ""
               }
             >
               Mes
@@ -451,9 +447,7 @@ export default function BookingCalendar({
               variant={viewMode === "week" ? "default" : "outline"}
               onClick={() => setViewMode("week")}
               className={
-                viewMode === "week"
-                  ? "bg-gradient-to-r from-orange-500 to-orange-600"
-                  : ""
+                viewMode === "week" ? "bg-primary text-primary-foreground" : ""
               }
             >
               Semana
@@ -462,9 +456,7 @@ export default function BookingCalendar({
               variant={viewMode === "day" ? "default" : "outline"}
               onClick={() => setViewMode("day")}
               className={
-                viewMode === "day"
-                  ? "bg-gradient-to-r from-orange-500 to-orange-600"
-                  : ""
+                viewMode === "day" ? "bg-primary text-primary-foreground" : ""
               }
             >
               Día
@@ -486,7 +478,7 @@ export default function BookingCalendar({
               Hoy
             </Button>
 
-            <div className="text-lg font-bold text-gray-900 min-w-[200px] text-center">
+            <div className="text-lg font-bold min-w-[200px] text-center">
               {viewMode === "month" &&
                 format(currentDate, "MMMM yyyy", { locale: es })}
               {viewMode === "week" &&
@@ -523,7 +515,7 @@ export default function BookingCalendar({
             <span className="text-sm text-gray-600">Clase Privada 🎓</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-orange-500 border-l-2 border-orange-700"></div>
+            <div className="w-4 h-4 rounded bg-primary border-l-2 border-primary"></div>
             <span className="text-sm text-gray-600">Evento 🏆</span>
           </div>
           <div className="flex items-center gap-2">

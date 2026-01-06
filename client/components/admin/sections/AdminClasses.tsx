@@ -112,10 +112,8 @@ export default function AdminClasses() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Clases Privadas</h1>
-          <p className="text-gray-600 mt-1">
-            Administra instructores y clases privadas
-          </p>
+          <h1 className="text-3xl font-bold text-primary">Clases Privadas</h1>
+          <p className="mt-1">Administra instructores y clases privadas</p>
         </div>
         <Button
           onClick={() => {
@@ -158,12 +156,12 @@ export default function AdminClasses() {
               {filteredInstructors.map((instructor) => (
                 <div
                   key={instructor.id}
-                  className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200"
+                  className="p-4 bg-card rounded-lg border border-green-200"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-lg text-gray-900">
+                        <h3 className="font-bold text-lg ">
                           {instructor.name}
                         </h3>
                         <span
@@ -177,7 +175,7 @@ export default function AdminClasses() {
                         </span>
                         {instructor.is_active &&
                           availabilityCounts[instructor.id] === 0 && (
-                            <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                            <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-muted text-foreground border border-border">
                               ⚠️ Sin disponibilidad
                             </span>
                           )}
@@ -185,7 +183,7 @@ export default function AdminClasses() {
 
                       {instructor.is_active &&
                         availabilityCounts[instructor.id] === 0 && (
-                          <div className="p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+                          <div className="p-2 bg-warning border border-border rounded text-xs text-yellow-800">
                             Este instructor necesita configurar su
                             disponibilidad para aparecer en el sistema de
                             reservas.{" "}
@@ -196,7 +194,7 @@ export default function AdminClasses() {
                                   name: instructor.name,
                                 })
                               }
-                              className="underline font-medium hover:text-amber-900"
+                              className="underline font-medium hover:text-primary"
                             >
                               Configurar ahora
                             </button>
@@ -205,28 +203,24 @@ export default function AdminClasses() {
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <p className="text-sm text-gray-600">Contacto</p>
-                          <p className="text-sm font-medium text-gray-900">
+                          <p className="text-sm ">Contacto</p>
+                          <p className="text-sm font-medium ">
                             {instructor.email}
                           </p>
                           {instructor.phone && (
-                            <p className="text-sm text-gray-700">
-                              {instructor.phone}
-                            </p>
+                            <p className="text-sm t">{instructor.phone}</p>
                           )}
                         </div>
 
                         <div>
-                          <p className="text-sm text-gray-600">
-                            Tarifa por Hora
-                          </p>
+                          <p className="text-sm ">Tarifa por Hora</p>
                           <p className="text-xl font-bold text-green-600">
                             ${Number(instructor.hourly_rate).toFixed(2)}
                           </p>
                         </div>
 
                         <div>
-                          <p className="text-sm text-gray-600">Experiencia</p>
+                          <p className="text-sm ">Experiencia</p>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">
                               {instructor.years_of_experience} años
@@ -242,9 +236,7 @@ export default function AdminClasses() {
                       </div>
 
                       {instructor.bio && (
-                        <p className="text-sm text-gray-700 mt-2">
-                          {instructor.bio}
-                        </p>
+                        <p className="text-sm t mt-2">{instructor.bio}</p>
                       )}
 
                       {instructor.specialties &&

@@ -36,16 +36,14 @@ export default function AdminPlayers() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-primary">
             Gestión de Jugadores
           </h1>
-          <p className="text-gray-600 mt-1">
-            Ve y administra los jugadores registrados
-          </p>
+          <p className="mt-1">Ve y administra los jugadores registrados</p>
         </div>
         <Button
           onClick={() => setShowAddPlayerModal(true)}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           <Plus className="h-4 w-4 mr-2" />
           Agregar Jugador
@@ -81,26 +79,22 @@ export default function AdminPlayers() {
               {filteredPlayers.map((player) => (
                 <div
                   key={player.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-card border rounded-lg"
                 >
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                      <p className="font-semibold text-gray-900">
-                        {player.name}
-                      </p>
+                      <p className="font-semibold ">{player.name}</p>
                       <p className="text-sm text-gray-600">{player.email}</p>
                       <p className="text-xs text-gray-500">{player.phone}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">
-                        Total de Reservaciones
-                      </p>
+                      <p className="text-sm">Total de Reservaciones</p>
                       <p className="font-bold text-lg">
                         {player.total_bookings}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Total Gastado</p>
+                      <p className="text-sm">Total Gastado</p>
                       <p className="font-bold text-lg text-green-600">
                         $
                         {player.total_spent
@@ -109,7 +103,7 @@ export default function AdminPlayers() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Se Unió</p>
+                      <p className="text-sm">Se Unió</p>
                       <p className="text-sm">
                         {new Date(player.created_at).toLocaleDateString()}
                       </p>
@@ -131,7 +125,7 @@ export default function AdminPlayers() {
                       onClick={() =>
                         setSelectedPlayer({ id: player.id, name: player.name })
                       }
-                      className="hover:bg-orange-50 hover:border-orange-500"
+                      className="hover:bg-muted hover:border-primary"
                     >
                       <Calendar className="h-4 w-4 mr-2" />
                       Crear Reserva

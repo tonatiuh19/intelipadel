@@ -238,7 +238,7 @@ export default function AddEventParticipantModal({
                 isLoadingParticipants ||
                 availablePlayers.length === 0
               }
-              className="bg-gradient-to-r from-orange-500 to-orange-600"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {isSubmitting ? "Agregando..." : "Agregar Participante"}
             </Button>

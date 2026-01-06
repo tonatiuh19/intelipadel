@@ -90,10 +90,10 @@ export default function AdminPolicies() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-primary">
           Términos y Políticas
         </h1>
-        <p className="text-gray-600 mt-1">
+        <p className="mt-1">
           Administra documentos legales y políticas del club
         </p>
       </div>

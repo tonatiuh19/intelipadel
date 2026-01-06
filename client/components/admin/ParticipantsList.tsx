@@ -107,7 +107,7 @@ export default function ParticipantsList({ eventId }: ParticipantsListProps) {
           <Button
             onClick={() => setIsAddModalOpen(true)}
             size="sm"
-            className="bg-gradient-to-r from-orange-500 to-orange-600"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Plus className="h-4 w-4 mr-1" />
             Agregar Participante

@@ -561,7 +561,7 @@ export default function ManualPrivateClassModal({
             </Button>
           </div>
           {(!selectedInstructor || !selectedCourtObj || !selectedTime) && (
-            <p className="text-sm text-orange-600">
+            <p className="text-sm text-muted-foreground">
               * Debes seleccionar un instructor, cancha y horario antes de crear
               la clase
             </p>

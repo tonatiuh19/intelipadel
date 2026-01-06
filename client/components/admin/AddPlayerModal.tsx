@@ -140,7 +140,7 @@ export default function AddPlayerModal({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-gradient-to-r from-orange-500 to-orange-600"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {isSubmitting ? "Creando..." : "Crear Jugador"}
             </Button>

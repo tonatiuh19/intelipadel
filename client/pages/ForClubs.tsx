@@ -418,9 +418,7 @@ export default function ForClubs() {
               >
                 <Card className="p-6 text-center hover:shadow-xl transition-all h-full">
                   <benefit.icon className="h-12 w-12 text-primary mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-secondary mb-2">
-                    {benefit.title}
-                  </h3>
+                  <h3 className="text-xl font-bold mb-2">{benefit.title}</h3>
                   <p className="text-muted-foreground">{benefit.description}</p>
                 </Card>
               </motion.div>
@@ -430,7 +428,7 @@ export default function ForClubs() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-muted">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-secondary mb-4">
@@ -449,7 +447,7 @@ export default function ForClubs() {
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                     <category.icon className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="text-3xl font-bold text-secondary">
+                  <h3 className="text-3xl text-secondary font-bold">
                     {category.category}
                   </h3>
                 </div>
@@ -471,7 +469,7 @@ export default function ForClubs() {
                             </div>
                           </div>
                           <div>
-                            <h4 className="text-lg font-bold text-secondary mb-2">
+                            <h4 className="text-lg font-bold mb-2">
                               {item.title}
                             </h4>
                             <p className="text-muted-foreground">
@@ -513,7 +511,7 @@ export default function ForClubs() {
                 <div className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-bold inline-block mb-4">
                   Plan Completo
                 </div>
-                <h3 className="text-3xl font-bold text-secondary mb-2">
+                <h3 className="text-3xl font-bold mb-2">
                   Todo lo que necesitas para digitalizar tu club
                 </h3>
               </div>
@@ -522,11 +520,11 @@ export default function ForClubs() {
                 {/* Setup Investment */}
                 <div className="border-r md:pr-8">
                   <div className="mb-6">
-                    <h4 className="text-xl font-bold text-secondary mb-2">
+                    <h4 className="text-xl font-bold mb-2">
                       Inversión Inicial Única
                     </h4>
                     <div className="mb-4">
-                      <span className="text-4xl font-black text-secondary">
+                      <span className="text-4xl font-black">
                         {pricingPlan.setupPrice}
                       </span>
                       <span className="text-muted-foreground ml-2">
@@ -610,14 +608,6 @@ export default function ForClubs() {
                 Registrar Mi Club
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white text-white hover:bg-white/10 font-bold text-lg px-8"
-              asChild
-            >
-              <a href="#pricing">Ver Precios</a>
             </Button>
           </div>
         </div>

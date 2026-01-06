@@ -160,7 +160,7 @@ export default function AdminSubscriptions() {
     return (
       <div className="flex items-center gap-2 text-sm">
         {icon}
-        <span className="text-gray-700">
+        <span>
           {label}:{" "}
           <strong>
             {value}
@@ -174,7 +174,7 @@ export default function AdminSubscriptions() {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
   }
@@ -184,8 +184,8 @@ export default function AdminSubscriptions() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Suscripciones</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-primary">Suscripciones</h1>
+          <p className="mt-1">
             Gestiona los planes de suscripción mensual de tu club
           </p>
         </div>
@@ -231,7 +231,7 @@ export default function AdminSubscriptions() {
                     <CardTitle className="text-xl mb-2">
                       {subscription.name}
                     </CardTitle>
-                    <div className="text-3xl font-bold text-orange-600">
+                    <div className="text-3xl font-bold text-primary">
                       ${subscription.price_monthly}
                       <span className="text-sm text-gray-500 font-normal">
                         /{subscription.currency}/mes
@@ -240,9 +240,7 @@ export default function AdminSubscriptions() {
                   </div>
                 </div>
                 {subscription.description && (
-                  <p className="text-sm text-gray-600 mt-2">
-                    {subscription.description}
-                  </p>
+                  <p className="text-sm mt-2">{subscription.description}</p>
                 )}
               </CardHeader>
 
@@ -252,7 +250,7 @@ export default function AdminSubscriptions() {
                   {renderBenefit(
                     "Descuento en reservas",
                     subscription.booking_discount_percent,
-                    <Percent className="h-4 w-4 text-orange-500" />,
+                    <Percent className="h-4 w-4 text-primary" />,
                     "%",
                   )}
                   {renderBenefit(
@@ -290,18 +288,14 @@ export default function AdminSubscriptions() {
                 {/* Extras */}
                 {subscription.extras && subscription.extras.length > 0 && (
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold text-gray-700">
-                      Extras:
-                    </p>
+                    <p className="font-semibold">Extras:</p>
                     {subscription.extras.map((extra) => (
                       <div
                         key={extra.id}
                         className="flex items-start gap-2 text-sm"
                       >
-                        <Gift className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-600">
-                          {extra.description}
-                        </span>
+                        <Gift className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                        <span>{extra.description}</span>
                       </div>
                     ))}
                   </div>
@@ -313,7 +307,7 @@ export default function AdminSubscriptions() {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleOpenSubscribers(subscription)}
-                    className="w-full justify-start text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                    className="w-full justify-start text-sm text-muted-foreground hover:text-primary hover:bg-muted"
                   >
                     <Users className="h-4 w-4 mr-2" />
                     <span>
