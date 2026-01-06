@@ -374,14 +374,14 @@ async function sendSubscriptionConfirmationEmail(
         <style>
           body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
           .container { background-color: white; border-radius: 10px; padding: 30px; max-width: 600px; margin: 0 auto; }
-          .header { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 30px; }
+          .header { background: linear-gradient(135deg, #f59e0b 0%, #84cc16 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 30px; }
           .badge { display: inline-block; background-color: #fbbf24; color: #78350f; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; }
-          .price { font-size: 36px; font-weight: bold; color: #ea580c; margin: 20px 0; }
+          .price { font-size: 36px; font-weight: bold; color: #84cc16; margin: 20px 0; }
           .benefits { background-color: #fef3c7; padding: 20px; border-radius: 10px; margin: 20px 0; }
           .benefit { padding: 10px 0; border-bottom: 1px solid #fcd34d; }
           .benefit:last-child { border-bottom: none; }
           .footer { color: #666; font-size: 12px; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
-          .button { background-color: #ea580c; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; }
+          .button { background-color: #84cc16; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; }
         </style>
       </head>
       <body>
@@ -890,7 +890,7 @@ const handleGetClubColorsPublic: RequestHandler = async (req, res) => {
     res.json({
       success: true,
       colors: {
-        primary_color: rows[0].primary_color || "#ea580c",
+        primary_color: rows[0].primary_color || "#84cc16",
         secondary_color: rows[0].secondary_color || "#fb923c",
         accent_color: rows[0].accent_color || "#fed7aa",
         text_color: rows[0].text_color || "#1f2937",
@@ -1113,7 +1113,7 @@ async function sendClubOnboardingNotification(
         <style>
           body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
           .container { background-color: white; border-radius: 10px; padding: 30px; max-width: 600px; margin: 0 auto; }
-          .header { background-color: #ea580c; color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+          .header { background-color: #84cc16; color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
           .info { background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 15px 0; }
           .footer { color: #666; font-size: 12px; text-align: center; margin-top: 30px; }
         </style>
@@ -1153,7 +1153,7 @@ async function sendClubOnboardingNotification(
         <style>
           body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
           .container { background-color: white; border-radius: 10px; padding: 30px; max-width: 600px; margin: 0 auto; }
-          .header { background-color: #ea580c; color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+          .header { background-color: #84cc16; color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
           .success { background-color: #dcfce7; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #10b981; }
           .footer { color: #666; font-size: 12px; text-align: center; margin-top: 30px; }
         </style>
@@ -4058,13 +4058,13 @@ async function sendEventRegistrationEmail(
         <style>
           body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
           .container { background-color: white; border-radius: 10px; padding: 30px; max-width: 600px; margin: 0 auto; }
-          .header { background-color: #ea580c; color: white; padding: 20px; border-radius: 5px; text-align: center; }
+          .header { background-color: #84cc16; color: white; padding: 20px; border-radius: 5px; text-align: center; }
           .event-badge { background-color: #fed7aa; color: #9a3412; padding: 5px 15px; border-radius: 20px; display: inline-block; margin: 10px 0; font-weight: bold; }
-          .event-details { background-color: #fff7ed; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ea580c; }
+          .event-details { background-color: #fff7ed; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #84cc16; }
           .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #fed7aa; }
           .label { font-weight: bold; color: #9a3412; }
           .value { color: #333; }
-          .total { font-size: 20px; font-weight: bold; color: #ea580c; }
+          .total { font-size: 20px; font-weight: bold; color: #84cc16; }
           .footer { color: #666; font-size: 12px; text-align: center; margin-top: 30px; }
           .highlight { background-color: #fed7aa; padding: 15px; border-radius: 5px; margin: 15px 0; text-align: center; }
         </style>
@@ -8471,7 +8471,7 @@ const handleGetClubColors: RequestHandler = async (req, res) => {
     res.json({
       success: true,
       colors: {
-        primary_color: rows[0].primary_color || "#ea580c",
+        primary_color: rows[0].primary_color || "#84cc16",
         secondary_color: rows[0].secondary_color || "#fb923c",
         accent_color: rows[0].accent_color || "#fed7aa",
         text_color: rows[0].text_color || "#1f2937",
@@ -8539,7 +8539,7 @@ const handleUpdateClubColors: RequestHandler = async (req, res) => {
            background_color = ?
        WHERE id = ?`,
       [
-        primary_color || "#ea580c",
+        primary_color || "#84cc16",
         secondary_color || "#fb923c",
         accent_color || "#fed7aa",
         text_color || "#1f2937",
@@ -8552,7 +8552,7 @@ const handleUpdateClubColors: RequestHandler = async (req, res) => {
       success: true,
       message: "Club colors updated successfully",
       colors: {
-        primary_color: primary_color || "#ea580c",
+        primary_color: primary_color || "#84cc16",
         secondary_color: secondary_color || "#fb923c",
         accent_color: accent_color || "#fed7aa",
         text_color: text_color || "#1f2937",
