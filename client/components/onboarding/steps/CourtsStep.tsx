@@ -18,6 +18,7 @@ import {
   addCourt,
   removeCourt,
   nextStep,
+  previousStep,
   CourtOnboarding,
 } from "@/store/slices/clubOnboardingSlice";
 import {
@@ -60,9 +61,10 @@ const surfaceTypeLabels = {
 
 export default function CourtsStep() {
   const dispatch = useAppDispatch();
-  const courts = useAppSelector(
-    (state) => state.clubOnboarding.data.courts || [],
-  );
+  const { courts = [], currentStep } = useAppSelector((state) => ({
+    courts: state.clubOnboarding.data.courts,
+    currentStep: state.clubOnboarding.currentStep,
+  }));
   const [showAddForm, setShowAddForm] = useState(courts.length === 0);
 
   const handleAddCourt = (values: any, { resetForm }: any) => {
@@ -86,17 +88,17 @@ export default function CourtsStep() {
   };
 
   return (
-    <Card className="p-8">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-            <Map className="h-6 w-6 text-primary" />
+    <Card className="p-4 sm:p-6 md:p-8">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Map className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-secondary">
+            <h2 className="text-xl sm:text-2xl font-bold">
               Configuración de Canchas
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-xs sm:text-sm">
               Agrega todas las canchas disponibles en tu club
             </p>
           </div>
@@ -106,7 +108,7 @@ export default function CourtsStep() {
       {/* Courts List */}
       {courts.length > 0 && (
         <div className="mb-6 space-y-3">
-          <h3 className="text-lg font-semibold text-secondary mb-3">
+          <h3 className="text-lg font-semibold mb-3">
             Canchas Agregadas ({courts.length})
           </h3>
           <AnimatePresence>
@@ -179,8 +181,8 @@ export default function CourtsStep() {
           {({ errors, touched, values, setFieldValue, isValid, dirty }) => (
             <Form>
               <Card className="p-6 bg-primary/5 border-primary/20">
-                <h3 className="text-lg font-semibold text-secondary mb-4 flex items-center gap-2">
-                  <Plus className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Plus className="h-5 w-5" />
                   Nueva Cancha
                 </h3>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -346,8 +348,23 @@ export default function CourtsStep() {
 
       {/* Continue Button */}
       {courts.length > 0 && (
-        <div className="flex justify-end mt-6 pt-6 border-t">
-          <Button onClick={handleContinue} size="lg" className="min-w-[200px]">
+        <div className="flex flex-col sm:flex-row justify-between gap-3 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => {
+              dispatch(previousStep());
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className="w-full sm:w-auto"
+          >
+            Atrás
+          </Button>
+          <Button
+            onClick={handleContinue}
+            size="lg"
+            className="w-full sm:w-auto sm:min-w-[200px]"
+          >
             Continuar
           </Button>
         </div>

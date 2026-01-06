@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { updateBasicInfo, nextStep } from "@/store/slices/clubOnboardingSlice";
+import { updateBasicInfo, nextStep, previousStep } from "@/store/slices/clubOnboardingSlice";
 import { Building2, Mail, Phone, Globe, MapPin, User } from "lucide-react";
 
 const validationSchema = Yup.object({
@@ -33,7 +33,6 @@ const validationSchema = Yup.object({
   email: Yup.string()
     .required("El email del club es obligatorio")
     .email("Email inválido"),
-  website: Yup.string().url("URL inválida").optional(),
   admin_name: Yup.string()
     .required("Tu nombre es obligatorio")
     .min(3, "El nombre debe tener al menos 3 caracteres"),
@@ -47,7 +46,7 @@ const validationSchema = Yup.object({
 
 export default function BasicInfoStep() {
   const dispatch = useAppDispatch();
-  const onboardingData = useAppSelector((state) => state.clubOnboarding.data);
+  const { data: onboardingData, currentStep } = useAppSelector((state) => state.clubOnboarding);
 
   const handleSubmit = (values: any) => {
     dispatch(updateBasicInfo(values));
@@ -63,12 +62,8 @@ export default function BasicInfoStep() {
             <Building2 className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-secondary">
-              Información Básica del Club
-            </h2>
-            <p className="text-muted-foreground">
-              Proporciona los datos principales de tu club de pádel
-            </p>
+            <h2 className="text-2xl font-bold">Información Básica del Club</h2>
+            <p>Proporciona los datos principales de tu club de pádel</p>
           </div>
         </div>
       </div>
@@ -84,7 +79,6 @@ export default function BasicInfoStep() {
           country: onboardingData.country || "México",
           phone: onboardingData.phone || "",
           email: onboardingData.email || "",
-          website: onboardingData.website || "",
           admin_name: onboardingData.admin_name || "",
           admin_email: onboardingData.admin_email || "",
           admin_phone: onboardingData.admin_phone || "",
@@ -96,14 +90,14 @@ export default function BasicInfoStep() {
       >
         {({ errors, touched, isValid, dirty }) => (
           <Form>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Club Information Section */}
               <div>
-                <h3 className="text-lg font-semibold text-secondary mb-4 flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-primary" />
+                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+                  <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   Información del Club
                 </h3>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-3 sm:gap-4">
                   <div className="md:col-span-2">
                     <Label htmlFor="name">
                       Nombre del Club{" "}
@@ -152,7 +146,7 @@ export default function BasicInfoStep() {
 
               {/* Location Section */}
               <div>
-                <h3 className="text-lg font-semibold text-secondary mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-primary" />
                   Ubicación
                 </h3>
@@ -271,7 +265,7 @@ export default function BasicInfoStep() {
 
               {/* Contact Information Section */}
               <div>
-                <h3 className="text-lg font-semibold text-secondary mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <Phone className="h-5 w-5 text-primary" />
                   Contacto del Club
                 </h3>
@@ -327,40 +321,16 @@ export default function BasicInfoStep() {
                       className="text-xs text-destructive mt-1"
                     />
                   </div>
-
-                  <div className="md:col-span-2">
-                    <Label htmlFor="website">Sitio Web (Opcional)</Label>
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      <Field
-                        as={Input}
-                        id="website"
-                        name="website"
-                        type="url"
-                        placeholder="https://www.tuclub.com"
-                        className={
-                          errors.website && touched.website
-                            ? "border-destructive"
-                            : ""
-                        }
-                      />
-                    </div>
-                    <ErrorMessage
-                      name="website"
-                      component="p"
-                      className="text-xs text-destructive mt-1"
-                    />
-                  </div>
                 </div>
               </div>
 
               {/* Administrator Information Section */}
               <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-secondary mb-2 flex items-center gap-2">
+                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <User className="h-5 w-5 text-primary" />
                   Primer Super Administrador del Club
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm mb-4">
                   Esta persona tendrá acceso completo al panel de administración
                   del club, podrá gestionar reservas, usuarios, instructores y
                   configuraciones. Es obligatorio designar al menos un super
@@ -439,12 +409,26 @@ export default function BasicInfoStep() {
               </div>
 
               {/* Submit Button */}
-              <div className="flex justify-end pt-4">
+              <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
+                {currentStep > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    onClick={() => {
+                      dispatch(previousStep());
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="w-full sm:w-auto"
+                  >
+                    Atrás
+                  </Button>
+                )}
                 <Button
                   type="submit"
                   size="lg"
-                  disabled={!isValid || !dirty}
-                  className="min-w-[200px]"
+                  disabled={!isValid}
+                  className="w-full sm:w-auto sm:min-w-[200px] sm:ml-auto"
                 >
                   Continuar
                 </Button>

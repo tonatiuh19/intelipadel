@@ -100,7 +100,7 @@ export default function ClubOnboardingWizard() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-secondary via-secondary/95 to-secondary/90 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-secondary via-secondary/95 to-secondary/90 flex items-center justify-center p-4 mt-5">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -115,18 +115,16 @@ export default function ClubOnboardingWizard() {
             >
               <CheckCircle2 className="h-12 w-12 text-primary" />
             </motion.div>
-            <h2 className="text-3xl font-bold text-secondary mb-4">
+            <h2 className="text-3xl font-bold mb-4">
               ¡Solicitud Enviada Exitosamente!
             </h2>
-            <p className="text-lg text-muted-foreground mb-6">
+            <p className="text-lg mb-6">
               Gracias por registrar tu club en Intelipadel. Nuestro equipo
               revisará tu información y se pondrá en contacto contigo en las
               próximas 24-48 horas.
             </p>
             <div className="bg-muted rounded-lg p-6 mb-6">
-              <h3 className="font-semibold text-secondary mb-2">
-                Próximos Pasos:
-              </h3>
+              <h3 className="font-semibold mb-2">Próximos Pasos:</h3>
               <ul className="text-left text-sm text-muted-foreground space-y-2">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
@@ -164,30 +162,30 @@ export default function ClubOnboardingWizard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-muted/50 via-background to-muted/30 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-muted/50 via-background to-muted/30 py-4 md:py-8 px-2 sm:px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-black text-secondary mb-3">
+        <div className="text-center mb-4 md:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-2 md:mb-3 px-2">
             Registra Tu Club en Intelipadel
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base md:text-lg max-w-2xl mx-auto px-2">
             Completa el proceso de registro en 5 pasos simples. Tu club será
             revisado por nuestro equipo antes de activarse.
           </p>
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-8">
+        <div className="mb-4 md:mb-8 px-2">
           <Progress value={progress} className="h-2 mb-2" />
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-xs sm:text-sm text-center font-medium">
             Paso {currentStep} de {totalSteps}
           </p>
         </div>
 
         {/* Steps Navigation */}
-        <div className="mb-8">
-          <div className="grid grid-cols-5 gap-2">
+        <div className="mb-4 md:mb-8 px-1 sm:px-2">
+          <div className="grid grid-cols-5 gap-1 sm:gap-2">
             {steps.map((step) => {
               const Icon = step.icon;
               const isActive = currentStep === step.number;
@@ -199,7 +197,7 @@ export default function ClubOnboardingWizard() {
                   key={step.number}
                   onClick={() => handleStepClick(step.number)}
                   disabled={!isClickable}
-                  className={`relative p-4 rounded-lg border-2 transition-all ${
+                  className={`relative p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all ${
                     isActive
                       ? "border-primary bg-primary/5 shadow-lg"
                       : isCompleted
@@ -207,9 +205,9 @@ export default function ClubOnboardingWizard() {
                         : "border-muted bg-card hover:border-muted-foreground/20"
                   } ${isClickable ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
                 >
-                  <div className="flex flex-col items-center gap-2">
+                  <div className="flex flex-col items-center gap-1 sm:gap-2">
                     <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                      className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center ${
                         isActive
                           ? "bg-primary text-primary-foreground"
                           : isCompleted
@@ -218,14 +216,14 @@ export default function ClubOnboardingWizard() {
                       }`}
                     >
                       {isCompleted ? (
-                        <CheckCircle2 className="h-6 w-6" />
+                        <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
                       ) : (
-                        <Icon className="h-6 w-6" />
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
                       )}
                     </div>
                     <div className="text-center">
                       <p
-                        className={`text-xs font-semibold ${
+                        className={`text-[10px] sm:text-xs font-semibold leading-tight ${
                           isActive
                             ? "text-primary"
                             : isCompleted
@@ -233,13 +231,16 @@ export default function ClubOnboardingWizard() {
                               : "text-muted-foreground"
                         }`}
                       >
-                        {step.title}
+                        <span className="hidden sm:inline">{step.title}</span>
+                        <span className="sm:hidden">Paso {step.number}</span>
                       </p>
-                      <p className="text-xs text-muted-foreground hidden md:block">
+                      <p className="text-xs text-muted-foreground hidden lg:block">
                         {step.subtitle}
                       </p>
                       {step.required && (
-                        <span className="text-xs text-destructive">*</span>
+                        <span className="text-xs text-destructive hidden sm:inline">
+                          *
+                        </span>
                       )}
                     </div>
                   </div>

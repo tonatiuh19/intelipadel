@@ -15,6 +15,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   updatePricingAndHours,
   nextStep,
+  previousStep,
   OperatingHours,
 } from "@/store/slices/clubOnboardingSlice";
 import { DollarSign, Clock, Calendar, Info } from "lucide-react";
@@ -387,8 +388,24 @@ export default function PricingHoursStep() {
               </div>
 
               {/* Submit Button */}
-              <div className="flex justify-end pt-4 border-t">
-                <Button type="submit" size="lg" className="min-w-[200px]">
+              <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  onClick={() => {
+                    dispatch(previousStep());
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className="w-full sm:w-auto"
+                >
+                  Atrás
+                </Button>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full sm:w-auto sm:min-w-[200px]"
+                >
                   Continuar
                 </Button>
               </div>

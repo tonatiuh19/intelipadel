@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   updateOptionalFeatures,
   nextStep,
+  previousStep,
 } from "@/store/slices/clubOnboardingSlice";
 import {
   Settings,
@@ -73,17 +74,17 @@ export default function OptionalFeaturesStep() {
   ];
 
   return (
-    <Card className="p-8">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-            <Settings className="h-6 w-6 text-primary" />
+    <Card className="p-4 sm:p-6 md:p-8">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-secondary">
+            <h2 className="text-xl sm:text-2xl font-bold">
               Funciones Opcionales
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-xs sm:text-sm">
               Activa funciones adicionales para tu club (puedes configurarlas
               más tarde)
             </p>
@@ -104,13 +105,13 @@ export default function OptionalFeaturesStep() {
       >
         {({ values, setFieldValue }) => (
           <Form>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Optional Features */}
               <div>
-                <h3 className="text-lg font-semibold text-secondary mb-4">
+                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
                   Funciones Avanzadas
                 </h3>
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                   {features.map((feature, index) => {
                     const Icon = feature.icon;
                     const isEnabled = values[
@@ -205,13 +206,14 @@ export default function OptionalFeaturesStep() {
 
               {/* Policies Section */}
               <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-secondary mb-4 flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
                   Políticas del Club (Opcional)
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm mb-4">
                   Puedes agregar tus políticas ahora o configurarlas más tarde
-                  desde el panel de administración.
+                  desde el panel de administración. <strong>Nota:</strong> Estas
+                  políticas serán requeridas para activar tu club.
                 </p>
 
                 <div className="space-y-4">
@@ -220,7 +222,7 @@ export default function OptionalFeaturesStep() {
                       htmlFor="terms_and_conditions"
                       className="flex items-center gap-2"
                     >
-                      <Shield className="h-4 w-4 text-muted-foreground" />
+                      <Shield className="h-4 w-4" />
                       Términos y Condiciones
                     </Label>
                     <Field
@@ -237,7 +239,7 @@ export default function OptionalFeaturesStep() {
                       htmlFor="privacy_policy"
                       className="flex items-center gap-2"
                     >
-                      <Shield className="h-4 w-4 text-muted-foreground" />
+                      <Shield className="h-4 w-4" />
                       Política de Privacidad
                     </Label>
                     <Field
@@ -254,7 +256,7 @@ export default function OptionalFeaturesStep() {
                       htmlFor="cancellation_policy"
                       className="flex items-center gap-2"
                     >
-                      <Shield className="h-4 w-4 text-muted-foreground" />
+                      <Shield className="h-4 w-4" />
                       Política de Cancelación
                     </Label>
                     <Field
@@ -264,7 +266,7 @@ export default function OptionalFeaturesStep() {
                       rows={4}
                       placeholder="Política de cancelación y reembolsos (opcional)..."
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs mt-1">
                       Ej: "Cancelaciones con al menos 24 horas de anticipación
                       reciben reembolso completo"
                     </p>
@@ -273,8 +275,24 @@ export default function OptionalFeaturesStep() {
               </div>
 
               {/* Submit Button */}
-              <div className="flex justify-end pt-4 border-t">
-                <Button type="submit" size="lg" className="min-w-[200px]">
+              <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  onClick={() => {
+                    dispatch(previousStep());
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className="w-full sm:w-auto"
+                >
+                  Atrás
+                </Button>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full sm:w-auto sm:min-w-[200px]"
+                >
                   Continuar a Revisión
                 </Button>
               </div>
