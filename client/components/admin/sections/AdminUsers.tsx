@@ -49,7 +49,7 @@ export default function AdminUsers() {
       email: "",
       name: "",
       role: "club_admin",
-      club_id: null as number | null,
+      club_id: currentAdmin?.club_id || null,
     },
     validationSchema: adminSchema,
     onSubmit: async (values) => {
@@ -138,22 +138,25 @@ export default function AdminUsers() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="club_id">
-                  ID de Club (para Admins de Club)
-                </Label>
-                <Input
-                  id="club_id"
-                  type="number"
-                  value={formik.values.club_id || ""}
-                  onChange={(e) =>
-                    formik.setFieldValue(
-                      "club_id",
-                      e.target.value ? parseInt(e.target.value) : null,
-                    )
-                  }
-                />
-              </div>
+              {currentAdmin?.role === "super_admin" && (
+                <div className="space-y-2">
+                  <Label htmlFor="club_id">
+                    ID de Club (para Admins de Club)
+                  </Label>
+                  <Input
+                    disabled
+                    id="club_id"
+                    type="number"
+                    value={formik.values.club_id || ""}
+                    onChange={(e) =>
+                      formik.setFieldValue(
+                        "club_id",
+                        e.target.value ? parseInt(e.target.value) : null,
+                      )
+                    }
+                  />
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <Button type="submit" disabled={isSubmitting}>
@@ -204,7 +207,7 @@ export default function AdminUsers() {
                   </div>
                   <div className="flex gap-2">
                     <span className="px-3 py-1 text-sm rounded-full bg-purple-100 text-purple-800">
-                      {admin.role.replace("_", " ")}
+                      {admin.role?.replace("_", " ") || "N/A"}
                     </span>
                     <span
                       className={`px-3 py-1 text-sm rounded-full ${

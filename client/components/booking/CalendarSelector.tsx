@@ -176,7 +176,9 @@ export default function CalendarSelector({
                 },
               )}
             >
-              <div className="text-sm font-semibold">{format(date, "d")}</div>
+              <div className="text-sm font-semibold whitespace-nowrap break-normal">
+                {format(date, "d")}
+              </div>
               {isPartiallyBlocked && !isBlocked && isCurrentMonth && (
                 <div className="absolute top-0.5 right-0.5 h-1.5 w-1.5 bg-orange-500 rounded-full" />
               )}
@@ -200,7 +202,7 @@ export default function CalendarSelector({
       </div>
 
       {/* Legend */}
-      <div className="flex gap-4 mt-4 text-xs text-muted-foreground">
+      {/* <div className="flex gap-4 mt-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 bg-primary rounded" />
           <span>Seleccionado</span>
@@ -227,7 +229,7 @@ export default function CalendarSelector({
           <div className="h-3 w-3 bg-muted/20 opacity-50 rounded" />
           <span>No disponible</span>
         </div>
-      </div>
+      </div> */}
     </Card>
   );
 }

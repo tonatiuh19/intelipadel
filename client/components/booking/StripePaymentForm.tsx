@@ -18,11 +18,8 @@ import {
   Check,
   Crown,
 } from "lucide-react";
-import {
-  PaymentElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
+import { SiVisa, SiMastercard, SiAmericanexpress } from "react-icons/si";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { confirmPayment, setPaymentStatus } from "@/store/slices/paymentSlice";
 import { confirmEventPayment } from "@/store/slices/eventPaymentSlice";
@@ -32,6 +29,7 @@ import ClubPolicyModal from "./ClubPolicyModal";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import type { Event, PaymentMethod } from "@shared/types";
+import { useMemo } from "react";
 
 interface Instructor {
   id: number;
@@ -128,6 +126,65 @@ export default function StripePaymentForm({
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<string>("new");
 
+  // Compute CardElement styles from CSS variables
+  const cardElementStyle = useMemo(() => {
+    if (typeof window === "undefined") return {};
+
+    const root = getComputedStyle(document.documentElement);
+    const getVar = (name: string) => root.getPropertyValue(name).trim();
+
+    // Helper to convert HSL to RGB
+    const hslToRgb = (h: number, s: number, l: number): string => {
+      s /= 100;
+      l /= 100;
+      const k = (n: number) => (n + h / 30) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const f = (n: number) =>
+        l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+      const r = Math.round(255 * f(0));
+      const g = Math.round(255 * f(8));
+      const b = Math.round(255 * f(4));
+      return `rgb(${r}, ${g}, ${b})`;
+    };
+
+    // Helper to convert CSS variable to RGB color
+    const toRgb = (varName: string, fallback: string) => {
+      const val = getVar(varName);
+      if (!val) return fallback;
+      // If already a complete color format, return as-is
+      if (val.startsWith("#") || val.startsWith("rgb")) return val;
+      // Parse HSL triplet: "220 13% 18%"
+      const parts = val.split(/\s+/);
+      if (parts.length === 3) {
+        const h = parseFloat(parts[0]);
+        const s = parseFloat(parts[1].replace("%", ""));
+        const l = parseFloat(parts[2].replace("%", ""));
+        return hslToRgb(h, s, l);
+      }
+      return fallback;
+    };
+
+    return {
+      base: {
+        color: toRgb("--card-foreground", "#000"),
+        fontFamily:
+          'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
+        fontSize: "16px",
+        fontSmoothing: "antialiased",
+        "::placeholder": {
+          color: toRgb("--muted-foreground", "#94a3b8"),
+        },
+      },
+      invalid: {
+        color: toRgb("--destructive", "#bf0a0a"),
+        iconColor: toRgb("--destructive", "#bf0a0a"),
+      },
+      complete: {
+        color: toRgb("--card-foreground", "#000"),
+      },
+    };
+  }, []);
+
   const handleOpenPolicy = (type: "terms" | "privacy" | "cancellation") => {
     setSelectedPolicyType(type);
     setShowPolicyModal(true);
@@ -209,13 +266,16 @@ export default function StripePaymentForm({
           redirect: "if_required",
         });
       } else {
-        // Use new payment method from PaymentElement
-        confirmResult = await stripe.confirmPayment({
-          elements,
-          confirmParams: {
-            return_url: window.location.origin + "/booking",
+        // Use new payment method from CardElement
+        const cardElement = elements!.getElement(CardElement);
+        if (!cardElement) {
+          throw new Error("CardElement not found");
+        }
+
+        confirmResult = await stripe.confirmCardPayment(clientSecret, {
+          payment_method: {
+            card: cardElement,
           },
-          redirect: "if_required",
         });
       }
 
@@ -277,9 +337,9 @@ export default function StripePaymentForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Event Summary - Only shown for events */}
       {isEventPayment && eventData && event && (
-        <Card className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 border-orange-200">
-          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 text-orange-900">
-            <Trophy className="h-5 w-5 text-orange-600" />
+        <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 text-foreground">
+            <Trophy className="h-5 w-5 text-primary" />
             Resumen de Inscripción
           </h3>
 
@@ -287,7 +347,7 @@ export default function StripePaymentForm({
           <div className="bg-white rounded-lg p-4 mb-4">
             <div className="flex items-center gap-2 mb-3">
               <h4 className="font-bold text-gray-900 text-lg">{event.title}</h4>
-              <span className="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800 font-medium">
+              <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary font-medium">
                 {event.event_type === "tournament"
                   ? "Torneo"
                   : event.event_type === "league"
@@ -308,8 +368,8 @@ export default function StripePaymentForm({
           <div className="space-y-3">
             {clubName && (
               <div className="flex items-center gap-3 text-sm">
-                <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                  <Target className="h-4 w-4 text-orange-600" />
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Target className="h-4 w-4 text-primary" />
                 </div>
                 <div>
                   <p className="text-gray-500 text-xs">Club</p>
@@ -319,8 +379,8 @@ export default function StripePaymentForm({
             )}
 
             <div className="flex items-center gap-3 text-sm">
-              <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                <Calendar className="h-4 w-4 text-orange-600" />
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Calendar className="h-4 w-4 text-primary" />
               </div>
               <div>
                 <p className="text-gray-500 text-xs">Fecha</p>
@@ -333,8 +393,8 @@ export default function StripePaymentForm({
             </div>
 
             <div className="flex items-center gap-3 text-sm">
-              <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                <Clock className="h-4 w-4 text-orange-600" />
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Clock className="h-4 w-4 text-primary" />
               </div>
               <div>
                 <p className="text-gray-500 text-xs">Horario</p>
@@ -346,8 +406,8 @@ export default function StripePaymentForm({
             </div>
 
             <div className="flex items-center gap-3 text-sm">
-              <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                <Users className="h-4 w-4 text-orange-600" />
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Users className="h-4 w-4 text-primary" />
               </div>
               <div>
                 <p className="text-gray-500 text-xs">Participantes</p>
@@ -372,12 +432,12 @@ export default function StripePaymentForm({
             </div>
 
             {event.prize_pool && Number(event.prize_pool) > 0 && (
-              <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
+              <div className="bg-primary/10 rounded-lg p-3 border border-primary/20">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-orange-800 font-medium">
+                  <span className="text-sm text-foreground font-medium">
                     Premio del Torneo
                   </span>
-                  <span className="text-lg font-bold text-orange-600">
+                  <span className="text-lg font-bold text-primary">
                     ${Number(event.prize_pool).toFixed(2)}
                   </span>
                 </div>
@@ -385,14 +445,14 @@ export default function StripePaymentForm({
             )}
 
             {/* Registration Fee */}
-            <div className="mt-4 pt-4 border-t border-orange-200 space-y-2">
+            <div className="mt-4 pt-4 border-t border-primary/20 space-y-2">
               {originalEventPrice &&
                 originalEventPrice > eventData.registration_fee && (
                   <>
-                    <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-lg mb-3">
+                    <div className="p-3 bg-primary/10 border border-primary rounded-lg mb-3">
                       <div className="flex items-center gap-2 mb-1">
-                        <Crown className="h-4 w-4 text-amber-600" />
-                        <span className="text-xs font-bold text-amber-900">
+                        <Crown className="h-4 w-4 text-primary" />
+                        <span className="text-xs font-bold text-foreground">
                           Descuento de Membresía{" "}
                           {(
                             ((originalEventPrice - eventData.registration_fee) /
@@ -402,7 +462,7 @@ export default function StripePaymentForm({
                           %
                         </span>
                       </div>
-                      <div className="text-xs text-amber-800">
+                      <div className="text-xs text-muted-foreground">
                         Ahorro: $
                         {(
                           originalEventPrice - eventData.registration_fee
@@ -637,18 +697,25 @@ export default function StripePaymentForm({
                     onClick={() => handleSelectPaymentMethod(pm.id)}
                   >
                     <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-14 rounded bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                            <CreditCard className="h-5 w-5 text-white" />
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-3">
+                        <div className="flex items-center gap-4 min-w-0 w-full">
+                          <div className="h-10 w-14 rounded bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center flex-shrink-0">
+                            {pm.brand?.toLowerCase() === "visa" ? (
+                              <SiVisa className="h-6 w-6 text-white" />
+                            ) : pm.brand?.toLowerCase() === "mastercard" ? (
+                              <SiMastercard className="h-6 w-6 text-white" />
+                            ) : pm.brand?.toLowerCase() === "amex" ||
+                              pm.brand?.toLowerCase() === "american express" ? (
+                              <SiAmericanexpress className="h-6 w-6 text-white" />
+                            ) : (
+                              <CreditCard className="h-5 w-5 text-white" />
+                            )}
                           </div>
-                          <div>
+
+                          <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold capitalize">
+                              <span className="font-semibold capitalize truncate">
                                 {pm.brand?.toUpperCase()}
-                              </span>
-                              <span className="text-muted-foreground">
-                                •••• {pm.last4}
                               </span>
                               {!!pm.is_default && (
                                 <Badge
@@ -660,15 +727,21 @@ export default function StripePaymentForm({
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-muted-foreground mt-0.5">
+                            <p className="text-sm text-muted-foreground mt-0.5 truncate">
                               Vence {pm.exp_month.toString().padStart(2, "0")}/
                               {pm.exp_year}
                             </p>
                           </div>
                         </div>
-                        {isSelected && (
-                          <Check className="h-5 w-5 text-primary" />
-                        )}
+
+                        <div className="flex items-center sm:flex-col sm:items-end gap-2 flex-shrink-0">
+                          <div className="font-mono text-lg tracking-widest text-muted-foreground">
+                            •••• {pm.last4}
+                          </div>
+                          {isSelected && (
+                            <Check className="h-5 w-5 text-primary mt-1" />
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -709,33 +782,29 @@ export default function StripePaymentForm({
 
             {/* New Card Form */}
             {selectedPaymentMethod === "new" && (
-              <div className="space-y-4 mt-4 p-4 border-2 border-primary/20 rounded-lg bg-primary/5">
-                <PaymentElement
-                  options={{
-                    layout: "tabs",
-                    defaultValues: {
-                      billingDetails: {
-                        email: user?.email || "",
-                      },
-                    },
-                  }}
-                />
+              <div className="space-y-4 mt-4">
+                <div className="p-4 border border-border rounded-lg bg-card">
+                  <CardElement
+                    options={{
+                      style: cardElementStyle,
+                      hidePostalCode: false,
+                    }}
+                  />
+                </div>
               </div>
             )}
           </div>
         ) : (
-          /* No Saved Cards - Show Payment Element Directly */
+          /* No Saved Cards - Show Card Element Directly */
           <div className="mb-6 space-y-4">
-            <PaymentElement
-              options={{
-                layout: "tabs",
-                defaultValues: {
-                  billingDetails: {
-                    email: user?.email || "",
-                  },
-                },
-              }}
-            />
+            <div className="p-4 border border-border rounded-lg bg-card">
+              <CardElement
+                options={{
+                  style: cardElementStyle,
+                  hidePostalCode: false,
+                }}
+              />
+            </div>
           </div>
         )}
 

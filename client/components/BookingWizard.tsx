@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -89,6 +89,7 @@ interface Instructor {
 
 export default function BookingWizard() {
   const dispatch = useAppDispatch();
+  const topRef = useRef<HTMLDivElement | null>(null);
   const { setClubId, colors } = useClubTheme();
   const { clubs, loading: clubsLoading } = useAppSelector(
     (state) => state.clubs,
@@ -245,7 +246,15 @@ export default function BookingWizard() {
     ) {
       calculatePrice();
     }
-  }, [selectedClub, selectedDate, selectedTime, duration, selectedCourt, user]);
+  }, [
+    selectedClub,
+    selectedDate,
+    selectedTime,
+    duration,
+    selectedCourt,
+    user,
+    userSubscription,
+  ]);
 
   const calculatePrice = async () => {
     if (!selectedClub || !selectedDate || !selectedTime || !duration) return;
@@ -826,6 +835,22 @@ export default function BookingWizard() {
     }
   };
 
+  // Scroll to top when entering payment step for better UX on mobile
+  useEffect(() => {
+    if (step === "payment") {
+      // Smoothly bring the wizard top into view
+      if (topRef.current) {
+        try {
+          topRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (e) {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+  }, [step]);
+
   const getStepNumber = () => {
     if (step === "club") return 1;
     if (step === "datetime") return 2;
@@ -847,7 +872,10 @@ export default function BookingWizard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-8">
+    <div
+      ref={topRef}
+      className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-8"
+    >
       <div className="max-w-6xl mx-auto">
         {/* Progress Header */}
         {step !== "success" && (
@@ -941,7 +969,7 @@ export default function BookingWizard() {
                     <div className="p-5">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="flex items-center">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <Star className="h-4 w-4 fill-primary text-primary" />
                           <span className="font-semibold text-sm ml-1">
                             {club.rating}
                           </span>
@@ -1063,16 +1091,16 @@ export default function BookingWizard() {
               >
                 <div className="space-y-4">
                   {userSubscription && userSubscription.status === "active" && (
-                    <div className="p-4 bg-primary border-2 border-amber-300 rounded-lg shadow-sm">
+                    <div className="p-4 bg-primary/10 border-2 border-primary rounded-lg shadow-sm">
                       <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
-                          <Crown className="h-5 w-5 text-white" />
+                        <div className="flex-shrink-0 w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                          <Crown className="h-5 w-5 text-primary-foreground" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-bold text-amber-900 mb-1">
+                          <p className="text-sm font-bold text-foreground mb-1">
                             ✨ Beneficio de Membresía Aplicado
                           </p>
-                          <p className="text-xs text-amber-800 leading-relaxed">
+                          <p className="text-xs text-muted-foreground leading-relaxed">
                             {userSubscription.subscription
                               ?.booking_discount_percent && (
                               <>
@@ -1135,16 +1163,16 @@ export default function BookingWizard() {
               !selectedTime &&
               (userSubscription.subscription?.event_discount_percent ||
                 userSubscription.subscription?.class_discount_percent) && (
-                <Card className="p-4 bg-primary border-2 border-amber-300 rounded-lg shadow-sm animate-in fade-in slide-in-from-bottom-4">
+                <Card className="p-4 bg-primary/10 border-2 border-primary rounded-lg shadow-sm animate-in fade-in slide-in-from-bottom-4">
                   <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
-                      <Crown className="h-5 w-5 text-white" />
+                    <div className="flex-shrink-0 w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                      <Crown className="h-5 w-5 text-primary-foreground" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-bold text-amber-900 mb-1">
+                      <p className="text-sm font-bold text-foreground mb-1">
                         ✨ Beneficios de Membresía Disponibles
                       </p>
-                      <div className="text-xs text-amber-800 leading-relaxed space-y-1">
+                      <div className="text-xs text-muted-foreground leading-relaxed space-y-1">
                         {userSubscription.subscription
                           ?.event_discount_percent && (
                           <p>
@@ -1180,11 +1208,11 @@ export default function BookingWizard() {
               )}
 
             {/* Navigation */}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="outline"
                 onClick={goBack}
-                className="flex-1"
+                className="w-full sm:flex-1"
                 size="lg"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -1207,7 +1235,7 @@ export default function BookingWizard() {
                       : paymentLoading ||
                         (flowType === "booking" && isCalculating)
                   }
-                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-8"
+                  className="w-full sm:flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-8"
                 >
                   {isCalculating ? (
                     <>

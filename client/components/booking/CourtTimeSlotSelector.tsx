@@ -443,35 +443,33 @@ export default function CourtTimeSlotSelector({
     <div className="space-y-4">
       {/* Events Section */}
       {eventsForDate.length > 0 && (
-        <Card className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 border-orange-200">
-          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 text-orange-900">
-            <Trophy className="h-5 w-5 text-orange-600" />
+        <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 text-foreground">
+            <Trophy className="h-5 w-5 text-primary" />
             Eventos Disponibles
           </h3>
           <div className="space-y-3">
             {eventsForDate.map((event) => (
               <div
                 key={event.id}
-                className="bg-white rounded-lg p-4 border-2 border-orange-200 hover:border-orange-400 transition-all"
+                className="bg-card rounded-lg p-4 border-2 border-primary/20 hover:border-primary/40 transition-all"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-bold text-gray-900">{event.title}</h4>
-                      <span className="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800 font-medium">
+                      <h4 className="font-bold text-primary">{event.title}</h4>
+                      <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary font-medium">
                         {getEventTypeLabel(event.event_type)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">
-                      {event.description}
-                    </p>
+                    <p className="text-sm mb-3">{event.description}</p>
                     <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="flex items-center gap-2 text-gray-600">
+                      <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4" />
                         {event.start_time.substring(0, 5)} -{" "}
                         {event.end_time.substring(0, 5)}
                       </div>
-                      <div className="flex items-center gap-2 text-gray-600">
+                      <div className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
                         {event.current_participants}/
                         {event.max_participants || "∞"} participantes
@@ -481,8 +479,8 @@ export default function CourtTimeSlotSelector({
                           ?.event_discount_percent ? (
                           <>
                             <div className="flex items-center gap-2">
-                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500">
-                                <Crown className="h-3 w-3 text-white" />
+                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary">
+                                <Crown className="h-3 w-3 text-primary-foreground" />
                                 <span className="text-xs font-bold text-white">
                                   -
                                   {
@@ -494,7 +492,7 @@ export default function CourtTimeSlotSelector({
                               </div>
                             </div>
                             <div className="flex flex-col items-start">
-                              <span className="text-xs text-gray-400 line-through">
+                              <span className="text-xs text-primary line-through">
                                 ${Number(event.registration_fee).toFixed(2)}
                               </span>
                               <div className="flex items-center gap-1">
@@ -514,8 +512,7 @@ export default function CourtTimeSlotSelector({
                           </>
                         ) : (
                           <>
-                            <DollarSign className="h-4 w-4" />
-                            <span className="text-gray-600">
+                            <span className="text-primary">
                               ${Number(event.registration_fee).toFixed(2)}
                             </span>
                           </>
@@ -529,12 +526,12 @@ export default function CourtTimeSlotSelector({
                       </div>
                     </div>
                     {event.prize_pool && Number(event.prize_pool) > 0 && (
-                      <div className="mt-2 text-sm font-semibold text-orange-600">
+                      <div className="mt-2 text-sm font-semibold text-primary">
                         Premio: ${Number(event.prize_pool).toFixed(2)}
                       </div>
                     )}
                     {getEventCourtInfo(event) && (
-                      <div className="mt-2 pt-2 border-t border-orange-100 text-xs text-gray-500">
+                      <div className="mt-2 pt-2 border-t border-primary/10 text-xs text-gray-500">
                         {getEventCourtInfo(event)}
                       </div>
                     )}
@@ -543,7 +540,7 @@ export default function CourtTimeSlotSelector({
                     <Button
                       onClick={() => onEventSelect(event)}
                       disabled={processingEventId === event.id}
-                      className="ml-4 bg-orange-600 hover:bg-orange-700"
+                      className="ml-0 sm:ml-4 w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       {processingEventId === event.id ? (
                         <>
@@ -564,8 +561,8 @@ export default function CourtTimeSlotSelector({
 
       {/* Private Classes Section */}
       {instructors.length > 0 && onClassSelect && (
-        <Card className="p-6 bg-gradient-to-br from-emerald-50 to-green-50 border-green-200">
-          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 text-green-900">
+        <Card className="p-6 bg-card from-emerald-50 to-green-50 border-green-200">
+          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
             <GraduationCap className="h-5 w-5 text-green-600" />
             Clases Privadas Disponibles
           </h3>
@@ -584,7 +581,7 @@ export default function CourtTimeSlotSelector({
                   <div
                     key={instructor.id}
                     className={cn(
-                      "bg-white rounded-lg p-4 border-2 transition-all cursor-pointer",
+                      "bg-card rounded-lg p-4 border-2 transition-all cursor-pointer",
                       isSelected
                         ? "border-green-600 ring-2 ring-green-200 shadow-lg"
                         : "border-green-200 hover:border-green-400",
@@ -607,12 +604,10 @@ export default function CourtTimeSlotSelector({
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h4 className="font-bold text-gray-900">
-                              {instructor.name}
-                            </h4>
+                            <h4 className="font-bold">{instructor.name}</h4>
                             {instructor.rating && (
                               <div className="flex items-center gap-1 text-sm text-gray-600">
-                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                <Star className="h-3 w-3 fill-primary text-primary" />
                                 <span className="font-medium">
                                   {instructor.rating}
                                 </span>
@@ -628,8 +623,8 @@ export default function CourtTimeSlotSelector({
                             {userSubscription?.subscription
                               ?.class_discount_percent ? (
                               <div className="flex flex-col items-end gap-1">
-                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500">
-                                  <Crown className="h-3 w-3 text-white" />
+                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary">
+                                  <Crown className="h-3 w-3 text-primary-foreground" />
                                   <span className="text-xs font-bold text-white">
                                     -
                                     {
@@ -662,9 +657,7 @@ export default function CourtTimeSlotSelector({
                           </div>
                         </div>
                         {instructor.bio && (
-                          <p className="text-sm text-gray-600 mb-2">
-                            {instructor.bio}
-                          </p>
+                          <p className="text-sm mb-2">{instructor.bio}</p>
                         )}
                         {instructor.specialties &&
                           instructor.specialties.length > 0 && (
@@ -713,13 +706,13 @@ export default function CourtTimeSlotSelector({
             )}
           />
           {selectedInstructor ? (
-            <span className="text-green-900">
+            <span>
               Selecciona Hora y Cancha para Clase con {selectedInstructor.name}
             </span>
           ) : (
             "Selecciona Hora y Cancha"
           )}
-          <span className="text-sm font-normal text-muted-foreground ml-auto">
+          <span className="text-sm font-normal ml-auto">
             {format(selectedDate, "dd 'de' MMMM", { locale: es })}
           </span>
         </h3>
@@ -730,7 +723,7 @@ export default function CourtTimeSlotSelector({
               className={cn(
                 "flex items-center gap-3 p-3 rounded-lg transition-colors",
                 selectedInstructor
-                  ? "bg-green-50 hover:bg-green-100"
+                  ? "bg-secondary hover:bg-green-100"
                   : "bg-muted/30 hover:bg-muted/50",
               )}
             >
@@ -769,11 +762,11 @@ export default function CourtTimeSlotSelector({
                     }}
                     disabled={!slot.available}
                     className={cn(
-                      "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                      "px-3 sm:px-4 py-3 sm:py-2 rounded-lg text-sm font-medium transition-all min-h-[44px]",
                       "border-2",
                       {
                         // Selected state - different colors for instructor vs regular
-                        "bg-green-600 text-white border-green-600 shadow-md":
+                        "bg-card text-white border-green-600 shadow-md":
                           selectedInstructor &&
                           selectedTime === time &&
                           selectedCourt?.id === slot.courtId,

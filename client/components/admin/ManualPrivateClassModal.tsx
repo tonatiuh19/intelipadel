@@ -447,6 +447,8 @@ export default function ManualPrivateClassModal({
                 selectedCourt={selectedCourtObj}
                 availability={availability}
                 loading={loadingAvailability}
+                duration={60}
+                calculatedPrice={null}
                 onSelectTimeSlot={(court, time) => {
                   // Prevent default - don't submit, just update state
                   setSelectedTime(time);
